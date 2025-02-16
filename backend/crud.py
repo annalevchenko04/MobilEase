@@ -95,8 +95,6 @@ def get_user_by_id(db: Session, userid: int):
     if db_user.role == "member":
         member_data = db.query(models.Member).filter(models.Member.id == userid).first()
         member_details = schemas.Member(
-            weight=member_data.weight,
-            height=member_data.height,
             membership_status=member_data.membership_status,
         )
 
@@ -130,8 +128,6 @@ def update_user(db: Session, user_id: int, user_update: schemas.UserCreate):
 
     if user_update.role == "member":
         if isinstance(db_user, models.Member):
-            db_user.weight = user_update.weight
-            db_user.height = user_update.height
             db_user.membership_status = user_update.membership_status
         else:
             raise ValueError("The user is not a member")
@@ -177,8 +173,6 @@ def get_users(db: Session):
                     "phone": user.phone,
                     "role": user.role,
                     "member_details": {
-                        "weight": user.weight,
-                        "height": user.height,
                         "membership_status": user.membership_status,
                     },
                 }
