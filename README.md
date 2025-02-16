@@ -17,10 +17,12 @@ npm audit fix
 ```
 # Don`t forget to create .env file for environmental variables
 # Structure of env file
+```bash
 DATABASE_URL=postgresql://postgres:{password}@localhost:5432/{database_name}
 ALGORITHM = HS256
 SECRET_KEY={secret_key}
 SENDGRID_API_KEY='{sendgrid_api_key}'
+```
 # How to run servers
 ## Backend
 First of all go to backend directory
