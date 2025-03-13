@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session, joinedload
 import models
 import schemas
 from passlib.context import CryptContext
+from send_email import send_welcome_email
+
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -38,6 +40,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    send_welcome_email(db_user.email, db_user.name)
 
     return schemas.UserResponse.model_validate(db_user)
 
