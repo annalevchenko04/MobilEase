@@ -10,6 +10,7 @@ import Main from "./components/Main";
 import Calculator from './components/Calculator';
 import Analytics from './components/Analytics';
 import Explore from './components/Explore';
+import CompanyRegister from "./components/CompanyRegister";
 import './styles.css';
 
 
@@ -154,6 +155,7 @@ const App = () => {
                 <div className="column"></div>
                 <div className="column m-5 is-two-thirds">
                     <Routes>
+                        <Route path="/register-company" element={<CompanyRegister />} />
                         {!token ? (
                             <>
                                 {/* Redirect to log in if not authenticated */}

@@ -1,6 +1,29 @@
 from typing import Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 
+INDUSTRY_CHOICES = [
+    "Technology", "Finance", "Healthcare", "Education",
+    "Retail", "Manufacturing", "Real Estate", "Transportation",
+    "Hospitality", "Energy"
+]
+
+class CompanyCreate(BaseModel):
+    name: str
+    industry: str = Field(..., description="Industry must be one of the predefined choices")
+    domain: str
+
+    @classmethod
+    def validate_industry(cls, industry):
+        if industry not in INDUSTRY_CHOICES:
+            raise ValueError("Invalid industry choice.")
+        return industry
+
+
+class CompanyResponse(CompanyCreate):
+    id: int
+
+    class Config:
+        from_attributes = True
 
 class UserCreate(BaseModel):
     username: str

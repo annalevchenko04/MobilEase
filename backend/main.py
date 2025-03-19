@@ -12,6 +12,8 @@ from database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated, List
 from dotenv import load_dotenv
+from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
@@ -21,6 +23,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 origins = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "https://quickchart.io"
 ]
 app.add_middleware(
@@ -204,5 +207,15 @@ async def delete_user(user_id: int, db: db_dependency):
     if not result:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "User deleted successfully"}
+
+class RegisterCompanyRequest(BaseModel):
+    company_data: schemas.CompanyCreate
+    user_data: schemas.UserCreate
+
+@app.post("/register-company/", response_model=schemas.UserResponse)
+def register_company(
+    request: RegisterCompanyRequest, db: Session = Depends(get_db)
+):
+    return crud.create_company(db, request.company_data, request.user_data)
 
 
