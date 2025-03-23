@@ -155,7 +155,14 @@ const App = () => {
                 <div className="column"></div>
                 <div className="column m-5 is-two-thirds">
                     <Routes>
-                        <Route path="/register-company" element={<CompanyRegister />} />
+                        <Route
+                            path="/register-company"
+                            element={
+                                token
+                                ? <Navigate to="/main" replace />  // Redirect if logged in
+                                : <CompanyRegister />
+                            }
+                        />
                         {!token ? (
                             <>
                                 {/* Redirect to log in if not authenticated */}
