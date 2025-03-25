@@ -29,10 +29,22 @@ def create_user(db: Session, user: schemas.UserCreate):
     }
 
     if user.role == "member":
+        # Extract domain from email
+        email_domain = user.email.split('@')[-1].lower()
+        company = db.query(models.Company).filter(models.Company.domain == email_domain).first()
+
+        if not company:
+            raise HTTPException(status_code=400,
+                                detail=f"No company registered with domain '{email_domain}'. Please contact your company admin.")
+
+        user_data["company_id"] = company.id  # Link user to company
+
         member_data = {
             "membership_status": user.membership_status,
         }
+
         db_user = models.Member(**user_data, **member_data)
+
     elif user.role == "admin":
         db_user = models.Admin(**user_data)
     else:
@@ -47,7 +59,7 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 
 def get_user(db: Session, username: str):
-    db_user = db.query(models.User).filter(models.User.username == username).first()
+    db_user = db.query(models.User).options(joinedload(models.User.company)).filter(models.User.username == username).first()
     if not db_user:
         return None
 
@@ -71,9 +83,18 @@ def get_user(db: Session, username: str):
             membership_status=member_data.membership_status,
         )
 
+    company_info = None
+    if db_user.company:
+        company_info = {
+            "name": db_user.company.name,
+            "domain": db_user.company.domain,
+            "industry": db_user.company.industry
+        }
+
     return schemas.UserResponse(
         **user_data,
-        member_details=member_details
+        member_details=member_details,
+        company=company_info
     )
 
 

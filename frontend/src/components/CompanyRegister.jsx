@@ -36,24 +36,29 @@ const submitRegistration = async () => {
     return;
   }
 
+  // Extract domain from email
+  const extractedDomain = email.trim().split("@")[1];
+
+
   const requestData = {
-    company_data: {  // ✅ Fix: Changed `companyData` → `company_data`
-      name: companyName.trim(),
-      industry,
-      domain: domain.trim(),
-    },
-    user_data: {  // ✅ Fix: Changed `userData` → `user_data`
-      username: username.trim(),
-      name: name.trim(),
-      surname: surname.trim(),
-      age: parseInt(age, 10) || 0,
-      gender,
-      phone: phone.trim(),
-      email: email.trim(),
-      password,
-      role: "admin",
-    },
-  };
+  company_data: {
+    name: companyName.trim(),
+    industry,
+    domain: extractedDomain, // 👈 use the extracted domain
+  },
+  user_data: {
+    username: username.trim(),
+    name: name.trim(),
+    surname: surname.trim(),
+    age: parseInt(age, 10) || 0,
+    gender,
+    phone: phone.trim(),
+    email: email.trim(),
+    password,
+    role: "admin",
+  },
+};
+
 
   console.log("📤 Sending Data:", JSON.stringify(requestData, null, 2));
 
@@ -142,20 +147,7 @@ const submitRegistration = async () => {
           </div>
         </div>
 
-        {/* Domain */}
-        <div className="field">
-          <label className="label">Company Domain</label>
-          <div className="control">
-            <input
-              type="text"
-              placeholder="Enter company domain (e.g., company.com)"
-              value={domain}
-              onChange={(e) => setDomain(e.target.value)}
-              className="input"
-              required
-            />
-          </div>
-        </div>
+
 
         <hr />
 

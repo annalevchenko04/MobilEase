@@ -56,6 +56,12 @@ const UserProfile = () => {
                     <p className="text-gray-400" style={{fontSize: "20px"}}><strong>Gender:</strong> {userProfile.gender}</p>
                     <p className="text-gray-400" style={{fontSize: "20px"}}><strong>Phone:</strong> {userProfile.phone}</p>
                     <p className="text-gray-400" style={{fontSize: "20px"}}><strong>Email:</strong> {userProfile.email}</p>
+                    {userProfile.company && (
+                        <p className="text-gray-400" style={{fontSize: "20px"}}>
+                        <strong>Company:</strong> {userProfile.company.name}
+                        </p>
+                    )}
+
                 </div>
             </div>
         </div>
