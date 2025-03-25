@@ -55,7 +55,29 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.refresh(db_user)
     send_welcome_email(db_user.email, db_user.name)
 
-    return schemas.UserResponse.model_validate(db_user)
+    # ✅ DO NOT assign a Pydantic model to db_user.company
+    # Instead, prepare Pydantic fields manually for return
+
+    return schemas.UserResponse.model_validate({
+        "id": db_user.id,
+        "username": db_user.username,
+        "name": db_user.name,
+        "surname": db_user.surname,
+        "age": db_user.age,
+        "gender": db_user.gender,
+        "email": db_user.email,
+        "phone": db_user.phone,
+        "role": db_user.role,
+        "member_details": {
+            "membership_status": db_user.membership_status
+        } if isinstance(db_user, models.Member) else None,
+        "company": {
+            "name": db_user.company.name,
+            "domain": db_user.company.domain,
+            "industry": db_user.company.industry
+        } if db_user.company else None
+    })
+
 
 
 def get_user(db: Session, username: str):
@@ -85,11 +107,11 @@ def get_user(db: Session, username: str):
 
     company_info = None
     if db_user.company:
-        company_info = {
-            "name": db_user.company.name,
-            "domain": db_user.company.domain,
-            "industry": db_user.company.industry
-        }
+        company_info = schemas.Company(
+            name=db_user.company.name,
+            domain=db_user.company.domain,
+            industry=db_user.company.industry
+        )
 
     return schemas.UserResponse(
         **user_data,
