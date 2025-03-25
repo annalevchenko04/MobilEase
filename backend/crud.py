@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session, joinedload
 import models
 import schemas
 from passlib.context import CryptContext
+import json
+import logging
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -195,3 +197,25 @@ def get_users(db: Session):
             raise ValueError(f"Unknown user role for user ID {user.id}")
         user_responses.append(user_response)
     return user_responses
+
+
+def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict):
+    if not user_id:
+        raise ValueError("User ID is missing. Only authenticated users can submit their footprint.")
+
+    combined_details = {
+        **details['numeric_data'],
+        **details['non_numeric_data']
+    }
+
+    logging.info(f"Saving Combined Details: {combined_details}")
+
+    footprint_entry = models.CarbonFootprint(
+        user_id=user_id,
+        total_footprint=total_footprint,
+        details=json.dumps(combined_details, default=str)
+    )
+    db.add(footprint_entry)
+    db.commit()
+    db.refresh(footprint_entry)
+    return footprint_entry

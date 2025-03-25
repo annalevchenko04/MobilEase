@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, CheckConstraint, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, CheckConstraint, ForeignKey, Float, func, DateTime, Text
 from sqlalchemy.orm import validates
 from database import Base
 
@@ -61,3 +61,32 @@ class Admin(User):
         'polymorphic_identity': 'admin',
     }
 
+
+class InteractiveQuestion(Base):
+    __tablename__ = "interactive_questions"
+
+    id = Column(Integer, primary_key=True, index=True)
+    text = Column(String, nullable=False)
+    category = Column(String, nullable=False)
+    input_type = Column(String, nullable=False)
+    options = Column(String)  # For dropdowns
+    next_question_id = Column(Integer, ForeignKey("interactive_questions.id"), nullable=True)  # Dynamic Flow
+
+
+class UserAnswer(Base):
+    __tablename__ = "user_answers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    question_id = Column(Integer, ForeignKey("interactive_questions.id"))
+    answer = Column(String, nullable=False)
+
+
+class CarbonFootprint(Base):
+    __tablename__ = "carbon_footprint"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    total_footprint = Column(Float, nullable=False)
+    details = Column(Text, nullable=True)  # Ensure this is correctly configured
+    created_at = Column(DateTime, server_default=func.now())

@@ -8,16 +8,21 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
+
 from database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Annotated, List
+from typing import Annotated, List, Dict, Union
 from dotenv import load_dotenv
+from pydantic import BaseModel
+from calculator import calculate_footprint, emission_factors
+import logging
 
 load_dotenv()
 
 app = FastAPI()
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+logging.basicConfig(level=logging.DEBUG)
 
 origins = [
     "http://localhost:3000",
@@ -51,6 +56,75 @@ REFRESH_TOKEN_EXPIRE_DAYS = 10
 
 
 db_dependency = Annotated[Session, Depends(get_db)]
+
+class CarbonFootprintRequest(BaseModel):
+    answers: Dict[str, Union[str, float, int]]
+
+
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    logging.info(f"Incoming Token: {token}")  # NEW: Log token received
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        logging.info(f"Decoded Token Payload: {payload}")  # NEW: Log payload
+
+        user_id: int = payload.get("id")
+        if user_id is None:
+            raise credentials_exception
+
+
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    logging.info(f"Database User Found: {user}")  # NEW: Log user data
+    if user is None:
+        raise credentials_exception
+    return user
+
+
+@app.post("/footprint")
+def calculate_footprint_api(
+        data: CarbonFootprintRequest,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    logging.info(f"Incoming Token Data: {current_user}")
+    logging.info(f"Answers Received: {data.answers}")
+
+    # # 🔎 Log the questions before calculation
+    # logging.info("=== Questions Loaded for Calculation ===")
+    # for question in questions:
+    #     logging.info(f"ID: {question['id']} | Text: {question['text']} | Type: {question['type']}")
+    try:
+        result = calculate_footprint(data.answers)
+        logging.info(f"Calculation Result: {result}")
+        logging.info(f"Numeric Data: {result['unified_data']['numeric_data']}")
+
+        saved_footprint = crud.save_carbon_footprint(
+            db,
+            user_id=current_user.id,
+            total_footprint=result['total_carbon_footprint_kg'],
+            details=result['unified_data']
+        )
+
+        return {
+            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
+            "category_breakdown": result['category_breakdown'],
+            "recommendations": [
+                "Reduce car usage and consider public transport.",
+                "Switch to energy-efficient appliances to reduce electricity use.",
+                "Consider reducing red meat consumption for lower food emissions."
+            ],
+            "saved_footprint": saved_footprint
+        }
+    except Exception as e:
+        logging.error(f"Error in calculation: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error calculating footprint: {str(e)}")
 
 
 @app.get("/user/{username}", response_model=schemas.UserResponse, tags=["Users"])

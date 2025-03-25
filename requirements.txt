@@ -10,3 +10,7 @@ python-jose~=3.3.0
 cryptography
 bcrypt
 email-validator
+axios
+react-icons
+framer-motion
+web-vitals
