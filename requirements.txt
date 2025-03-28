@@ -10,3 +10,4 @@ python-jose~=3.3.0
 cryptography
 bcrypt
 email-validator
+sendgrid~=6.11.0

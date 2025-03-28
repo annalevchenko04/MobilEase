@@ -6,6 +6,9 @@ from sqlalchemy.orm import Session, joinedload
 import models
 import schemas
 from passlib.context import CryptContext
+from send_email import send_welcome_email
+from send_company_email import send_company_registration_email
+from sqlalchemy.exc import IntegrityError
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -38,6 +41,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+    send_welcome_email(db_user.email, db_user.name)
 
     return schemas.UserResponse.model_validate(db_user)
 
@@ -195,3 +199,60 @@ def get_users(db: Session):
             raise ValueError(f"Unknown user role for user ID {user.id}")
         user_responses.append(user_response)
     return user_responses
+
+
+def create_company(db: Session, company_data: schemas.CompanyCreate, user_data: schemas.UserCreate):
+    # 🔹 Check if company already exists
+    existing_company = db.query(models.Company).filter(models.Company.name == company_data.name).first()
+    if existing_company:
+        raise HTTPException(status_code=400, detail="Company with this name already exists.")
+
+    # 🔹 Check if username already exists before creating company
+    existing_user = db.query(models.User).filter(models.User.username == user_data.username).first()
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Username is already taken.")
+
+    # 🔹 Hash the password
+    hashed_password = pwd_context.hash(user_data.password)
+
+    try:
+        # 🔹 Create company entry
+        new_company = models.Company(
+            name=company_data.name,
+            industry=company_data.industry,
+            domain=company_data.domain,
+        )
+        db.add(new_company)
+        db.commit()
+        db.refresh(new_company)
+
+        # 🔹 Create user as company admin
+        new_admin = models.Admin(
+            username=user_data.username,
+            name=user_data.name,
+            surname=user_data.surname,
+            age=user_data.age,
+            gender=user_data.gender,
+            email=user_data.email,
+            phone=user_data.phone,
+            hashed_password=hashed_password,
+            role="admin",
+            company_id=new_company.id,
+        )
+
+        db.add(new_admin)
+        db.commit()
+        db.refresh(new_admin)
+
+        # Send email after successful registration
+        send_company_registration_email(new_company.name, new_admin.email)
+
+        return new_admin
+
+    except IntegrityError as e:
+        db.rollback()  # Rollback company creation if admin creation fails
+        raise HTTPException(status_code=400, detail="An error occurred while creating the company admin. Username might already be taken.")
+
+    except Exception as e:
+        db.rollback()  # Ensure rollback on any unexpected error
+        raise HTTPException(status_code=500, detail="Unexpected server error occurred.")

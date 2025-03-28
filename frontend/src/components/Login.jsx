@@ -1,9 +1,12 @@
 import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom"; // Import React Router navigation
 import ErrorMessage from "./ErrorMessage";
 import { UserContext } from "../context/UserContext";
 import { FaSignInAlt } from "react-icons/fa";
 
 const Login = ({ toggleForm }) => {
+  const navigate = useNavigate(); // Initialize navigation
+
   const [Username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -90,6 +93,13 @@ const Login = ({ toggleForm }) => {
               Don't have an account?{" "}
               <a href="#" onClick={toggleForm}>
                 Back to Register
+              </a>
+            </p>
+            <br />
+            <p>
+              Want to register your company?{" "}
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate("/register-company"); }}>
+                Register Company
               </a>
             </p>
           </div>
