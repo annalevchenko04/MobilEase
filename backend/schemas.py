@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import BaseModel, EmailStr, Field
 
+
 INDUSTRY_CHOICES = [
     "Technology", "Finance", "Healthcare", "Education",
     "Retail", "Manufacturing", "Real Estate", "Transportation",
@@ -43,6 +44,10 @@ class UserCreate(BaseModel):
 class Member(BaseModel):
     membership_status: Optional[str]
 
+class Company(BaseModel):
+    name: str
+    domain: str
+    industry: str
 
 class UserResponse(BaseModel):
     id: int
@@ -55,6 +60,7 @@ class UserResponse(BaseModel):
     phone: Optional[str]
     role: str
     member_details: Optional[Member] = None
+    company: Optional[Company] = None
 
     class Config:
         from_attributes = True
