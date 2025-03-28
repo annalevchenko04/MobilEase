@@ -81,9 +81,14 @@ def create_user(db: Session, user: schemas.UserCreate):
 
 
 def get_user(db: Session, username: str):
+    print("🔍 get_user() called with username:", username)
+
     db_user = db.query(models.User).options(joinedload(models.User.company)).filter(models.User.username == username).first()
     if not db_user:
+        print("❌ No user found in models.User with username:", username)
         return None
+
+    print("✅ Found user:", db_user.username, "role:", db_user.role)
 
     user_data = {
         "id": db_user.id,
@@ -100,13 +105,19 @@ def get_user(db: Session, username: str):
 
     member_details = None
     if db_user.role == "member":
-        member_data = db.query(models.Member).filter(models.Member.username == username).first()
-        member_details = schemas.Member(
-            membership_status=member_data.membership_status,
-        )
+        print("🔍 Looking up member details for user ID:", db_user.id)
+        member_data = db.query(models.Member).filter(models.Member.id == db_user.id).first()
+        if not member_data:
+            print("❌ No matching member found for ID:", db_user.id)
+        else:
+            print("✅ Found member details")
+            member_details = schemas.Member(
+                membership_status=member_data.membership_status,
+            )
 
     company_info = None
     if db_user.company:
+        print("🏢 Company attached:", db_user.company.name)
         company_info = schemas.Company(
             name=db_user.company.name,
             domain=db_user.company.domain,
@@ -118,6 +129,7 @@ def get_user(db: Session, username: str):
         member_details=member_details,
         company=company_info
     )
+
 
 
 def get_user_by_id(db: Session, userid: int):

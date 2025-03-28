@@ -24,7 +24,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://quickchart.io"
+    "https://quickchart.io",
 ]
 app.add_middleware(
     CORSMiddleware,
@@ -172,23 +172,27 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        user_id: int = payload.get("id")
-        username: str = payload.get("username")
-        role: str = payload.get("role")
-        if user_id is None or username is None or role is None:
+        username = payload.get("username")
+        if username is None:
             raise credentials_exception
     except JWTError:
         raise credentials_exception
 
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.query(models.User).filter(models.User.username == username).first()
     if user is None:
-        raise credentials_exception
+        raise HTTPException(status_code=404, detail="User not found")
     return user
 
 
 @app.get("/user/profile", response_model=schemas.UserResponse, tags=["Users"])
-async def get_user_profile(current_user: models.User = Depends(get_current_user)):
-    return current_user
+async def get_user_profile(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    return crud.get_user(db, current_user.username)
+
+
+
 
 
 # Update a user
@@ -219,3 +223,37 @@ def register_company(
     return crud.create_company(db, request.company_data, request.user_data)
 
 
+@app.get("/admin/company-employees", response_model=List[schemas.UserResponse])
+def get_company_employees(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    print("✅ get_company_employees called by:", current_user.username, "| Role:", current_user.role)
+
+    if current_user.role != "admin":
+        print("⛔ Not an admin")
+        raise HTTPException(status_code=403, detail="Only admins can access this.")
+
+    employees = db.query(models.User).filter(models.User.company_id == current_user.company_id).all()
+    print(f"👥 Found {len(employees)} employees for company_id {current_user.company_id}")
+
+    try:
+        return [
+            schemas.UserResponse.model_validate({
+                "id": e.id,
+                "username": e.username,
+                "name": e.name,
+                "surname": e.surname,
+                "age": e.age,
+                "gender": e.gender,
+                "email": e.email,
+                "phone": e.phone,
+                "role": e.role,
+                "member_details": {
+                    "membership_status": getattr(e, "membership_status", None)
+                } if e.role == "member" else None
+            }) for e in employees
+        ]
+    except Exception as e:
+        print("🔥 Exception while building employee list:", str(e))
+        raise
