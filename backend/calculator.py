@@ -140,3 +140,4 @@ def get_category(question_id):
             return q.get('category', "Uncategorized")  # Return "Uncategorized" only as a fallback
     logging.warning(f"Category not found for question ID: {question_id}")
     return None  # Return `None` instead of "Uncategorized"
+

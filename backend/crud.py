@@ -749,4 +749,3 @@ def delete_comment(db: Session, comment_id: int):
     db.commit()
     return True
 
-

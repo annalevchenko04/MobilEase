@@ -149,4 +149,3 @@ questions = [
         "options": ["","Yes", "No"],
         "default_value": "Yes"
     }
-]
