@@ -10,15 +10,21 @@ import Main from "./components/Main";
 import Calculator from './components/Calculator';
 import Analytics from './components/Analytics';
 import Explore from './components/Explore';
-import CompanyRegister from "./components/CompanyRegister";
+import PostDetail from './components/PostDetail';
+import Schedule from './components/Schedule';
+import { Link } from "react-router-dom";
 import './styles.css';
-
+import CompanyRegister from "./components/CompanyRegister";
 
 const App = () => {
     const [token, , , , setToken] = useContext(UserContext); // Use userRole from context
     const [isLogin, setIsLogin] = useState(true);  // State to toggle between login and register
     const [, setRemainingTime] = useState(null);
     const [isBurgerActive, setIsBurgerActive] = useState(false);
+    const [events, setEvents] = useState([]);
+    const addEvent = (event) => {
+    setEvents([...events, event]);
+  };
 
     const handleBurgerClick = () => {
         setIsBurgerActive(!isBurgerActive);
@@ -93,7 +99,7 @@ const App = () => {
                             <div className="navbar-start">
                                 {token && (
                                     <>
-                                        <a className="navbar-item" href="/profile">
+                                        <a className="navbar-item is-size-5" href="/profile">
                                     <span className="icon-text">
                                         <span className="icon">
                                             <i className="fas fa-user"></i>
@@ -102,7 +108,7 @@ const App = () => {
                                     </span>
                                         </a>
 
-                                        <a className="navbar-item" href="/footprint">
+                                        <a className="navbar-item is-size-5" href="/footprint">
                                     <span className="icon-text">
                                         <span className="icon">
                                             <i className="fas fa-calculator"></i>
@@ -111,7 +117,7 @@ const App = () => {
                                     </span>
                                         </a>
 
-                                        <a className="navbar-item" href="/analytics">
+                                        <a className="navbar-item is-size-5" href="/analytics">
                                     <span className="icon-text">
                                         <span className="icon">
                                             <i className="fas fa-chart-line"></i>
@@ -120,7 +126,7 @@ const App = () => {
                                     </span>
                                         </a>
 
-                                        <a className="navbar-item" href="/explore">
+                                        <a className="navbar-item is-size-5" href="/explore">
                                     <span className="icon-text">
                                         <span className="icon">
                                             <i className="fas fa-list-alt"></i>
@@ -128,12 +134,23 @@ const App = () => {
                                         <span><strong>Explore</strong></span>
                                     </span>
                                         </a>
-                                        
+
+
+                                        <a className="navbar-item is-size-5" href="/schedule">
+                                                <span className="icon-text">
+                                                    <span className="icon">
+                                                        <i className="fas fa-calendar-alt"></i>
+                                                    </span>
+                                                    <span><strong>Schedule</strong></span>
+                                                </span>
+                                         </a>
+
+
                                         <div className="navbar-end">
                                             <br/>
-                                            <div className="navbar-item">
+                                            <div className="navbar-item is-size-5">
                                                 <button
-                                                    className="button is-danger is-light has-text-weight-bold"
+                                                    className="button is-danger is-light has-text-weight-bold is-size-6"
                                                     onClick={handleLogout}
                                                 >
                                                     <i className="fas fa-sign-out-alt"></i>
@@ -155,14 +172,8 @@ const App = () => {
                 <div className="column"></div>
                 <div className="column m-5 is-two-thirds">
                     <Routes>
-                        <Route
-                            path="/register-company"
-                            element={
-                                token
-                                ? <Navigate to="/main" replace />  // Redirect if logged in
-                                : <CompanyRegister />
-                            }
-                        />
+                        <Route path="/register-company" element={<CompanyRegister />}
+                                />
                         {!token ? (
                             <>
                                 {/* Redirect to log in if not authenticated */}
@@ -178,6 +189,9 @@ const App = () => {
                                 <Route path="/footprint" element={<Calculator/>}/>
                                 <Route path="/analytics" element={<Analytics/>}/>
                                 <Route path="/explore" element={<Explore/>}/>
+                                <Route path="/post/:id" element={<PostDetail />} />
+                                <Route path="/schedule" element={<Schedule events={events} addEvent={addEvent}/>}/>
+
                                 <Route path="*" element={<Navigate to="/main"/>}/>
                             </>
                         )}

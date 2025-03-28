@@ -22,7 +22,7 @@ const CompanyRegister = () => {
   const [confirmationPassword, setConfirmationPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [gender, setGender] = useState("");
-
+  const extractedDomain = email.trim().split("@")[1];
   const industries = [
     "Technology", "Finance", "Healthcare", "Education",
     "Retail", "Manufacturing", "Real Estate", "Transportation",
@@ -36,12 +36,8 @@ const submitRegistration = async () => {
     return;
   }
 
-  // Extract domain from email
-  const extractedDomain = email.trim().split("@")[1];
-
-
   const requestData = {
-  company_data: {
+    company_data: {
     name: companyName.trim(),
     industry,
     domain: extractedDomain, // 👈 use the extracted domain
@@ -58,7 +54,6 @@ const submitRegistration = async () => {
     role: "admin",
   },
 };
-
 
   console.log("📤 Sending Data:", JSON.stringify(requestData, null, 2));
 
@@ -103,8 +98,6 @@ const submitRegistration = async () => {
 };
 
 
-
-
   return (
     <div className="column is-half is-offset-one-quarter">
       <form
@@ -146,8 +139,6 @@ const submitRegistration = async () => {
             </div>
           </div>
         </div>
-
-
 
         <hr />
 

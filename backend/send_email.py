@@ -8,6 +8,7 @@ load_dotenv()  # Load environment variables from .env file
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
 SENDER_EMAIL = "andrid1@ktu.lt"  # Change to your verified SendGrid sender email
 
+
 def send_welcome_email(to_email: str, name: str):
     message = Mail(
         from_email=SENDER_EMAIL,
@@ -20,4 +21,4 @@ def send_welcome_email(to_email: str, name: str):
         response = sg.send(message)
         print(f"Email sent to {to_email}. Status code: {response.status_code}")
     except Exception as e:
-        print(f"Error sending email: {str(e)}")
+        raise e
