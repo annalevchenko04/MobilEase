@@ -16,6 +16,7 @@ Automatically fixes security vulnerabilities found by npm audit
 npm audit fix 
 ```
 # Don`t forget to create .env file for environmental variables
+
 # Structure of env file
 ```bash
 DATABASE_URL=postgresql://postgres:{password}@localhost:5432/{database_name}
@@ -40,5 +41,5 @@ cd frontend
 ```
 And start server
 ```bash
-npm start
+npm run dev
 ```

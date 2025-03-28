@@ -1,7 +1,7 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, {useState, useContext, useEffect} from "react";
 import axios from "axios";
-import { UserContext } from "../context/UserContext";
-import { questions } from "../context/questions";  // Corrected Import Path
+import {UserContext} from "../context/UserContext";
+import {questions} from "../context/questions";  // Corrected Import Path
 
 const Calculator = () => {
     const [answers, setAnswers] = useState({});
@@ -74,88 +74,89 @@ const Calculator = () => {
     //     eco_program: {"Yes": 1, "No": 0},
     //     home_type: {"Apartment": 1, "Detached house": 2, "Semi-detached house": 3}
     // };
-const handleAnswerChange = (questionId, value) => {
-    setAnswers((prev) => {
-        const updatedAnswers = { ...prev, [questionId]: value };
+    const handleAnswerChange = (questionId, value) => {
+        setAnswers((prev) => {
+            const updatedAnswers = {...prev, [questionId]: value};
 
-        // Default empty values to default or 'No'
-        if (!value && questions.find(q => q.id === questionId)?.default_value) {
-            updatedAnswers[questionId] = questions.find(q => q.id === questionId)?.default_value;
-        }
-
-        // Special logic for conditional fields
-        if (questionId === "car_owner") {
-            updatedAnswers[questionId] = value || "No";
-            if (value === "No") {
-                delete updatedAnswers["car_type"];
-                delete updatedAnswers["car_km"];
-            } else {
-                updatedAnswers["car_km"] = updatedAnswers["car_km"] ?? 0;
+            // Default empty values to default or 'No'
+            if (!value && questions.find(q => q.id === questionId)?.default_value) {
+                updatedAnswers[questionId] = questions.find(q => q.id === questionId)?.default_value;
             }
-        }
 
-        if (questionId === "eco_program") {
-            updatedAnswers[questionId] = value || "No";
-        }
+            // Special logic for conditional fields
+            if (questionId === "car_owner") {
+                updatedAnswers[questionId] = value || "No";
+                if (value === "No") {
+                    delete updatedAnswers["car_type"];
+                    delete updatedAnswers["car_km"];
+                } else {
+                    updatedAnswers["car_km"] = updatedAnswers["car_km"] ?? 0;
+                }
+            }
 
-        console.log("Updated Answers:", updatedAnswers);
-        return updatedAnswers;
-    });
-};
+            if (questionId === "eco_program") {
+                updatedAnswers[questionId] = value || "No";
+            }
+
+            console.log("Updated Answers:", updatedAnswers);
+            return updatedAnswers;
+        });
+    };
 
     // Dynamic rendering of questions and follow-up conditions
     const currentQuestion = questions[step];
 
     const shouldRenderQuestion = (question) => {
-    // If no dependency, always render
-    if (!question.depends_on) return true;
+        // If no dependency, always render
+        if (!question.depends_on) return true;
 
-    // Get the dependency's answer
-    const dependencyAnswer = answers[question.depends_on];
+        // Get the dependency's answer
+        const dependencyAnswer = answers[question.depends_on];
 
-    // If the dependency is answered, check if it matches the conditions
-    if (dependencyAnswer === undefined) return false;
+        // If the dependency is answered, check if it matches the conditions
+        if (dependencyAnswer === undefined) return false;
 
-    return question.conditions.includes(dependencyAnswer);
+        return question.conditions.includes(dependencyAnswer);
     };
 
 // Ensure all questions have answers before submission
-const handleSubmit = async () => {
-    try {
-        const token = localStorage.getItem("token");
-        console.log("Token sent in request:", token);
+    const handleSubmit = async () => {
+        try {
+            const token = localStorage.getItem("token");
+            console.log("Token sent in request:", token);
 
-        // Fill in missing answers with default values
-        const finalAnswers = {};
-        questions.forEach((question) => {
-            finalAnswers[question.id] = answers[question.id] ?? question.default_value ?? "";
-        });
+            // Fill in missing answers with default values
+            const finalAnswers = {};
+            questions.forEach((question) => {
+                finalAnswers[question.id] = answers[question.id] ?? question.default_value ?? "";
+            });
 
-        console.log("Answers to send:", finalAnswers);
-        console.log("Final Data Sent:", JSON.stringify(finalAnswers, null, 2));
-        const response = await axios.post(
-            "http://localhost:8000/footprint",
-            { answers: finalAnswers },
-            {
-                headers: {
-                    "Content-Type": "application/json",   // Ensure this matches the backend
-                    Authorization: `Bearer ${token}`,
-                },
-            }
-        );
+            console.log("Answers to send:", finalAnswers);
+            console.log("Final Data Sent:", JSON.stringify(finalAnswers, null, 2));
+            const response = await axios.post(
+                "http://localhost:8000/footprint",
+                {answers: finalAnswers},
+                {
+                    headers: {
+                        "Content-Type": "application/json",   // Ensure this matches the backend
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
 
-        setResult(response.data);
-    } catch (error) {
-        alert("Error calculating footprint. Please try again.");
-        console.error(error);
-    }
-};
+            setResult(response.data);
+        } catch (error) {
+            alert("Error calculating footprint. Please try again.");
+            console.error(error);
+        }
+    };
 
     return (
         <div>
-            <h1>Carbon Footprint Calculator</h1>
 
+            <h2 className="title is-2">Footprint Calculator</h2>
             {/* Progress Bar */}
+             {!result && (
             <div style={{
                 width: "100%",
                 backgroundColor: "#ddd",
@@ -166,85 +167,140 @@ const handleSubmit = async () => {
                 <div style={{
                     width: `${progress}%`,
                     height: "100%",
-                    backgroundColor: "#4CAF50",
+                    backgroundColor: "#18D9A8",
                     borderRadius: "10px"
-                }} />
+                }}/>
             </div>
+                 )}
 
             {/* Current Question */}
-            {shouldRenderQuestion(currentQuestion) && (
+            {!result && shouldRenderQuestion(currentQuestion) && (
                 <>
-                    <h2>{currentQuestion.text}</h2>
+                    <h5 className="title is-5">{currentQuestion.text}</h5>
 
-                    {/*{currentQuestion.type === 'dropdown' && (*/}
-                    {/*    <select*/}
-                    {/*        onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}*/}
-                    {/*    >*/}
-                    {/*        {currentQuestion.options.map(option => (*/}
-                    {/*            <option key={option} value={option}>{option}</option>*/}
-                    {/*        ))}*/}
-                    {/*    </select>*/}
-                    {/*)}*/}
-
+                    {/* Dropdown Question */}
                     {currentQuestion.type === 'dropdown' && (
-                        <select
-                            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                            value={answers[currentQuestion.id] ?? ""}
-                        >
-                            {currentQuestion.options.map(option => (
-                                <option key={option} value={option}>{option}</option>
-                            ))}
-                        </select>
-                    )}
-
-                    {currentQuestion.type === 'slider' && (
-                        <div>
-                            <input
-                                type="range"
-                                min={currentQuestion.min}
-                                max={currentQuestion.max}
-                                value={answers[currentQuestion.id] || currentQuestion.min}
-                                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                            />
-                            <span>{answers[currentQuestion.id] || currentQuestion.min}</span>
+                        <div className="field">
+                            <label className="label">{currentQuestion.label}</label>
+                            <div className="control">
+                                <div className="select is-fullwidth">
+                                    <select
+                                        onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                                        value={answers[currentQuestion.id] ?? ""}
+                                    >
+                                        {currentQuestion.options.map(option => (
+                                            <option key={option} value={option}>{option}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </div>
                     )}
 
-                    {currentQuestion.type === 'input' && (
-                        <input
-                            type="number"
-                            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                        />
+                    {/* Slider Question */}
+                    {currentQuestion.type === 'slider' && (
+                        <div className="field">
+                            <label className="label">{currentQuestion.label}</label>
+                            <div className="control">
+                                <input
+                                    className="slider is-fullwidth is-primary"
+                                    type="range"
+                                    min={currentQuestion.min}
+                                    max={currentQuestion.max}
+                                    value={answers[currentQuestion.id] || currentQuestion.min}
+                                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                                />
+                            </div>
+                            <p className="has-text-weight-bold">
+                                {answers[currentQuestion.id] || currentQuestion.min}
+                            </p>
+                        </div>
                     )}
+
+                    {/* Input Question */}
+                    {currentQuestion.type === 'input' && (
+    <div className="field">
+        <label className="label">{currentQuestion.label}</label>
+        <div className="control">
+            <input
+                className="input is-primary"
+                type="number"
+                placeholder="Enter a number"
+                value={answers[currentQuestion.id] || ""}  // If there's no value, show an empty string
+                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+            />
+        </div>
+    </div>
+)}
+
+                    <br/>
+                    <br/>
+                    <br/>
                 </>
             )}
 
-            {/* Navigation */}
-            <div style={{ marginTop: "20px" }}>
-                <button onClick={handlePrevious} disabled={step === 0}>Previous</button>
-                {step === questions.length - 1 ? (
-                    <button onClick={handleSubmit}>Submit</button>
-                ) : (
-                    <button onClick={handleNext}>Next</button>
-                )}
-            </div>
+            {!result && (
+                <div style={{
+                    marginTop: "20px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    width: "100%",
+                    padding: "0 20px"
+                }}>
+                    <button
+                        className="button is-primary is-outlined is-normal"
+                        style={{
+                            borderWidth: '3px',
+                            margin: '10px'
+                        }}
+                        onClick={handlePrevious}
+                        disabled={step === 0}
+                    >
+                        ← Previous
+                    </button>
 
+                    {step === questions.length - 1 ? (
+                        <button
+                            className="button is-primary is-outlined is-normal"
+                            style={{
+                                borderWidth: '3px',
+                                margin: '10px'
+                            }}
+                            onClick={handleSubmit}
+                        >
+                            Submit
+                        </button>
+                    ) : (
+                        <button
+                            className="button is-primary is-outlined is-normal"
+                            style={{
+                                borderWidth: '3px',
+                                margin: '10px'
+                            }}
+                            onClick={handleNext}
+                        >
+                            Next →
+                        </button>
+                    )}
+                </div>
+            )}
 
             {/* Display Result on Screen */}
             {result && (
-                <div style={{ marginTop: "30px" }}>
-                    <h2>Your Carbon Footprint</h2>
+                <div style={{marginTop: "30px"}}>
                     <p>Total Carbon Footprint: {result.total_carbon_footprint_kg} kg CO₂</p>
-                    <h3>Category Breakdown:</h3>
+                    <br/>
+                    <h4 className="title is-4">Category Breakdown:</h4>
                     <ul>
                         {Object.entries(result.category_breakdown).map(([category, value]) => (
                             <li key={category}>{category}: {value} kg CO₂</li>
                         ))}
                     </ul>
-                    <h3>Recommendations:</h3>
+                    <br/>
+                    <h4 className="title is-4">Recommendations:</h4>
                     <ul>
                         {result.recommendations.map((rec, index) => (
-                            <li key={index}>{rec}</li>
+                            <li key={index}><strong>-></strong> {rec}</li>
                         ))}
                     </ul>
                 </div>
