@@ -1,5 +1,4 @@
-import React, { useEffect, useState, useContext } from "react";
-import { UserContext } from "../context/UserContext";
+import React from "react";
 import { motion } from "framer-motion";
 import { FaLeaf, FaBalanceScale, FaChartLine } from "react-icons/fa";
 import ImageCarousel from "./ImageCarousel";
@@ -37,7 +36,7 @@ export default function SustainabilityPage() {
 
                       {/* Right Column: Image */}
                       <div className="image-column">
-                      <motion.img
+                          <motion.img
                               src="/images/p6.png"
                               alt="Description of image"
                               className="image-motion"
@@ -97,6 +96,12 @@ export default function SustainabilityPage() {
                               <br/>
                               <h3 className="title is-5 is-size-4-mobile is-size-3-tablet is-size-2-desktop">
                                   Explore Analytics and Posts to gain knowledge</h3>
+                              <img
+                                  src="/images/arrow.png"
+                                  alt="Description of image"
+                                  className="is-fullwidth"
+                                  style={{maxWidth: "80%", height: "150px", margin: "20px 0", objectFit: "contain"}}
+                              />
                           </div>
                       </motion.div>
 
@@ -113,6 +118,36 @@ export default function SustainabilityPage() {
                               whileHover={{scale: 1.2}}
                           />
                       </div>
+                  </motion.div>
+              </div>
+
+              <div className="items-center">
+                  <motion.div className="grid md:grid-cols-2 gap-8 items-center">
+                      {/* Left Column: Text Block */}
+                      <div className="image-column">
+                          <motion.img
+                              src="/images/main4.png"
+                              alt="Description of image"
+                              className="image-motion"
+                              style={{maxWidth: "80%", height: "auto", margin: "20px 0"}}
+                              initial={{opacity: 0, y: 50}}
+                              animate={{opacity: 1, y: 0}}
+                              transition={{duration: 1}}
+                              whileHover={{scale: 1.2}}
+                          />
+                      </div>
+
+                      {/* Right Column: Image */}
+                      <motion.div className="p-6 bg-gray-700 rounded-xl shadow-lg w-full max-w-4xl mx-auto"
+                                  whileHover={{scale: 1.05}}>
+                          <div style={{textAlign: "center"}}>
+                              <br/>
+                              <br/>
+                              <br/>
+                              <h3 className="title is-5 is-size-4-mobile is-size-3-tablet is-size-2-desktop">
+                                  Book you place in Sustainability Events </h3>
+                          </div>
+                      </motion.div>
                   </motion.div>
               </div>
           </div>

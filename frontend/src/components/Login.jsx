@@ -2,13 +2,14 @@ import React, { useState, useContext } from "react";
 import ErrorMessage from "./ErrorMessage";
 import { UserContext } from "../context/UserContext";
 import { FaSignInAlt } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const Login = ({ toggleForm }) => {
   const [Username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [,,,,setToken] = useContext(UserContext);
-
+  const navigate = useNavigate();
   const submitLogin = async () => {
     const requestOptions = {
       method: "POST",
@@ -49,7 +50,7 @@ const Login = ({ toggleForm }) => {
 
           <div className="field">
             <label className="label">Username</label>
-            <div className="control">
+            <div className="control has-icons-left">
               <input
                   type="text"
                   placeholder="Enter username"
@@ -58,12 +59,15 @@ const Login = ({ toggleForm }) => {
                   className="input"
                   required
               />
+              <span className="icon is-small is-left">
+                  <i className="fas fa-user"></i>
+              </span>
             </div>
           </div>
 
           <div className="field">
             <label className="label">Password</label>
-            <div className="control">
+            <div className="control has-icons-left">
               <input
                   type="password"
                   placeholder="Enter password"
@@ -72,8 +76,12 @@ const Login = ({ toggleForm }) => {
                   className="input"
                   required
               />
+              <span className="icon is-small is-left">
+                  <i className="fas fa-lock"></i>
+              </span>
             </div>
           </div>
+
 
           <ErrorMessage message={errorMessage}/>
 
@@ -90,6 +98,16 @@ const Login = ({ toggleForm }) => {
               Don't have an account?{" "}
               <a href="#" onClick={toggleForm}>
                 Back to Register
+              </a>
+            </p>
+            <br/>
+            <p>
+              Want to register your company?{" "}
+              <a href="#" onClick={(e) => {
+                e.preventDefault();
+                navigate("/register-company");
+              }}>
+                Register Company
               </a>
             </p>
           </div>

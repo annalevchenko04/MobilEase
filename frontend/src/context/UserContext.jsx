@@ -7,6 +7,7 @@ export const UserProvider = (props) => {
     const [userRole, setUserRole] = useState(null);
     const [userName, setUserName] = useState(null);
     const [userId, setUserId] = useState(null);
+
     const [exp, setExp] = useState(null);
 
     const decodeToken = (token) => {
