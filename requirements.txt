@@ -11,7 +11,3 @@ cryptography
 bcrypt
 email-validator
 sendgrid~=6.11.0
-axios
-react-icons
-framer-motion
-web-vitals
