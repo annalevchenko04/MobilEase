@@ -41,5 +41,5 @@ cd frontend
 ```
 And start server
 ```bash
-npm run dev
+npm start
 ```
