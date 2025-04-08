@@ -177,14 +177,14 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
                 </div>
 
                 <div className="field">
-                  <label className="label">Room Number</label>
+                  <label className="label">Address</label>
                   <div className="control">
                     <input
                         type="text"
                         className="input"
                         value={roomNumber}
                         onChange={(e) => setRoomNumber(e.target.value)}
-                        placeholder="Enter room number"
+                        placeholder="Enter place"
                     />
                   </div>
                 </div>

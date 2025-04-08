@@ -143,7 +143,7 @@ const App = () => {
                                                     </span>
                                                     <span><strong>Schedule</strong></span>
                                                 </span>
-                                         </a>
+                                        </a>
 
 
                                         <div className="navbar-end">

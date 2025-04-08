@@ -632,7 +632,7 @@ const handleRemoveTag = (tag) => {
                     </p>
                     <p className="text-gray-400" style={{fontSize: "20px"}}>
                         <i className="fas fa-user-circle mr-2"></i> {/* Username Icon */}
-                        <strong>Username:</strong> {userProfile.username}
+                        <strong>Username:</strong> {userProfile.username} 
                     </p>
                     <p className="text-gray-400" style={{fontSize: "20px"}}>
                         <i className="fas fa-birthday-cake mr-2"></i> {/* Age Icon */}
@@ -654,7 +654,7 @@ const handleRemoveTag = (tag) => {
                     {userProfile.company && (
                         <p className="text-gray-400" style={{fontSize: "20px"}}>
                             <i className="fas fa-briefcase mr-2"></i>
-                            <strong>Company:</strong> {userProfile.company.name}
+                            <strong>Company:</strong> {userProfile.company.name} ({userProfile.role})
                         </p>
                     )}
                 </div>
@@ -665,7 +665,7 @@ const handleRemoveTag = (tag) => {
             <div className="profile-badges">
                 <h3 className="title is-large">My Badges</h3>
                 {badges.length > 0 ? (
-                <div className="badges-container">
+                    <div className="badges-container">
                     {badges.map((badge) => (
                         <div key={badge.id} className="badge">
                             {badge.id === 1 ? (
