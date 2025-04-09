@@ -8,20 +8,55 @@ const Calculator = () => {
     const [step, setStep] = useState(0);
     const [progress, setProgress] = useState(0);
     const [result, setResult] = useState(null);  // State to hold the result
+    const [season, setSeason] = useState("Winter"); // Default to winter
+    const [year, setYear] = useState(new Date().getFullYear()); // Current year
+    const [mode, setMode] = useState("fast"); // "fast" or "detailed"
+    const [loading, setLoading] = useState(false);
+    const [unknownSelections, setUnknownSelections] = useState({}); // Track "I don't know" selections
 
+    // Get filtered questions based on mode
+    const getFilteredQuestions = () => {
+        if (mode === "fast") {
+            // In fast mode, exclude questions marked as detailed
+            return questions.filter(q => !q.detailed);
+        }
+        // In detailed mode, include all questions
+        return questions;
+    };
+
+    const filteredQuestions = getFilteredQuestions();
 
     // Progress bar calculation
     useEffect(() => {
-        const totalQuestions = questions.length;
+        const totalQuestions = filteredQuestions.length;
         const completed = ((step + 1) / totalQuestions) * 100;
         setProgress(completed);
-    }, [step]);
+    }, [step, filteredQuestions.length]);
+
+    // Get seasonal question text and defaults if applicable
+    const getQuestionDisplay = (question) => {
+        if (question.seasonal && season && question.seasonal_text && question.seasonal_text[season]) {
+            return {
+                ...question,
+                text: question.seasonal_text[season],
+                default_value: question.seasonal_defaults?.[season] || question.default_value
+            };
+        }
+        return question;
+    };
 
     const handleNext = () => {
-        const currentQuestion = questions[step];
+        const currentQuestion = getQuestionDisplay(filteredQuestions[step]);
 
-        // Check if current question's answer is empty
-        if (!answers[currentQuestion.id] && currentQuestion.default_value) {
+        // Validate dropdown selection before proceeding
+        if (currentQuestion.type === 'dropdown' && (!answers[currentQuestion.id] || answers[currentQuestion.id] === "")) {
+            // Show validation error for dropdowns
+            alert("Please select an option before proceeding.");
+            return;
+        }
+
+        // Check if current question's answer is empty for non-dropdown questions
+        if (!answers[currentQuestion.id] && currentQuestion.default_value && currentQuestion.type !== 'dropdown') {
             setAnswers((prev) => ({
                 ...prev,
                 [currentQuestion.id]: currentQuestion.default_value
@@ -29,58 +64,60 @@ const Calculator = () => {
         }
 
         let nextStep = step + 1;
-        while (nextStep < questions.length && !shouldRenderQuestion(questions[nextStep])) {
+        while (nextStep < filteredQuestions.length && !shouldRenderQuestion(filteredQuestions[nextStep])) {
             nextStep++;
         }
 
-        if (nextStep < questions.length) setStep(nextStep);
+        if (nextStep < filteredQuestions.length) setStep(nextStep);
     };
 
     const handlePrevious = () => {
         let previousStep = step - 1;
-        while (previousStep >= 0 && !shouldRenderQuestion(questions[previousStep])) {
+        while (previousStep >= 0 && !shouldRenderQuestion(filteredQuestions[previousStep])) {
             previousStep--;
         }
         if (previousStep >= 0) setStep(previousStep);
     };
 
+    // Handle "I don't know" option
+    const handleUnknown = (questionId) => {
+        const question = questions.find(q => q.id === questionId);
+        if (question) {
+            // Set to default value
+            const displayQuestion = getQuestionDisplay(question);
+            setAnswers(prev => ({
+                ...prev,
+                [questionId]: displayQuestion.default_value
+            }));
+
+            // Mark as unknown
+            setUnknownSelections(prev => ({
+                ...prev,
+                [questionId]: true
+            }));
+
+            // Move to next question immediately
+            let nextStep = step + 1;
+            while (nextStep < filteredQuestions.length && !shouldRenderQuestion(filteredQuestions[nextStep])) {
+                nextStep++;
+            }
+
+            if (nextStep < filteredQuestions.length) setStep(nextStep);
+        }
+    };
+
     // Capture answer changes
-    // const handleAnswerChange = (questionId, value) => {
-    // setAnswers(prev => {
-    //     const updatedAnswers = { ...prev, [questionId]: value || questions.find(q => q.id === questionId)?.default_value };
-    //     console.log(updatedAnswers);  // Debugging the state updates
-    //     return updatedAnswers;
-    // });
-
-
-    // // Mapping for numeric conversion
-    // const mappingCorrections = {
-    //     car_owner: {"Yes": 1, "No": 0},
-    //     car_type: {"Petrol": 1, "Diesel": 2, "Electric": 3, "Hybrid": 4},
-    //     energy_source: {
-    //         "Electricity": 1,
-    //         "Natural Gas": 2,
-    //         "Heating Oil": 3,
-    //         "Solar": 4,
-    //         "District Heating": 5
-    //     },
-    //     diet_type: {
-    //         "Vegan": "Vegan",
-    //         "Vegetarian": "Vegetarian",
-    //         "Pescetarian": "Pescetarian",
-    //         "Meat-eater": "Meat-eater",
-    //         "Heavy Meat-eater": "heavy_meat_eater"
-    //     },
-    //     eco_program: {"Yes": 1, "No": 0},
-    //     home_type: {"Apartment": 1, "Detached house": 2, "Semi-detached house": 3}
-    // };
     const handleAnswerChange = (questionId, value) => {
         setAnswers((prev) => {
             const updatedAnswers = {...prev, [questionId]: value};
 
-            // Default empty values to default or 'No'
-            if (!value && questions.find(q => q.id === questionId)?.default_value) {
-                updatedAnswers[questionId] = questions.find(q => q.id === questionId)?.default_value;
+            // Only apply default values for non-empty values
+            // Allow empty strings for numeric inputs to facilitate clearing
+            if (value === "" && questions.find(q => q.id === questionId)?.type !== 'input') {
+                // Only apply defaults for non-input type questions
+                if (questions.find(q => q.id === questionId)?.default_value) {
+                    updatedAnswers[questionId] = questions.find(q => q.id === questionId)?.default_value;
+                }
             }
 
             // Special logic for conditional fields
@@ -98,13 +135,22 @@ const Calculator = () => {
                 updatedAnswers[questionId] = value || "No";
             }
 
+            // Clear unknown selection if manually changed
+            if (unknownSelections[questionId]) {
+                setUnknownSelections(prev => {
+                    const updated = {...prev};
+                    delete updated[questionId];
+                    return updated;
+                });
+            }
+
             console.log("Updated Answers:", updatedAnswers);
             return updatedAnswers;
         });
     };
 
     // Dynamic rendering of questions and follow-up conditions
-    const currentQuestion = questions[step];
+    const currentQuestion = filteredQuestions[step] ? getQuestionDisplay(filteredQuestions[step]) : null;
 
     const shouldRenderQuestion = (question) => {
         // If no dependency, always render
@@ -119,8 +165,23 @@ const Calculator = () => {
         return question.conditions.includes(dependencyAnswer);
     };
 
-// Ensure all questions have answers before submission
+    // Handle mode toggle
+    const toggleMode = () => {
+        setMode(mode === "fast" ? "detailed" : "fast");
+        setStep(0); // Reset to first question
+        setAnswers({}); // Clear answers when switching modes
+    };
+
+    // Ensure all questions have answers before submission
     const handleSubmit = async () => {
+        // Check if current question is a dropdown and has no value
+        const currentQuestion = getQuestionDisplay(filteredQuestions[step]);
+        if (currentQuestion.type === 'dropdown' && (!answers[currentQuestion.id] || answers[currentQuestion.id] === "")) {
+            alert("Please select an option before submitting.");
+            return;
+        }
+
+        setLoading(true);
         try {
             const token = localStorage.getItem("token");
             console.log("Token sent in request:", token);
@@ -128,13 +189,16 @@ const Calculator = () => {
             // Fill in missing answers with default values
             const finalAnswers = {};
             questions.forEach((question) => {
-                finalAnswers[question.id] = answers[question.id] ?? question.default_value ?? "";
+                const displayQuestion = getQuestionDisplay(question);
+                finalAnswers[question.id] = answers[question.id] ?? displayQuestion.default_value ?? "";
             });
 
             console.log("Answers to send:", finalAnswers);
             console.log("Final Data Sent:", JSON.stringify(finalAnswers, null, 2));
+            console.log("Season:", season, "Year:", year);
+
             const response = await axios.post(
-                "http://localhost:8000/footprint",
+                `http://localhost:8000/footprint?season=${season}&year=${year}`,
                 {answers: finalAnswers},
                 {
                     headers: {
@@ -148,94 +212,196 @@ const Calculator = () => {
         } catch (error) {
             alert("Error calculating footprint. Please try again.");
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
 
     return (
         <div>
+            <h2 className="title is-2">Seasonal Carbon Footprint Calculator</h2>
 
-            <h2 className="title is-2">Footprint Calculator</h2>
-            {/* Progress Bar */}
-             {!result && (
-            <div style={{
-                width: "100%",
-                backgroundColor: "#ddd",
-                height: "20px",
-                borderRadius: "10px",
-                marginBottom: "20px"
-            }}>
-                <div style={{
-                    width: `${progress}%`,
-                    height: "100%",
-                    backgroundColor: "#18D9A8",
-                    borderRadius: "10px"
-                }}/>
-            </div>
-                 )}
-
-            {/* Current Question */}
-            {!result && shouldRenderQuestion(currentQuestion) && (
-                <>
-                    <h5 className="title is-5">{currentQuestion.text}</h5>
-
-                    {/* Dropdown Question */}
-                    {currentQuestion.type === 'dropdown' && (
+            {!result && (
+                <div className="columns is-vcentered mb-4">
+                    <div className="column">
                         <div className="field">
-                            <label className="label">{currentQuestion.label}</label>
+                            <label className="label">Season</label>
                             <div className="control">
                                 <div className="select is-fullwidth">
-                                    <select
-                                        onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-                                        value={answers[currentQuestion.id] ?? ""}
-                                    >
-                                        {currentQuestion.options.map(option => (
-                                            <option key={option} value={option}>{option}</option>
-                                        ))}
+                                    <select value={season} onChange={(e) => setSeason(e.target.value)}>
+                                        <option value="Winter">Winter</option>
+                                        <option value="Spring">Spring</option>
+                                        <option value="Summer">Summer</option>
+                                        <option value="Fall">Fall</option>
                                     </select>
                                 </div>
                             </div>
                         </div>
-                    )}
+                    </div>
 
-                    {/* Slider Question */}
-                    {currentQuestion.type === 'slider' && (
+                    <div className="column">
                         <div className="field">
-                            <label className="label">{currentQuestion.label}</label>
+                            <label className="label">Year</label>
                             <div className="control">
                                 <input
-                                    className="slider is-fullwidth is-primary"
-                                    type="range"
-                                    min={currentQuestion.min}
-                                    max={currentQuestion.max}
-                                    value={answers[currentQuestion.id] || currentQuestion.min}
-                                    onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                                    className="input"
+                                    type="number"
+                                    value={year}
+                                    onChange={(e) => setYear(parseInt(e.target.value))}
+                                    min="2020"
+                                    max="2030"
                                 />
                             </div>
-                            <p className="has-text-weight-bold">
-                                {answers[currentQuestion.id] || currentQuestion.min}
-                            </p>
                         </div>
-                    )}
+                    </div>
 
-                    {/* Input Question */}
-                    {currentQuestion.type === 'input' && (
-    <div className="field">
-        <label className="label">{currentQuestion.label}</label>
-        <div className="control">
-            <input
-                className="input is-primary"
-                type="number"
-                placeholder="Enter a number"
-                value={answers[currentQuestion.id] || ""}  // If there's no value, show an empty string
-                onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
-            />
-        </div>
-    </div>
-)}
+                    <div className="column">
+                        <div className="field">
+                            <label className="label">Mode</label>
+                            <div className="control">
+                                <button className={`button ${mode === "detailed" ? "is-info" : "is-info is-outlined"}`} onClick={toggleMode}>
+                                    {mode === "fast" ? (
+                                        <>Fast Mode <span className="tag is-light ml-2">Quick Assessment ({filteredQuestions.length} questions)</span></>
+                                    ) : (
+                                        <>Detailed Mode <span className="tag is-light ml-2">Comprehensive ({filteredQuestions.length} questions)</span></>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
-                    <br/>
-                    <br/>
-                    <br/>
+            {!result && (
+                <div style={{
+                    width: "100%",
+                    backgroundColor: "#ddd",
+                    height: "20px",
+                    borderRadius: "10px",
+                    marginBottom: "20px"
+                }}>
+                    <div style={{
+                        width: `${progress}%`,
+                        height: "100%",
+                        backgroundColor: "#18D9A8",
+                        borderRadius: "10px"
+                    }}/>
+                </div>
+            )}
+
+            {/* Current Question */}
+            {!result && currentQuestion && shouldRenderQuestion(currentQuestion) && (
+                <>
+                    <div className="box">
+                        <h5 className="title is-5">{currentQuestion.text}</h5>
+                        <p className="subtitle is-6 has-text-grey">
+                            Category: {currentQuestion.category.replace('_', ' ')}
+                        </p>
+
+                        {/* Dropdown Question */}
+                        {currentQuestion.type === 'dropdown' && (
+                            <div className="field">
+                                <div className="control">
+                                    <div className="select is-fullwidth">
+                                        <select
+                                            onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                                            value={answers[currentQuestion.id] ?? ""}
+                                        >
+                                            {currentQuestion.options.map(option => (
+                                                <option key={option} value={option}>
+                                                    {option === "" ? "Please, choose option" : option}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                                {/* "I don't know" option for dropdown */}
+                                {currentQuestion.allow_unknown && (
+                                    <div className="mt-3">
+                                        <button
+                                            className="button is-small is-light"
+                                            onClick={() => handleUnknown(currentQuestion.id)}
+                                        >
+                                            I don't know
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Slider Question */}
+                        {currentQuestion.type === 'slider' && (
+                            <div className="field">
+                                <div className="control">
+                                    <input
+                                        className="slider is-fullwidth is-primary"
+                                        type="range"
+                                        min={currentQuestion.min}
+                                        max={currentQuestion.max}
+                                        value={answers[currentQuestion.id] || currentQuestion.min}
+                                        onChange={(e) => handleAnswerChange(currentQuestion.id, e.target.value)}
+                                    />
+                                </div>
+                                <p className="has-text-weight-bold mt-2">
+                                    {answers[currentQuestion.id] || currentQuestion.min} {currentQuestion.unit || ""}
+                                </p>
+
+                                {/* "I don't know" option for slider */}
+                                {currentQuestion.allow_unknown && (
+                                    <div className="mt-3">
+                                        <button
+                                            className="button is-small is-light"
+                                            onClick={() => handleUnknown(currentQuestion.id)}
+                                        >
+                                            I don't know
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Input Question */}
+                        {currentQuestion.type === 'input' && (
+                            <div className="field">
+                                <div className="control" style={{ position: 'relative' }}>
+                                    <input
+                                        className="input is-primary"
+                                        type="number"
+                                        placeholder={`Enter a number${currentQuestion.unit ? ' in ' + currentQuestion.unit : ''}`}
+                                        value={answers[currentQuestion.id] || ""}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            // Allow empty value to facilitate erasing numbers
+                                            handleAnswerChange(currentQuestion.id, value === "" ? "" : value);
+                                        }}
+                                    />
+                                    {currentQuestion.unit && (
+                                        <span style={{
+                                            position: 'absolute',
+                                            right: '10px',
+                                            top: '50%',
+                                            transform: 'translateY(-50%)',
+                                            color: '#666'
+                                        }}>
+                                            {currentQuestion.unit}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* "I don't know" option for input */}
+                                {currentQuestion.allow_unknown && (
+                                    <div className="mt-3">
+                                        <button
+                                            className="button is-small is-light"
+                                            onClick={() => handleUnknown(currentQuestion.id)}
+                                        >
+                                            I don't know
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        )}
+                    </div>
                 </>
             )}
 
@@ -259,7 +425,7 @@ const Calculator = () => {
                         ← Previous
                     </button>
 
-                    {step === questions.length - 1 ? (
+                    {step === filteredQuestions.length - 1 ? (
                         <button
                             className="button is-primary is-outlined is-normal"
                             style={{
@@ -267,8 +433,9 @@ const Calculator = () => {
                                 margin: '10px'
                             }}
                             onClick={handleSubmit}
+                            disabled={loading}
                         >
-                            Submit
+                            {loading ? "Calculating..." : "Submit"}
                         </button>
                     ) : (
                         <button
@@ -288,25 +455,80 @@ const Calculator = () => {
             {/* Display Result on Screen */}
             {result && (
                 <div style={{marginTop: "30px"}}>
-                    <p>Total Carbon Footprint: {result.total_carbon_footprint_kg} kg CO₂</p>
-                    <br/>
-                    <h4 className="title is-4">Category Breakdown:</h4>
-                    <ul>
-                        {Object.entries(result.category_breakdown).map(([category, value]) => (
-                            <li key={category}>{category}: {value} kg CO₂</li>
-                        ))}
-                    </ul>
-                    <br/>
-                    <h4 className="title is-4">Recommendations:</h4>
-                    <ul>
-                        {result.recommendations.map((rec, index) => (
-                            <li key={index}><strong>-></strong> {rec}</li>
-                        ))}
-                    </ul>
+                    <div className="notification is-primary">
+                        <h3 className="title is-3">
+                            {result.season ? `Your ${result.season} ${result.year} Carbon Footprint` : "Your Carbon Footprint"}
+                        </h3>
+                        <h4 className="subtitle is-4">{result.total_carbon_footprint_kg} kg CO₂</h4>
+                        <p className="has-text-grey-light">Calculated using {mode === "fast" ? "Fast" : "Detailed"} mode</p>
+                    </div>
+
+                    <div className="columns">
+                        <div className="column is-half">
+                            <h4 className="title is-4">Category Breakdown:</h4>
+                            <table className="table is-fullwidth">
+                                <thead>
+                                    <tr>
+                                        <th>Category</th>
+                                        <th>Emissions (kg CO₂)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {Object.entries(result.category_breakdown).map(([category, value]) => (
+                                        <tr key={category}>
+                                            <td>{category.replace('_', ' ')}</td>
+                                            <td>{Math.round(value * 100) / 100}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div className="column is-half">
+                            <h4 className="title is-4">Recommendations:</h4>
+                            <ul>
+                                {result.recommendations.map((rec, index) => (
+                                    <li key={index} className="mb-2"><strong>→</strong> {rec}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+
+                    {/* Display benchmarks if available */}
+                    {result.benchmarks && (
+                        <div className="mt-5">
+                            <h4 className="title is-4">Climate Goals Comparison:</h4>
+                            <div className="columns">
+                                <div className="column">
+                                    <div className="notification is-info">
+                                        <p>2030 Goal: {result.benchmarks["2030_goal"] * 1000} kg CO₂ per season</p>
+                                        <p>Your footprint is {Math.round((result.total_carbon_footprint_kg / (result.benchmarks["2030_goal"] * 1000)) * 100)}% of the 2030 target</p>
+                                    </div>
+                                </div>
+                                <div className="column">
+                                    <div className="notification is-warning">
+                                        <p>2050 Goal: {result.benchmarks["2050_goal"] * 1000} kg CO₂ per season</p>
+                                        <p>Your footprint is {Math.round((result.total_carbon_footprint_kg / (result.benchmarks["2050_goal"] * 1000)) * 100)}% of the 2050 target</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="mt-5">
+                        <button
+                            className="button is-primary"
+                            onClick={() => {
+                                setResult(null);
+                                setStep(0);
+                            }}
+                        >
+                            Calculate Another Footprint
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
-
     );
 };
 
