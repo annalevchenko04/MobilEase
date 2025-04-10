@@ -300,8 +300,7 @@ def get_users(db: Session):
     return user_responses
 
 
-
-def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict):
+def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict, season=None, year=None):
     if not user_id:
         raise ValueError("User ID is missing. Only authenticated users can submit their footprint.")
 
@@ -312,15 +311,51 @@ def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, det
 
     logging.info(f"Saving Combined Details: {combined_details}")
 
+    # If season and year are provided, check for existing entry to update
+    if season and year:
+        existing_entry = db.query(models.CarbonFootprint).filter(
+            models.CarbonFootprint.user_id == user_id,
+            models.CarbonFootprint.season == season,
+            models.CarbonFootprint.year == year
+        ).first()
+
+        if existing_entry:
+            # Update existing entry
+            existing_entry.total_footprint = total_footprint
+            existing_entry.details = json.dumps(combined_details, default=str)
+            db.commit()
+            db.refresh(existing_entry)
+            return existing_entry
+
+    # Create new entry (for both seasonal and non-seasonal)
     footprint_entry = models.CarbonFootprint(
         user_id=user_id,
         total_footprint=total_footprint,
-        details=json.dumps(combined_details, default=str)
+        details=json.dumps(combined_details, default=str),
+        season=season,
+        year=year
     )
     db.add(footprint_entry)
     db.commit()
     db.refresh(footprint_entry)
     return footprint_entry
+
+
+# New function to get footprint history
+def get_footprint_history(db: Session, user_id: int):
+    """Get the carbon footprint history for a user, including seasonal entries."""
+    if not user_id:
+        raise ValueError("User ID is missing.")
+
+    footprint_entries = db.query(models.CarbonFootprint).filter(
+        models.CarbonFootprint.user_id == user_id
+    ).order_by(
+        models.CarbonFootprint.year.desc(),
+        models.CarbonFootprint.season.desc(),
+        models.CarbonFootprint.created_at.desc()
+    ).all()
+
+    return footprint_entries
 
 # --- Post CRUD operations ---
 

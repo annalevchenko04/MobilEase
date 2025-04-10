@@ -95,44 +95,100 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     return user
 
 
+from fastapi import Query
+from calculator import calculate_footprint, generate_seasonal_recommendations
+
+
+# Update the existing footprint endpoint
 @app.post("/footprint")
 def calculate_footprint_api(
         data: CarbonFootprintRequest,
+        season: str = Query(None, enum=["Winter", "Spring", "Summer", "Fall"]),  # Optional
+        year: int = Query(None, gt=2000, lt=2050),  # Optional
         db: Session = Depends(get_db),
         current_user: models.User = Depends(get_current_user)
 ):
     logging.info(f"Incoming Token Data: {current_user}")
     logging.info(f"Answers Received: {data.answers}")
+    logging.info(f"Season: {season}, Year: {year}")
 
-    # # 🔎 Log the questions before calculation
-    # logging.info("=== Questions Loaded for Calculation ===")
-    # for question in questions:
-    #     logging.info(f"ID: {question['id']} | Text: {question['text']} | Type: {question['type']}")
     try:
-        result = calculate_footprint(data.answers)
+        # Calculate footprint with season if provided
+        result = calculate_footprint(data.answers, season=season)
         logging.info(f"Calculation Result: {result}")
-        logging.info(f"Numeric Data: {result['unified_data']['numeric_data']}")
 
+        # Save with season and year if provided
         saved_footprint = crud.save_carbon_footprint(
             db,
             user_id=current_user.id,
             total_footprint=result['total_carbon_footprint_kg'],
-            details=result['unified_data']
+            details=result['unified_data'],
+            season=season,
+            year=year
         )
 
-        return {
-            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
-            "category_breakdown": result['category_breakdown'],
-            "recommendations": [
+        # Generate recommendations based on season
+        if season:
+            recommendations = generate_seasonal_recommendations(season, result['category_breakdown'])
+        else:
+            recommendations = [
                 "Reduce car usage and consider public transport.",
                 "Switch to energy-efficient appliances to reduce electricity use.",
                 "Consider reducing red meat consumption for lower food emissions."
-            ],
+            ]
+
+        response_data = {
+            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
+            "category_breakdown": result['category_breakdown'],
+            "recommendations": recommendations,
             "saved_footprint": saved_footprint
         }
+
+        # Add season-specific data if available
+        if season:
+            response_data["season"] = season
+            response_data["year"] = year
+            response_data["benchmarks"] = result.get('benchmarks', {})
+
+        return response_data
     except Exception as e:
         logging.error(f"Error in calculation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error calculating footprint: {str(e)}")
+
+
+# Add new endpoint for footprint history
+@app.get("/footprint/history")
+def get_footprint_history_api(
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    """Get historical footprint data for the current user."""
+    try:
+        footprint_entries = crud.get_footprint_history(db, current_user.id)
+
+        # Format the response
+        history_data = []
+        for entry in footprint_entries:
+            entry_data = {
+                "id": entry.id,
+                "total_footprint": entry.total_footprint,
+                "created_at": entry.created_at
+            }
+
+            # Add seasonal data if available
+            if entry.season and entry.year:
+                entry_data["season"] = entry.season
+                entry_data["year"] = entry.year
+                entry_data["is_seasonal"] = True
+            else:
+                entry_data["is_seasonal"] = False
+
+            history_data.append(entry_data)
+
+        return {"history": history_data}
+    except Exception as e:
+        logging.error(f"Error retrieving history: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving data: {str(e)}")
 
 
 default_values = {

@@ -113,8 +113,15 @@ class CarbonFootprint(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     total_footprint = Column(Float, nullable=False)
-    details = Column(Text, nullable=True)  # Ensure this is correctly configured
+    details = Column(Text, nullable=True)  # Existing field
     created_at = Column(DateTime, server_default=func.now())
+
+    # New fields for seasonal tracking
+    season = Column(String(10), nullable=True)  # "Winter", "Spring", "Summer", "Fall"
+    year = Column(Integer, nullable=True)
+
+    # Add constraint to ensure season+year+user_id is unique when both are provided
+    __table_args__ = (UniqueConstraint('user_id', 'season', 'year', name='unique_user_season_year'),)
 
 # Post model
 class Post(Base):
