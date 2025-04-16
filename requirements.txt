@@ -13,3 +13,4 @@ email-validator
 sendgrid~=6.11.0
 axios
 alembic
+react-chartjs-2
