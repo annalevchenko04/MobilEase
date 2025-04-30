@@ -1,0 +1,150 @@
+/* DailyCheckInTracker.css */
+
+/* Column sizing for the calendar grid */
+.is-one-seventh {
+  width: 14.28% !important;
+}
+
+/* Calendar day styles */
+.calendar-day {
+  position: relative;
+  border-radius: 8px;
+  height: 60px;
+  transition: all 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-day.is-checkable:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.calendar-day.is-checked {
+  background-color: #effaf5 !important;
+  border-left: 3px solid #48c774;
+}
+
+.calendar-day.is-today {
+  background-color: #fffbeb !important;
+  border-left: 3px solid #ffdd57;
+}
+
+.calendar-day.is-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Day number styling */
+.day-number {
+  font-size: 1.1rem;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.day-number.is-today {
+  color: #b86e00;
+}
+
+/* Progress circle styling */
+.progress-circle-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  margin-left: auto;
+}
+
+.progress-circle-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 1rem;
+  font-weight: bold;
+  color: #333;
+}
+
+/* Calendar header styling */
+.calendar-header {
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.calendar-month {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #363636;
+}
+
+/* Weekday header styling */
+.weekday-header {
+  font-weight: 600;
+  color: #7a7a7a;
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+/* Info notification styling */
+.check-in-info {
+  background-color: #ebf8ff;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.check-in-info .icon {
+  margin-right: 0.75rem;
+  color: #3182ce;
+}
+
+/* Status indicators */
+.status-tag {
+  padding: 0.5rem 1rem;
+  border-radius: 290486px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.status-tag.is-completed {
+  background-color: #effaf5;
+  color: #257942;
+}
+
+.status-tag.is-in-progress {
+  background-color: #ebf8ff;
+  color: #2b6cb0;
+}
+
+/* Progress indicators */
+.progress-stats {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Check icon styling */
+.check-icon {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Animation for checking a day */
+@keyframes checkPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.check-animation {
+  animation: checkPulse 0.3s ease-in-out;
+}

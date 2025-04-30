@@ -18,6 +18,8 @@ from dotenv import load_dotenv
 from pydantic import BaseModel
 from calculator import calculate_footprint, emission_factors
 import logging
+from typing import Optional, List
+from fastapi.responses import JSONResponse
 
 load_dotenv()
 
@@ -953,3 +955,425 @@ def delete_comment_endpoint(comment_id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=400, detail="Failed to delete comment")
 
 
+# Add this validation to your /initiatives/ POST endpoint in main.py:
+
+@app.post("/initiatives/", response_model=schemas.Initiative, status_code=status.HTTP_201_CREATED)
+def create_initiative_endpoint(
+        initiative: schemas.InitiativeCreate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Check if user already has a pending initiative for this month/year
+    existing_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.created_by == current_user.id,
+        models.Initiative.month == initiative.month,
+        models.Initiative.year == initiative.year,
+        models.Initiative.status == "pending"
+    ).all()
+
+    if existing_initiatives:
+        raise HTTPException(
+            status_code=400,
+            detail="You have already submitted an initiative for this month. Only one initiative per month is allowed."
+        )
+
+    return crud.create_initiative(db, initiative, current_user.id, current_user.company_id)
+
+
+# Update the API endpoint in main.py
+@app.get("/initiatives/", response_model=List[schemas.Initiative])
+def list_initiatives(
+        status: Optional[str] = None,
+        month: Optional[int] = None,
+        year: Optional[int] = None,
+        include_archived: bool = False,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    initiatives = crud.get_initiatives(
+        db,
+        current_user.company_id,
+        status,
+        month,
+        year,
+        include_archived
+    )
+
+    # Add vote count to each initiative
+    for initiative in initiatives:
+        vote_count = len(initiative.votes)
+        initiative.vote_count = vote_count
+
+    return initiatives
+
+
+@app.get("/initiatives/{initiative_id}", response_model=schemas.Initiative)
+def get_initiative_endpoint(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if user belongs to the same company as the initiative
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to access this initiative")
+
+    # Add vote count
+    initiative.vote_count = len(initiative.votes)
+    return initiative
+
+
+@app.put("/initiatives/{initiative_id}", response_model=schemas.Initiative)
+def update_initiative_endpoint(
+        initiative_id: int,
+        initiative: schemas.InitiativeCreate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    db_initiative = crud.get_initiative(db, initiative_id)
+    if not db_initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if user is the creator or an admin
+    if db_initiative.created_by != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to update this initiative")
+
+    updated_initiative = crud.update_initiative(db, initiative_id, initiative)
+    return updated_initiative
+
+
+@app.delete("/initiatives/{initiative_id}", response_model=dict)
+def delete_initiative_endpoint(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    db_initiative = crud.get_initiative(db, initiative_id)
+    if not db_initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if user is the creator or an admin
+    if db_initiative.created_by != current_user.id and current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized to delete this initiative")
+
+    crud.delete_initiative(db, initiative_id)
+    return {"message": "Initiative deleted successfully"}
+
+
+@app.post("/initiatives/{initiative_id}/vote", response_model=schemas.Vote)
+def vote_for_initiative(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if initiative is still pending (voting period)
+    if initiative.status != "pending":
+        raise HTTPException(status_code=400, detail="Voting is only allowed for pending initiatives")
+
+    # Check if user belongs to the same company as the initiative
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to vote for this initiative")
+
+    return crud.create_vote(db, current_user.id, initiative_id)
+
+
+@app.delete("/initiatives/{initiative_id}/vote", response_model=dict)
+def remove_vote(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if initiative is still pending (voting period)
+    if initiative.status != "pending":
+        raise HTTPException(status_code=400, detail="Vote removal is only allowed for pending initiatives")
+
+    result = crud.delete_vote(db, current_user.id, initiative_id)
+    if result:
+        return {"message": "Vote removed successfully"}
+    raise HTTPException(status_code=404, detail="Vote not found")
+
+
+@app.get("/initiatives/{initiative_id}/votes", response_model=List[schemas.Vote])
+def get_initiative_votes(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if user belongs to the same company as the initiative
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view votes for this initiative")
+
+    return crud.get_votes_by_initiative(db, initiative_id)
+
+
+@app.get("/initiatives/voting-results/{month}/{year}", response_model=List[dict])
+def get_voting_results_endpoint(
+        month: int,
+        year: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    if month < 1 or month > 12:
+        raise HTTPException(status_code=400, detail="Invalid month")
+
+    return crud.get_voting_results(db, current_user.company_id, month, year)
+
+
+@app.post("/initiatives/activate/{initiative_id}", response_model=schemas.Initiative)
+def activate_initiative_endpoint(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Only admins can activate initiatives
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can activate initiatives")
+
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if initiative belongs to the admin's company
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to activate this initiative")
+
+    activated_initiative = crud.activate_initiative(db, initiative_id)
+    return activated_initiative
+
+
+@app.get("/initiatives/active")
+def get_active_initiative_endpoint(
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    """Get the currently active initiative for the user's company."""
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="User is not associated with a company")
+
+    initiative = crud.get_active_initiative(db, current_user.company_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="No active initiative found")
+
+    # Convert SQLAlchemy model to dictionary
+    # This approach ensures we're grabbing exactly the fields we need
+    response_data = {
+        "id": initiative.id,
+        "title": initiative.title,
+        "description": initiative.description,
+        "created_by": initiative.created_by,
+        "created_at": initiative.created_at.isoformat(),  # Convert datetime to string
+        "status": initiative.status,
+        "month": initiative.month,
+        "year": initiative.year,
+        "company_id": initiative.company_id,
+        "vote_count": len(initiative.votes) if hasattr(initiative, 'votes') else 0,
+        "is_locked": initiative.is_locked if hasattr(initiative, 'is_locked') else False,
+    }
+
+    # Handle optional fields that might cause serialization issues
+    if hasattr(initiative, 'voting_end_date') and initiative.voting_end_date:
+        response_data["voting_end_date"] = initiative.voting_end_date.isoformat()
+    else:
+        response_data["voting_end_date"] = None
+
+    if hasattr(initiative, 'auto_delete_date') and initiative.auto_delete_date:
+        response_data["auto_delete_date"] = initiative.auto_delete_date.isoformat()
+    else:
+        response_data["auto_delete_date"] = None
+
+    # Return as a JSONResponse instead of direct dict return
+    return JSONResponse(content=response_data)
+
+
+# Progress endpoints
+@app.post("/progress/", response_model=schemas.Progress)
+def create_or_update_progress_endpoint(
+        progress: schemas.ProgressCreate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Validate the initiative exists and is active
+    initiative = crud.get_initiative(db, progress.initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    if initiative.status != "active":
+        raise HTTPException(status_code=400, detail="Progress can only be updated for active initiatives")
+
+    # Check if user belongs to the same company as the initiative
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to update progress for this initiative")
+
+    # Validate progress percentage
+    if progress.progress < 0 or progress.progress > 100:
+        raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
+
+    # If the progress is complete (100%), award a badge
+    if progress.progress == 100 and progress.completed:
+        crud.award_initiative_completion_badge(db, current_user.id)
+
+    return crud.create_or_update_progress(db, current_user.id, progress)
+
+
+@app.get("/progress/", response_model=List[schemas.Progress])
+def get_user_progress_endpoint(
+        initiative_id: Optional[int] = None,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    return crud.get_user_progress(db, current_user.id, initiative_id)
+
+
+@app.get("/initiatives/{initiative_id}/progress", response_model=List[schemas.Progress])
+def get_company_progress_endpoint(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Only admins can view company-wide progress
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can view company-wide progress")
+
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if initiative belongs to the admin's company
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to view progress for this initiative")
+
+    return crud.get_company_progress(db, current_user.company_id, initiative_id)
+
+
+# Check if user can suggest an initiative for next month
+@app.get("/initiatives/can-suggest")
+def can_suggest_initiative(
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    """Check if a user can suggest a new initiative."""
+    try:
+        # Check if user already has a pending initiative for the next month
+        current_date = datetime.now()
+        next_month_date = current_date.replace(day=1) + timedelta(days=32)
+        next_month = next_month_date.month
+        next_year = next_month_date.year
+
+        pending_initiative = db.query(models.Initiative).filter(
+            models.Initiative.created_by == current_user.id,
+            models.Initiative.month == next_month,
+            models.Initiative.year == next_year,
+            models.Initiative.status.in_(["pending", "active"])
+        ).first()
+
+        can_suggest = pending_initiative is None
+        return {"can_suggest": can_suggest}
+
+    except Exception as e:
+        # Log the error for debugging
+        print(f"Error in can_suggest_initiative: {str(e)}")
+        # Return a default response
+        return {"can_suggest": True, "error": str(e)}
+
+
+# Modified POST endpoint with additional checks
+@app.post("/initiatives/", response_model=schemas.Initiative, status_code=status.HTTP_201_CREATED)
+def create_initiative_endpoint(
+        initiative: schemas.InitiativeCreate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Check if user already has a pending initiative for this month/year
+    has_pending = crud.check_user_has_pending_initiative(db, current_user.id)
+    if has_pending:
+        raise HTTPException(
+            status_code=400,
+            detail="You have already submitted an initiative for the next month."
+        )
+
+    # Enforce next month requirement
+    current_date = datetime.now()
+    next_month_date = current_date.replace(day=1) + timedelta(days=32)
+    next_month = next_month_date.month
+    next_year = next_month_date.year
+
+    if initiative.month != next_month or initiative.year != next_year:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Initiatives must be submitted for the next month ({next_month}/{next_year})."
+        )
+
+    return crud.create_initiative(db, initiative, current_user.id, current_user.company_id)
+
+
+# Admin endpoint to deactivate initiative and start voting
+@app.post("/initiatives/{initiative_id}/deactivate", response_model=dict)
+def deactivate_initiative_endpoint(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Only admins can deactivate initiatives
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can deactivate initiatives")
+
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if it belongs to admin's company
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to deactivate this initiative")
+
+    # Check if it's locked
+    if initiative.is_locked:
+        raise HTTPException(status_code=400, detail="Cannot deactivate a locked initiative")
+
+    voting_end_date = crud.deactivate_initiative(db, initiative_id)
+    if not voting_end_date:
+        raise HTTPException(status_code=400, detail="Failed to deactivate initiative")
+
+    return {
+        "message": "Initiative deactivated. A 3-day voting period has started.",
+        "voting_end_date": voting_end_date
+    }
+
+
+# Run scheduled tasks (this would normally be run by a scheduler like Celery)
+@app.post("/admin/run-scheduled-tasks", response_model=dict)
+def run_scheduled_tasks(
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Only admins can manually run scheduled tasks
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can run scheduled tasks")
+
+    # Check for expired voting periods
+    crud.check_expired_voting_periods(db)
+
+    # Check for monthly auto-activation
+    crud.check_monthly_auto_activation(db)
+
+    # Cleanup failed initiatives
+    deleted_count = crud.cleanup_failed_initiatives(db)
+
+    return {
+        "message": "Scheduled tasks completed",
+        "deleted_initiatives": deleted_count
+    }

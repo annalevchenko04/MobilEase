@@ -15,6 +15,7 @@ import Schedule from './components/Schedule';
 import { Link } from "react-router-dom";
 import './styles.css';
 import CompanyRegister from "./components/CompanyRegister";
+import Initiatives from './components/Initiatives';
 
 const App = () => {
     const [token, , , , setToken] = useContext(UserContext); // Use userRole from context
@@ -135,6 +136,14 @@ const App = () => {
                                     </span>
                                         </a>
 
+                                        <a className="navbar-item is-size-5" href="/initiatives">
+                                            <span className="icon-text">
+                                                <span className="icon">
+                                                    <i className="fas fa-leaf"></i>
+                                                </span>
+                                                <span><strong>Initiatives</strong></span>
+                                            </span>
+                                        </a>
 
                                         <a className="navbar-item is-size-5" href="/schedule">
                                                 <span className="icon-text">
@@ -190,6 +199,7 @@ const App = () => {
                                 <Route path="/analytics" element={<Analytics/>}/>
                                 <Route path="/explore" element={<Explore/>}/>
                                 <Route path="/post/:id" element={<PostDetail />} />
+                                <Route path="/initiatives" element={<Initiatives />} />
                                 <Route path="/schedule" element={<Schedule events={events} addEvent={addEvent}/>}/>
 
                                 <Route path="*" element={<Navigate to="/main"/>}/>
