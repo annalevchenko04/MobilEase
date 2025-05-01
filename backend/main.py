@@ -953,3 +953,98 @@ def delete_comment_endpoint(comment_id: int, db: Session = Depends(get_db)):
     raise HTTPException(status_code=400, detail="Failed to delete comment")
 
 
+@app.get("/api/rewards/day-off", response_model=schemas.DayOffRewardResponse)
+def get_day_off_reward(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    # Try to get "issued" reward first
+    issued_reward = db.query(models.Reward).filter_by(user_id=current_user.id, type="day_off", status="issued").first()
+    if issued_reward:
+        return {
+            "status": issued_reward.status,
+            "qr_code": issued_reward.qr_code
+        }
+
+    # Then check for "redeemed"
+    redeemed_reward = db.query(models.Reward).filter_by(user_id=current_user.id, type="day_off", status="redeemed").first()
+    if redeemed_reward:
+        return {
+            "status": redeemed_reward.status,
+            "qr_code": None
+        }
+
+    # Otherwise, return "not_earned"
+    return {
+        "status": "not_earned",
+        "qr_code": None
+    }
+
+
+def get_current_admin(user: models.User = Depends(get_current_user)):
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return user
+
+@app.post("/api/admin/rewards/redeem/{user_id}")
+def admin_redeem_day_off_reward(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    reward = db.query(models.Reward).filter_by(user_id=user_id, type="day_off", status="issued").first()
+    if not reward:
+        raise HTTPException(status_code=404, detail="Reward not found or already redeemed")
+
+    reward.status = "redeemed"
+    reward.redeemed_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Reward redeemed successfully by admin"}
+
+
+@app.delete("/api/admin/reset-progress/{user_id}")
+def reset_user_progress(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).delete()
+    # db.query(models.Reward).filter(models.Reward.user_id == user_id, models.Reward.type == "day_off").delete()
+    db.commit()
+    return {"message": "User progress reset successfully"}
+
+
+@app.get("/api/admin/rewards")
+def get_all_rewards(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
+    users = db.query(models.User).all()
+    results = []
+
+    for user in users:
+        rewards = (
+            db.query(models.Reward)
+            .filter_by(user_id=user.id, type="day_off")
+            .order_by(models.Reward.issued_at.desc())
+            .all()
+        )
+
+        reward_list = []
+        for reward in rewards:
+            reward_list.append({
+                "reward_id": reward.id,
+                "status": reward.status,
+                "qr_code": reward.qr_code if reward.status == "issued" else None,
+                "issued_at": reward.issued_at.isoformat(),
+                "redeemed_at": reward.redeemed_at.isoformat() if reward.redeemed_at else None
+            })
+
+        results.append({
+            "user_id": user.id,
+            "name": user.name,
+            "surname": user.surname,
+            "email": user.email,
+            "phone": user.phone,
+            "role": user.role,
+            "rewards": reward_list if reward_list else [],
+        })
+
+    return results
+
+

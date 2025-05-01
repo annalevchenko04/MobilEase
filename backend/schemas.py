@@ -263,3 +263,10 @@ class CompanyResponse(CompanyCreate):
 
     class Config:
         from_attributes = True
+
+
+class DayOffRewardResponse(BaseModel):
+    status: str  # "not_earned", "issued", "redeemed"
+    qr_code: Optional[str]
+
+
