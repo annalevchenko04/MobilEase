@@ -3,7 +3,7 @@ from sqlalchemy.orm import validates
 from database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
-from datetime import date
+from datetime import date, datetime
 
 
 class User(Base):
@@ -55,10 +55,10 @@ class User(Base):
     badges = relationship("UserBadge", back_populates="user", cascade="all, delete-orphan")
 
     # Events created by the user (trainers and admins)
-    created_events = relationship("Event", back_populates="creator")
+    created_events = relationship("Event", back_populates="creator", cascade="all, delete-orphan")
 
     # Events booked by the user (members)
-    booked_events = relationship("Booking", back_populates="user")
+    booked_events = relationship("Booking", back_populates="user", cascade="all, delete-orphan")
 
 
     # New Foreign Key for Company
@@ -259,7 +259,7 @@ class Event(Base):
     creator = relationship("User", back_populates="created_events")
 
     # Participants (for public group events)
-    bookings = relationship("Booking", back_populates="event")
+    bookings = relationship("Booking", back_populates="event", cascade="all, delete-orphan")
 
 
 class Booking(Base):
@@ -267,7 +267,7 @@ class Booking(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))  # User who booked the event
-    event_id = Column(Integer, ForeignKey("events.id"))  # Booked event
+    event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"))
 
     # Relationships
     user = relationship("User", back_populates="booked_events")
@@ -288,3 +288,16 @@ class Company(Base):
 
     def __repr__(self):
         return f"<Company(name={self.name}, industry={self.industry}, domain={self.domain})>"
+
+
+class Reward(Base):
+    __tablename__ = "rewards"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    type = Column(String)  # e.g. "day_off"
+    status = Column(String, default="issued")  # "issued", "redeemed"
+    qr_code = Column(Text)  # base64 image or a code string
+    issued_at = Column(DateTime, default=datetime.utcnow)
+    redeemed_at = Column(DateTime, nullable=True)
+
+
