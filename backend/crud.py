@@ -13,6 +13,10 @@ from sqlalchemy.exc import IntegrityError
 import json
 import logging
 from typing import Optional, List
+from qrcode import QRCode
+import datetime
+import base64
+from io import BytesIO
 
 
 
@@ -326,6 +330,7 @@ def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, det
             existing_entry.details = json.dumps(combined_details, default=str)
             db.commit()
             db.refresh(existing_entry)
+            check_and_assign_climate_champion_badge(db, user_id, total_footprint, season, year)
             return existing_entry
 
     # Create new entry (for both seasonal and non-seasonal)
@@ -339,6 +344,7 @@ def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, det
     db.add(footprint_entry)
     db.commit()
     db.refresh(footprint_entry)
+    check_and_assign_climate_champion_badge(db, user_id, total_footprint, season, year)
     return footprint_entry
 
 
@@ -550,6 +556,8 @@ def check_and_assign_badge(db: Session, user_id: int):
         db.add(models.UserBadge(user_id=user_id, badge_id=existing_badge.id))
         db.commit()  # Commit only if assigning a new badge
 
+    check_day_off_eligibility_and_issue(db, user_id)
+
 
 
 def check_and_assign_popular_post_badge(db: Session, post_id: int):
@@ -585,6 +593,8 @@ def check_and_assign_popular_post_badge(db: Session, post_id: int):
                 db.add(models.UserBadge(user_id=user_id, badge_id=existing_badge.id))
                 db.commit()  # Commit only if assigning a new badge
 
+            check_day_off_eligibility_and_issue(db, user_id)
+
 def get_user_badges(db: Session, user_id: int):
     user_badges = db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).all()
     return [
@@ -595,10 +605,6 @@ def get_user_badges(db: Session, user_id: int):
         )
         for ub in user_badges
     ]
-
-
-
-
 
 def create_event(db: Session, event: schemas.EventCreate, user_id: int):
     db_event = models.Event(
@@ -711,6 +717,8 @@ def book_event(db: Session, event_id: int, user_id: int):
     db.add(db_booking)
     db.commit()
     db.refresh(db_booking)
+
+    check_and_assign_sustainability_badge(db, user_id)
 
     return db_booking
 
@@ -1234,3 +1242,144 @@ def cleanup_failed_initiatives(db: Session):
 
     db.commit()
     return len(initiatives_to_delete)
+
+
+def check_and_assign_sustainability_badge(db: Session, user_id: int):
+    badge_name = "Eco Explorer"
+    badge_description = "Attended 3 Sustainability Events"
+
+    # Count how many sustainability events the user attended
+    sustainability_events_attended = db.query(models.Booking).join(models.Event).filter(
+        models.Booking.user_id == user_id
+    ).count()
+
+    if sustainability_events_attended < 3:
+        return  # User hasn't qualified yet
+
+    # Check if badge exists or create it
+    badge = db.query(models.Badge).filter(models.Badge.name == badge_name).first()
+    if not badge:
+        badge = models.Badge(name=badge_name, description=badge_description)
+        db.add(badge)
+        db.commit()
+
+    # Check if user already has it
+    user_has_badge = db.query(models.UserBadge).filter(
+        models.UserBadge.user_id == user_id,
+        models.UserBadge.badge_id == badge.id
+    ).first()
+
+    if not user_has_badge:
+        db.add(models.UserBadge(user_id=user_id, badge_id=badge.id))
+        db.commit()
+
+    check_day_off_eligibility_and_issue(db, user_id)
+
+
+
+def check_and_assign_climate_champion_badge(db: Session, user_id: int, total_footprint: float, season=None, year=None):
+    badge_name = "Climate Champion"
+    badge_description = "Reached the 2030 seasonal CO₂ goal (≤ 625 kg)"
+
+    # Only proceed if footprint is within goal
+    if total_footprint > 625:
+        return
+
+    # Check if badge exists
+    badge = db.query(models.Badge).filter(models.Badge.name == badge_name).first()
+    if not badge:
+        badge = models.Badge(name=badge_name, description=badge_description)
+        db.add(badge)
+        db.commit()
+
+    # Check if user already has this badge
+    user_has_badge = db.query(models.UserBadge).filter(
+        models.UserBadge.user_id == user_id,
+        models.UserBadge.badge_id == badge.id
+    ).first()
+
+    if not user_has_badge:
+        db.add(models.UserBadge(user_id=user_id, badge_id=badge.id))
+        db.commit()
+
+    check_day_off_eligibility_and_issue(db, user_id)
+
+
+def has_earned_day_off(db: Session, user_id: int) -> bool:
+    badge_count = db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).count()
+    return badge_count >= 4
+
+
+def generate_qr_code_data(user_id: int, db: Session) -> str:
+    # Fetch user details from the database
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+
+    if not user:
+        raise ValueError("User not found")
+
+    # Fetch the company details associated with the user
+    company = user.company  # This uses the relationship defined in the User model
+
+    if not company:
+        raise ValueError("User does not belong to any company")
+
+    # Prepare the additional data for the QR code
+    qr_content = {
+        "user_id": user.id,
+        "name": user.name,
+        "surname": user.surname,
+        "email": user.email,
+        "company_name": company.name,  # Company name
+        "company_industry": company.industry,  # Company industry
+        "company_domain": company.domain,  # Company domain
+        "reward": "day_off",  # You can replace this if different reward types are added
+        "issued_at": datetime.datetime.utcnow().isoformat(),  # Add current timestamp
+        "status": "issued",  # Example of reward status
+    }
+
+    # Convert the dictionary to a string (e.g., JSON or query string format)
+    import json
+    qr_content_str = json.dumps(qr_content)
+
+    # Initialize the QR code
+    qr = QRCode(
+        version=1,
+        box_size=10,
+        border=5
+    )
+
+    qr.add_data(qr_content_str)
+    qr.make(fit=True)
+
+    # Generate the QR code image
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    # Save the image to a buffer
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+
+    # Get the image bytes and encode them as base64
+    img_bytes = buffer.getvalue()
+    return base64.b64encode(img_bytes).decode('utf-8')
+
+
+
+def check_day_off_eligibility_and_issue(db: Session, user_id: int):
+    if not has_earned_day_off(db, user_id):
+        return
+
+    # Check if already has voucher
+    existing = db.query(models.Reward).filter_by(user_id=user_id, type="day_off").first()
+    if existing and existing.status == "issued":
+        return
+
+    # ✅ Issue reward and generate QR
+    reward = models.Reward(
+        user_id=user_id,
+        type="day_off",
+        status="issued",
+        qr_code=generate_qr_code_data(user_id, db)
+    )
+    db.add(reward)
+    db.commit()
+

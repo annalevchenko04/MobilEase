@@ -264,7 +264,6 @@ class CompanyResponse(CompanyCreate):
     class Config:
         from_attributes = True
 
-
 # Update the Initiative schema in schemas.py
 class InitiativeBase(BaseModel):
     title: str
@@ -324,3 +323,9 @@ class Progress(ProgressBase):
 
     class Config:
         from_attributes = True
+
+class DayOffRewardResponse(BaseModel):
+    status: str  # "not_earned", "issued", "redeemed"
+    qr_code: Optional[str]
+
+

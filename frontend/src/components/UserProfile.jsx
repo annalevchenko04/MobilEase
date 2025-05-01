@@ -672,7 +672,7 @@ const handleRemoveTag = (tag) => {
                                 <img
                                   src="http://localhost:8000/images/ESP_badge_1.png"  // Image for badge id 1
                                   alt={badge.name}
-                                  className="badge-image"  // Create a class for the badge image
+                                  className="badge-image"
                                 />
                               ) : badge.id === 2 ? (
                                 <img
@@ -680,7 +680,21 @@ const handleRemoveTag = (tag) => {
                                   alt={badge.name}
                                   className="badge-image"
                                 />
-                              ) : null}
+                              ) : badge.id === 3 ? (
+                                <img
+                                  src="http://localhost:8000/images/ESP_badge_3.png"  // Image for badge id 3
+                                  alt={badge.name}
+                                  className="badge-image"
+                                />
+                              )
+                                : badge.id === 4 ? (
+                                <img
+                                  src="http://localhost:8000/images/ESP_badge_4.png"  // Image for badge id 4
+                                  alt={badge.name}
+                                  className="badge-image"
+                                />
+                              )
+                                : null}
                             <div className="badge-info">  {/* Wrapper to group name and description */}
                                 <strong>{badge.name}</strong>
                                 <br/>

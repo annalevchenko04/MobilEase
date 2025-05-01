@@ -15,7 +15,10 @@ import Schedule from './components/Schedule';
 import { Link } from "react-router-dom";
 import './styles.css';
 import CompanyRegister from "./components/CompanyRegister";
+
 import Initiatives from './components/Initiatives';
+import RewardsPage from "./components/RewardsPage";
+
 
 const App = () => {
     const [token, , , , setToken] = useContext(UserContext); // Use userRole from context
@@ -154,6 +157,14 @@ const App = () => {
                                                 </span>
                                         </a>
 
+                                        <a className="navbar-item is-size-5" href="/rewards">
+                                                <span className="icon-text">
+                                                    <span className="icon">
+                                                        <i className="fas fa-trophy"></i>
+                                                    </span>
+                                                    <span><strong>Rewards</strong></span>
+                                                </span>
+                                        </a>
 
                                         <div className="navbar-end">
                                             <br/>
@@ -181,11 +192,11 @@ const App = () => {
                 <div className="column"></div>
                 <div className="column m-5 is-two-thirds">
                     <Routes>
-                        <Route path="/register-company" element={<CompanyRegister />}
-                                />
+                        <Route path="/register-company" element={<CompanyRegister/>}
+                        />
                         {!token ? (
                             <>
-                                {/* Redirect to log in if not authenticated */}
+                            {/* Redirect to log in if not authenticated */}
                                 <Route path="/" element={isLogin ? <Login toggleForm={() => setIsLogin(false)}/> :
                                     <Register toggleForm={() => setIsLogin(true)}/>}/>
                                 <Route path="*" element={<Navigate to="/"/>}/>
@@ -201,6 +212,7 @@ const App = () => {
                                 <Route path="/post/:id" element={<PostDetail />} />
                                 <Route path="/initiatives" element={<Initiatives />} />
                                 <Route path="/schedule" element={<Schedule events={events} addEvent={addEvent}/>}/>
+                                <Route path="/rewards" element={<RewardsPage/>}/>
 
                                 <Route path="*" element={<Navigate to="/main"/>}/>
                             </>

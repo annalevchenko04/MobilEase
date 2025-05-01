@@ -473,3 +473,25 @@ p {
   right: -5px;
   font-size: 1.2rem;
 }
+
+
+.goal-list li.interactive-goal {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px;
+  margin: 6px 0;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.goal-list li.interactive-goal:hover {
+  background-color: rgba(0, 209, 178, 0.1); /* lighter & less transparent */
+  transition: background-color 0.2s ease;
+}
+
+.goal-list li.interactive-goal .icon {
+  margin-right: 12px;
+  font-size: 1.2rem;
+}
+
