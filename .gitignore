@@ -101,3 +101,8 @@ Pipfile.lock
 .mypy_cache/
 .pylint.d/
 pytest_cache/
+/bin/
+/Libs/
+/.settings/
+/.classpath
+.svn/
