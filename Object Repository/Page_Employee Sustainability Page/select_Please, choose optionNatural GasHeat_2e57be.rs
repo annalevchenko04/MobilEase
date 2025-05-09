@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>select_Please, choose optionNatural GasHeat_2e57be</name>
+   <tag></tag>
+   <elementGuidId>2d1e23d2-f16f-4d0c-83df-f26a1bf674d1</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.box > div.field > div.control > div.select.is-fullwidth > select</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[3]/div/div/div/select</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>select</value>
+      <webElementGuid>aa27d84a-6fb6-4caf-8dd8-8625dc9ba4f3</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Please, choose optionNatural GasHeating OilSolarDistrict Heating</value>
+      <webElementGuid>ed4562c4-6486-408d-840d-d67db6500fe8</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[@class=&quot;box&quot;]/div[@class=&quot;field&quot;]/div[@class=&quot;control&quot;]/div[@class=&quot;select is-fullwidth&quot;]/select[1]</value>
+      <webElementGuid>d11471df-42c1-4712-96e7-87ef23b65baa</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[3]/div/div/div/select</value>
+      <webElementGuid>d632a49f-7daf-41a9-a5ee-c8f0125b0c98</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='What type of energy source powers your home?'])[1]/following::select[1]</value>
+      <webElementGuid>cf2a7ae5-93e2-4656-8c75-2b1fe622b582</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='← Previous'])[1]/preceding::select[1]</value>
+      <webElementGuid>30875cfd-4a50-4995-952e-91468955a26e</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[3]/div/div/div/select</value>
+      <webElementGuid>38a62bdf-96a3-43d2-ab28-a7bd9ec477bb</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//select[(text() = 'Please, choose optionNatural GasHeating OilSolarDistrict Heating' or . = 'Please, choose optionNatural GasHeating OilSolarDistrict Heating')]</value>
+      <webElementGuid>f5006eb5-e823-4e2e-a74b-797b5fba05ce</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

@@ -1,0 +1,14 @@
+{
+  "brokenTestObjects": [
+    {
+      "approved": true,
+      "testObjectId": "Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button",
+      "brokenLocator": "//div[@id\u003d\u0027root\u0027]/div/div/div[2]/div/form/div[3]/button",
+      "brokenLocatorMethod": "XPATH",
+      "proposedLocator": "//button",
+      "proposedLocatorMethod": "XPATH",
+      "recoveryMethod": "XPATH",
+      "pathToScreenshot": "Reports/20250509_200734/Explore_Component/20250509_200734/Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button_position.png"
+    }
+  ]
+}

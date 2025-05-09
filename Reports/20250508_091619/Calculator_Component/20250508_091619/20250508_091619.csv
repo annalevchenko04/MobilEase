@@ -1,0 +1,40 @@
+Suite/Test/Step Name,Browser,Description,Tag,Start time,End time,Duration,Status
+Calculator_Component,Chrome 136.0.0.0,,,08-05-2025 09:16:30,08-05-2025 09:17:01,30.446s,PASSED
+,,,,,,,
+Test Cases/Calculator_Component,Chrome 136.0.0.0,,,08-05-2025 09:16:31,08-05-2025 09:17:01,30.112s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,08-05-2025 09:16:31,08-05-2025 09:16:35,3.859s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,08-05-2025 09:16:35,08-05-2025 09:16:38,2.468s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""annlev"")",Chrome 136.0.0.0,,,08-05-2025 09:16:38,08-05-2025 09:16:39,1.144s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,08-05-2025 09:16:39,08-05-2025 09:16:39,0.553s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button""))",Chrome 136.0.0.0,,,08-05-2025 09:16:39,08-05-2025 09:16:40,0.481s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/a_Footprint Calculator""))",Chrome 136.0.0.0,,,08-05-2025 09:16:40,08-05-2025 09:16:41,1.767s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_WinterSpringSummerFall""), ""Spring"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:41,08-05-2025 09:16:43,1.128s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionUSAUKSwedenFranceOther""), ""Other"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:43,08-05-2025 09:16:44,1.122s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:44,08-05-2025 09:16:44,0.462s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionApartmentDetach_79c02f""), ""Apartment"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:44,08-05-2025 09:16:45,1.048s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:45,08-05-2025 09:16:46,0.422s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""60"")",Chrome 136.0.0.0,,,08-05-2025 09:16:46,08-05-2025 09:16:46,0.716s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:46,08-05-2025 09:16:47,0.441s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""5"")",Chrome 136.0.0.0,,,08-05-2025 09:16:47,08-05-2025 09:16:48,0.723s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:48,08-05-2025 09:16:48,0.411s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionNatural GasHeat_2e57be""), ""District Heating"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:48,08-05-2025 09:16:49,1.067s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:49,08-05-2025 09:16:50,0.462s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_I dont know""))",Chrome 136.0.0.0,,,08-05-2025 09:16:50,08-05-2025 09:16:50,0.444s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionYesNo""), ""Yes"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:50,08-05-2025 09:16:51,1.013s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:51,08-05-2025 09:16:51,0.397s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionPetrolDieselHyb_106d56""), ""Petrol"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:51,08-05-2025 09:16:52,0.969s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:52,08-05-2025 09:16:53,0.413s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_I dont know""))",Chrome 136.0.0.0,,,08-05-2025 09:16:53,08-05-2025 09:16:53,0.401s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""1"")",Chrome 136.0.0.0,,,08-05-2025 09:16:53,08-05-2025 09:16:54,0.689s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:54,08-05-2025 09:16:54,0.420s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_I dont know""))",Chrome 136.0.0.0,,,08-05-2025 09:16:54,08-05-2025 09:16:55,0.450s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionRarelyEvery yea_e7df67""), ""Rarely"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:55,08-05-2025 09:16:56,1.033s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:56,08-05-2025 09:16:56,0.427s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionVeganVegetarian_b1d045""), ""Meat-eater"", true)",Chrome 136.0.0.0,,,08-05-2025 09:16:56,08-05-2025 09:16:57,1.046s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:57,08-05-2025 09:16:58,0.424s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_I dont know""))",Chrome 136.0.0.0,,,08-05-2025 09:16:58,08-05-2025 09:16:58,0.454s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""5"")",Chrome 136.0.0.0,,,08-05-2025 09:16:58,08-05-2025 09:16:59,0.724s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:16:59,08-05-2025 09:16:59,0.428s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""1"")",Chrome 136.0.0.0,,,08-05-2025 09:16:59,08-05-2025 09:17:00,0.727s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Next""))",Chrome 136.0.0.0,,,08-05-2025 09:17:00,08-05-2025 09:17:00,0.414s,PASSED
+"verifyElementPresent(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Please, choose optionLow (5 hrsweek)_1b6309""), 0)",Chrome 136.0.0.0,,,08-05-2025 09:17:00,08-05-2025 09:17:01,0.347s,PASSED

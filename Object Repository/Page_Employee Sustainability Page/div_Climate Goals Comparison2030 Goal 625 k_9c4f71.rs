@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_Climate Goals Comparison2030 Goal 625 k_9c4f71</name>
+   <tag></tag>
+   <elementGuidId>3327cd7c-9b40-4860-81f7-e36cf4c85e36</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.mt-5</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div/div[3]</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;Climate Goals Comparison:2030 Goal: 625 kg CO₂ per seasonYour footprint is 151% &quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>9c690072-f173-4f9b-937c-513d793418ce</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>mt-5</value>
+      <webElementGuid>a99948ed-dedf-45b7-876f-4bc8803fbee8</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Climate Goals Comparison:2030 Goal: 625 kg CO₂ per seasonYour footprint is 151% of the 2030 target2050 Goal: 250 kg CO₂ per seasonYour footprint is 377% of the 2050 target</value>
+      <webElementGuid>388367c4-2afa-4962-a761-6e134eb72b36</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[1]/div[@class=&quot;mt-5&quot;]</value>
+      <webElementGuid>7ea46265-952b-49d7-b216-502120d912aa</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div/div[3]</value>
+      <webElementGuid>e92f28f4-01d0-4596-bb9a-77b138aefda8</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='→'])[3]/following::div[1]</value>
+      <webElementGuid>2cfcd969-9656-431c-a9ac-b6c0b0c62f4a</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Calculate Another Footprint'])[1]/preceding::div[6]</value>
+      <webElementGuid>c70254bf-99fd-46b9-bcca-8d929eeabaa8</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[2]/div/div/div[3]</value>
+      <webElementGuid>8175c2a4-1972-4277-92f9-5de09e74b41f</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = 'Climate Goals Comparison:2030 Goal: 625 kg CO₂ per seasonYour footprint is 151% of the 2030 target2050 Goal: 250 kg CO₂ per seasonYour footprint is 377% of the 2050 target' or . = 'Climate Goals Comparison:2030 Goal: 625 kg CO₂ per seasonYour footprint is 151% of the 2030 target2050 Goal: 250 kg CO₂ per seasonYour footprint is 377% of the 2050 target')]</value>
+      <webElementGuid>493e5615-ec7a-40d6-9cd3-74ef0ca747a0</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

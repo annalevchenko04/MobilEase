@@ -1,0 +1,36 @@
+Suite/Test/Step Name,Browser,Description,Tag,Start time,End time,Duration,Status
+User Profile,Chrome 136.0.0.0,,,09-05-2025 20:15:58,09-05-2025 20:18:28,2m - 30.582s,FAILED
+,,,,,,,
+Test Cases/User_SignIn,Chrome 136.0.0.0,,,09-05-2025 20:15:58,09-05-2025 20:16:43,44.818s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,09-05-2025 20:15:58,09-05-2025 20:16:01,2.769s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,09-05-2025 20:16:01,09-05-2025 20:16:03,2.239s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/a_Back to Register""))",Chrome 136.0.0.0,,,09-05-2025 20:16:03,09-05-2025 20:16:04,0.548s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""vika"")",Chrome 136.0.0.0,,,09-05-2025 20:16:04,09-05-2025 20:16:04,0.704s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Name_input""), ""Vika"")",Chrome 136.0.0.0,,,09-05-2025 20:16:04,09-05-2025 20:16:05,0.616s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Surname_input""), ""Ushkalo"")",Chrome 136.0.0.0,,,09-05-2025 20:16:05,09-05-2025 20:16:06,0.598s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""16"")",Chrome 136.0.0.0,,,09-05-2025 20:16:06,09-05-2025 20:16:06,0.629s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Phone_input""), ""+3859668575"")",Chrome 136.0.0.0,,,09-05-2025 20:16:06,09-05-2025 20:16:07,0.613s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Email Address_input""), ""vika@ktu.lt"")",Chrome 136.0.0.0,,,09-05-2025 20:16:07,09-05-2025 20:16:07,0.596s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Select GenderMaleFemale""), ""female"", true)",Chrome 136.0.0.0,,,09-05-2025 20:16:07,09-05-2025 20:16:08,0.902s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,09-05-2025 20:16:08,09-05-2025 20:16:09,0.364s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Confirm Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,09-05-2025 20:16:09,09-05-2025 20:16:09,0.329s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/path""))",Chrome 136.0.0.0,,,09-05-2025 20:16:09,09-05-2025 20:16:43,33.624s,PASSED
+,,,,,,,
+Test Cases/User_Login,Chrome 136.0.0.0,,,09-05-2025 20:16:43,09-05-2025 20:16:50,7.728s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,09-05-2025 20:16:43,09-05-2025 20:16:44,1.232s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,09-05-2025 20:16:44,09-05-2025 20:16:46,2.015s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""vika"")",Chrome 136.0.0.0,,,09-05-2025 20:16:46,09-05-2025 20:16:47,0.719s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,09-05-2025 20:16:47,09-05-2025 20:16:47,0.339s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button""))",Chrome 136.0.0.0,,,09-05-2025 20:16:47,09-05-2025 20:16:47,0.321s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_My Profile""))",Chrome 136.0.0.0,,,09-05-2025 20:16:47,09-05-2025 20:16:48,1.043s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_My ProfileFootprint CalculatorAnalytics_0db291""))",Chrome 136.0.0.0,,,09-05-2025 20:16:48,09-05-2025 20:16:49,0.447s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Footprint Calculator""))",Chrome 136.0.0.0,,,09-05-2025 20:16:49,09-05-2025 20:16:49,0.312s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Analytics""))",Chrome 136.0.0.0,,,09-05-2025 20:16:49,09-05-2025 20:16:50,0.305s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Explore""))",Chrome 136.0.0.0,,,09-05-2025 20:16:50,09-05-2025 20:16:50,0.312s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Schedule""))",Chrome 136.0.0.0,,,09-05-2025 20:16:50,09-05-2025 20:16:50,0.311s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/span_Schedule_icon""))",Chrome 136.0.0.0,,,09-05-2025 20:16:50,09-05-2025 20:16:50,0.306s,PASSED
+,,,,,,,
+Test Cases/Reward_Badges,Chrome 136.0.0.0,,,09-05-2025 20:18:25,09-05-2025 20:18:28,3.205s,FAILED
+"openBrowser("""")",Chrome 136.0.0.0,,,09-05-2025 20:18:25,09-05-2025 20:18:26,0.996s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,09-05-2025 20:18:26,09-05-2025 20:18:27,1.109s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""anna"")",Chrome 136.0.0.0,,,09-05-2025 20:18:27,09-05-2025 20:18:28,1.080s,FAILED

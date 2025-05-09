@@ -1,0 +1,14 @@
+{
+  "brokenTestObjects": [
+    {
+      "approved": true,
+      "testObjectId": "Object Repository/Page_Employee Sustainability Page/input_Age_input",
+      "brokenLocator": "//input[@value\u003d\u0027\u0027]",
+      "brokenLocatorMethod": "XPATH",
+      "proposedLocator": "//div[@id\u003d\u0027root\u0027]/div/div/div[2]/div/div[3]/div/div/input",
+      "proposedLocatorMethod": "XPATH",
+      "recoveryMethod": "XPATH",
+      "pathToScreenshot": "Reports/20250508_083446/Calculator_Component/20250508_083446/Object Repository/Page_Employee Sustainability Page/input_Age_input_idRelative.png"
+    }
+  ]
+}

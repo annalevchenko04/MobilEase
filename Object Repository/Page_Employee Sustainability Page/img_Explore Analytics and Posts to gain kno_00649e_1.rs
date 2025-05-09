@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>img_Explore Analytics and Posts to gain kno_00649e_1</name>
+   <tag></tag>
+   <elementGuidId>08771423-cb97-49e9-9c9e-3eb73ec61624</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div/div[4]/div/div/img</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>div:nth-child(4) > .grid > .image-column > .image-motion</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>img</value>
+      <webElementGuid>4cfbb016-ec2a-4d81-a19f-a48786e3373b</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>src</name>
+      <type>Main</type>
+      <value>/images/main4.png</value>
+      <webElementGuid>a1c54aab-c512-4bb0-8f4a-a2be2d168d69</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>alt</name>
+      <type>Main</type>
+      <value>Description of image</value>
+      <webElementGuid>b8750412-3b7a-4b15-88dc-5d2b9bc847da</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>image-motion</value>
+      <webElementGuid>18f5f3ae-1576-4550-a10a-ceeec33ae347</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[@class=&quot;min-h-screen bg-gray-900 text-white&quot;]/div[@class=&quot;py-12 px-6 md:px-20 text-center&quot;]/div[@class=&quot;items-center&quot;]/div[@class=&quot;grid md:grid-cols-2 gap-8 items-center&quot;]/div[@class=&quot;image-column&quot;]/img[@class=&quot;image-motion&quot;]</value>
+      <webElementGuid>fa81946b-e5e4-4eb2-bbed-84d931012945</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div/div[4]/div/div/img</value>
+      <webElementGuid>7f9b8bee-9714-40f5-8f16-70e103eed9a4</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:img</name>
+      <type>Main</type>
+      <value>(//img[@alt='Description of image'])[7]</value>
+      <webElementGuid>83a6d01d-9c3e-476e-9e45-0739abbe764d</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[4]/div/div/img</value>
+      <webElementGuid>01e25174-fc67-43a3-9a2e-1553c77b5d60</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//img[@src = '/images/main4.png' and @alt = 'Description of image']</value>
+      <webElementGuid>8a1e68d1-4e2a-489c-abca-60c950da8eca</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>
