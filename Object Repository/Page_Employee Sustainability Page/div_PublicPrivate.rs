@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_PublicPrivate</name>
+   <tag></tag>
+   <elementGuidId>1bbacf5e-1f2d-4496-bd9c-12309e969bf2</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[3]/div[2]/section/div[6]/div</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>div >> internal:has-text=/^PublicPrivate$/ >> nth=0</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>7b6b4985-9372-4d7d-b8fc-84330ab6c81b</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>control</value>
+      <webElementGuid>ae37d134-7060-4b05-95f7-1119c66fe6ba</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>PublicPrivate</value>
+      <webElementGuid>553030a5-df53-49d5-b057-cd61999e502e</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[@class=&quot;modal is-active&quot;]/div[@class=&quot;modal-card&quot;]/section[@class=&quot;modal-card-body&quot;]/div[@class=&quot;field&quot;]/div[@class=&quot;control&quot;]</value>
+      <webElementGuid>f4917a82-2719-4c86-b42d-9c807b5de40f</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[3]/div[2]/section/div[6]/div</value>
+      <webElementGuid>56c5f159-d5a0-4c00-8c59-1d65a6b55612</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Event Type'])[1]/following::div[1]</value>
+      <webElementGuid>55b1e67a-f01c-4de3-866e-72c60f98e236</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Duration (minutes)'])[1]/following::div[3]</value>
+      <webElementGuid>fe88d353-d6d6-4894-a278-d2e8d66ba03a</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Max Participants'])[1]/preceding::div[2]</value>
+      <webElementGuid>134da620-bb7d-4c43-a5a4-a1e6d39dcf7a</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Address'])[1]/preceding::div[4]</value>
+      <webElementGuid>5f76dafe-6b98-4f61-97a1-e7acb200e10b</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//section/div[6]/div</value>
+      <webElementGuid>83dec099-b6df-42c8-b806-566c696d1280</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = 'PublicPrivate' or . = 'PublicPrivate')]</value>
+      <webElementGuid>fc686507-231a-4d7b-ac20-c89860cc3ae7</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

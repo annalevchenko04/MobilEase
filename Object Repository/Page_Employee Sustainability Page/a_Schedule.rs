@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>a_Schedule</name>
+   <tag></tag>
+   <elementGuidId>f51a9c92-d60e-4512-a52a-1ca45cd31424</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/nav/div/div[2]/div/a[5]</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:role=link[name=&quot; Schedule&quot;i]</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>a</value>
+      <webElementGuid>02c3997c-b080-4fa3-8489-87693dbb8d6c</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>navbar-item is-size-5</value>
+      <webElementGuid>8ce22acd-00e6-4892-ba1a-3d4f8acaf1da</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>href</name>
+      <type>Main</type>
+      <value>/schedule</value>
+      <webElementGuid>6a199d18-905a-4f3b-83f3-34eac12ec6fc</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Schedule</value>
+      <webElementGuid>b73d3b27-f5dd-4485-a49f-72c46cd4a4cc</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/nav[@class=&quot;navbar is-light is-spaced has-shadow p-3&quot;]/div[@class=&quot;container&quot;]/div[@class=&quot;navbar-menu is-centered&quot;]/div[@class=&quot;navbar-start&quot;]/a[@class=&quot;navbar-item is-size-5&quot;]</value>
+      <webElementGuid>b902ce8c-92ac-47ef-abd5-779ae7027a7b</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/nav/div/div[2]/div/a[5]</value>
+      <webElementGuid>1f7e1cdf-2a3a-466a-967e-dd0d2c943885</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Explore'])[1]/following::a[1]</value>
+      <webElementGuid>692c4217-1493-4725-a5b1-9a64ed89794b</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Analytics'])[1]/following::a[2]</value>
+      <webElementGuid>3b2ac47a-e740-4432-a8c9-b24dee458cd6</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Rewards'])[1]/preceding::a[1]</value>
+      <webElementGuid>cb093933-dcab-4893-9dc8-32889759dd2f</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:href</name>
+      <type>Main</type>
+      <value>//a[contains(@href, '/schedule')]</value>
+      <webElementGuid>02a73f65-0b35-4774-9f98-b30d12f731a0</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//a[5]</value>
+      <webElementGuid>21a116a8-af03-4d4b-913e-d1c169d09b07</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//a[@href = '/schedule' and (text() = 'Schedule' or . = 'Schedule')]</value>
+      <webElementGuid>dffda729-32c3-48d3-a57b-247b8b0b427b</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>p_Scan or share the QR code below with HR</name>
+   <tag></tag>
+   <elementGuidId>b87088d2-d058-438a-84b7-6d48e8bc3829</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>p.text-gray-400</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/p</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;Scan or share the QR code below with HR.&quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>p</value>
+      <webElementGuid>0d5662a6-cb10-4779-90dc-a91a5e7db354</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>text-gray-400</value>
+      <webElementGuid>2a5731fb-7d0b-4d4c-b5b0-3102422df1cd</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Scan or share the QR code below with HR.</value>
+      <webElementGuid>cde55128-c87a-4b02-8b15-0a425c10e1d0</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/p[@class=&quot;text-gray-400&quot;]</value>
+      <webElementGuid>6defde2d-4231-41d5-b39e-06a15bd857e6</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/p</value>
+      <webElementGuid>a5b44536-f56a-48bd-8e35-5864ea1f7cf5</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Congratulations! 🎉 You’ve unlocked 1 Day Off.'])[1]/following::p[1]</value>
+      <webElementGuid>8ff85776-d25f-41e1-b653-3f2e32125684</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Rewards'])[2]/following::p[1]</value>
+      <webElementGuid>25e1d221-288f-4e52-8120-adb94c90100c</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>//*/text()[normalize-space(.)='Scan or share the QR code below with HR.']/parent::*</value>
+      <webElementGuid>410a645a-43e7-4b11-8ffe-cfd797a6f4e2</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//p</value>
+      <webElementGuid>ad0aee67-5876-4894-a0dd-550631731146</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//p[(text() = 'Scan or share the QR code below with HR.' or . = 'Scan or share the QR code below with HR.')]</value>
+      <webElementGuid>0ea1ad0f-ff85-4d48-82c8-e1ada301983d</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

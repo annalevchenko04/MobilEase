@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>a_Congratulations  Youve unlocked 1 Day Off_5cf97c</name>
+   <tag></tag>
+   <elementGuidId>e54878ae-e9c4-4378-8cf6-7854a180db15</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>a.button.is-link.mt-4</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/a</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:role=link[name=&quot;&quot;i]</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>a</value>
+      <webElementGuid>09b05be0-65c5-4d2d-b00a-78654a5496e4</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>href</name>
+      <type>Main</type>
+      <value>mailto:?subject= ESP a Day Off Reward&amp;body=Hello! I just unlocked a reward day off! Verify my QR code </value>
+      <webElementGuid>7cb33805-651f-4ced-a26d-9505d86a1674</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>button is-link mt-4</value>
+      <webElementGuid>fd7ac2c4-7277-48f8-bf14-a573ece1beaa</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/a[@class=&quot;button is-link mt-4&quot;]</value>
+      <webElementGuid>6474daa4-91ae-4fa8-9a0e-14785d37ff79</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/a</value>
+      <webElementGuid>b796808a-2821-4665-aaf7-ec940f6915f7</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Congratulations! 🎉 You’ve unlocked 1 Day Off.'])[1]/following::a[1]</value>
+      <webElementGuid>f6932a7e-16d4-48ca-9e80-c48184d7182a</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Rewards'])[2]/following::a[1]</value>
+      <webElementGuid>af353fba-47ba-4b33-8af4-716a57bf92bf</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:href</name>
+      <type>Main</type>
+      <value>//a[contains(@href, 'mailto:?subject= ESP a Day Off Reward&amp;body=Hello! I just unlocked a reward day off! Verify my QR code ')]</value>
+      <webElementGuid>8fa351d3-2ab6-4fe6-9478-db369d50afed</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div/div/div[2]/div/a</value>
+      <webElementGuid>ec02eb27-5121-48a3-8761-cdb7c84e989d</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//a[@href = 'mailto:?subject= ESP a Day Off Reward&amp;body=Hello! I just unlocked a reward day off! Verify my QR code ']</value>
+      <webElementGuid>5445f5d6-3df1-411c-bdb3-c3333e139463</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>strong_Explore</name>
+   <tag></tag>
+   <elementGuidId>fec4f377-13b9-4771-a1d9-985f1924686c</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/nav/div/div[2]/div/a[4]/span/span[2]/strong</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:role=link[name=&quot; Explore&quot;i]</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>strong</value>
+      <webElementGuid>7c03f2ba-04c6-44cf-95ac-93ea2ac61356</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Explore</value>
+      <webElementGuid>04da98cb-4464-4f85-940b-8f7057452aa9</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/nav[@class=&quot;navbar is-light is-spaced has-shadow p-3&quot;]/div[@class=&quot;container&quot;]/div[@class=&quot;navbar-menu is-centered&quot;]/div[@class=&quot;navbar-start&quot;]/a[@class=&quot;navbar-item is-size-5&quot;]/span[@class=&quot;icon-text&quot;]/span[2]/strong[1]</value>
+      <webElementGuid>ce660e1b-18e4-498a-835d-e49bf03c54d7</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/nav/div/div[2]/div/a[4]/span/span[2]/strong</value>
+      <webElementGuid>147221bf-f5a6-4771-a1d3-f6546949e11c</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Analytics'])[1]/following::strong[1]</value>
+      <webElementGuid>41925c28-e93a-4685-872b-4b32e3c22bbe</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Footprint Calculator'])[1]/following::strong[2]</value>
+      <webElementGuid>ef6987a9-3897-46b6-8555-80036b8be45d</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Schedule'])[1]/preceding::strong[1]</value>
+      <webElementGuid>f8a68118-62ea-426d-a62f-aafbc16ac5d3</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Rewards'])[1]/preceding::strong[2]</value>
+      <webElementGuid>da39ed7c-bad7-403d-a712-2920935c294c</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>//*/text()[normalize-space(.)='Explore']/parent::*</value>
+      <webElementGuid>9ef9ae8c-a9a6-4074-91b9-fa96f8021c9b</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//a[4]/span/span[2]/strong</value>
+      <webElementGuid>d6d22886-73e2-47d4-8e80-6ee4b82f5581</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//strong[(text() = 'Explore' or . = 'Explore')]</value>
+      <webElementGuid>a213eed0-61cf-4103-b0e2-a1c2e206ce9e</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

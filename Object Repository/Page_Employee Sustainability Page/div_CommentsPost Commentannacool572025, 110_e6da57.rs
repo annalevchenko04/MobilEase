@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_CommentsPost Commentannacool572025, 110_e6da57</name>
+   <tag></tag>
+   <elementGuidId>56f6b148-81a9-4fc3-a70e-f9ccba5e1504</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.box</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[6]</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;CommentsPost Commentannacool!5/7/2025, 11:06:58 AMannacool!5/7/2025, 11:02:27 AM&quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>bb469cc3-50a3-4907-8e69-4ca516382e24</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>box</value>
+      <webElementGuid>4579ca41-ee02-49d7-8dc6-5e18904bf24e</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>CommentsPost Commentannacool!5/7/2025, 11:06:58 AMannacool!5/7/2025, 11:02:27 AMtarasgreat!4/28/2025, 2:36:26 PMannlevcool!4/28/2025, 2:35:55 PM</value>
+      <webElementGuid>507f55fd-c376-4268-bc76-cb966af54b63</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[@class=&quot;box&quot;]</value>
+      <webElementGuid>6efd11a1-9a8e-4a45-9744-0676c1912412</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[6]</value>
+      <webElementGuid>a40d38de-f9e1-472c-9ad3-42cd5d204b7e</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='#tag5'])[1]/following::div[3]</value>
+      <webElementGuid>af8cbf5b-e786-44a2-b3f5-478d75a999ad</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='#tag10'])[1]/following::div[3]</value>
+      <webElementGuid>a108b39a-dddd-4126-a3bb-e92ecd6853ce</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[6]</value>
+      <webElementGuid>4660f8f5-53e6-4062-bde0-1d6d58fbd529</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = 'CommentsPost Commentannacool!5/7/2025, 11:06:58 AMannacool!5/7/2025, 11:02:27 AMtarasgreat!4/28/2025, 2:36:26 PMannlevcool!4/28/2025, 2:35:55 PM' or . = 'CommentsPost Commentannacool!5/7/2025, 11:06:58 AMannacool!5/7/2025, 11:02:27 AMtarasgreat!4/28/2025, 2:36:26 PMannlevcool!4/28/2025, 2:35:55 PM')]</value>
+      <webElementGuid>e664301f-57e5-428f-aa08-c8420841decc</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

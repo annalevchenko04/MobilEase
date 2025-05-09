@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_RegisterUsernameNameSurnameAgePhoneEmai_93c993</name>
+   <tag></tag>
+   <elementGuidId>0e5a2fb8-f981-44cb-b433-e3535e792d33</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.column.is-half.is-offset-one-quarter</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>div >> internal:has-text=&quot;RegisterUsernameNameSurnameAgePhoneEmail AddressGenderSelect GenderMaleFemalePas&quot;i >> nth=4</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>af7d9257-c58c-4479-ba3e-0a7e8fc9dfdb</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>column is-half is-offset-one-quarter</value>
+      <webElementGuid>854c3bf6-ab64-43a1-8b60-fad642dff567</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>RegisterUsernameNameSurnameAgePhoneEmail AddressGenderSelect GenderMaleFemalePasswordConfirm PasswordAlready have an account? Login here</value>
+      <webElementGuid>6d403353-31ba-4b5c-a92e-5d2096c39600</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[@class=&quot;column is-half is-offset-one-quarter&quot;]</value>
+      <webElementGuid>0bd10ac8-fa70-42db-9d51-abfc6a00c511</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div</value>
+      <webElementGuid>cf1c7384-42c4-4a8b-ba52-dde79ff9b63f</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Employee Sustainability Portal'])[1]/following::div[4]</value>
+      <webElementGuid>f839095a-17a9-460a-aa34-94300fafdb82</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[2]/div</value>
+      <webElementGuid>deb7b3b8-efb6-482e-a117-9611e4a39f3c</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = 'RegisterUsernameNameSurnameAgePhoneEmail AddressGenderSelect GenderMaleFemalePasswordConfirm PasswordAlready have an account? Login here' or . = 'RegisterUsernameNameSurnameAgePhoneEmail AddressGenderSelect GenderMaleFemalePasswordConfirm PasswordAlready have an account? Login here')]</value>
+      <webElementGuid>c821df15-cbe4-4661-8133-31ff1fd94fa7</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

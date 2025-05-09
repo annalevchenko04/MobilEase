@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_How much do you spend on new clothes mo_becc74</name>
+   <tag></tag>
+   <elementGuidId>d05db4b2-c35d-470a-a6df-21f29e49dd7e</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.box</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[3]</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;How much do you spend on new clothes monthly in spring? (USD)Category: Shopping &quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>755b6bc8-30bf-491c-8c0c-394b74bc003d</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>box</value>
+      <webElementGuid>73f071e1-6a9c-47ab-9e2c-45f0d9874c9b</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>How much do you spend on new clothes monthly in spring? (USD)Category: Shopping Leisure0 I don't know</value>
+      <webElementGuid>a82c92cb-ae5a-4968-a13c-04f018316d26</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[@class=&quot;box&quot;]</value>
+      <webElementGuid>a454e24f-0a8b-4566-ab20-9004a4e445ff</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[3]</value>
+      <webElementGuid>b468d791-e3c1-401a-8008-e147b217e588</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[2]/div/div[3]</value>
+      <webElementGuid>dbca08c8-45b9-40ab-8496-54f02037c4be</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = concat(&quot;How much do you spend on new clothes monthly in spring? (USD)Category: Shopping Leisure0 I don&quot; , &quot;'&quot; , &quot;t know&quot;) or . = concat(&quot;How much do you spend on new clothes monthly in spring? (USD)Category: Shopping Leisure0 I don&quot; , &quot;'&quot; , &quot;t know&quot;))]</value>
+      <webElementGuid>21c475f8-0dad-4e9e-8219-611a6a548e30</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

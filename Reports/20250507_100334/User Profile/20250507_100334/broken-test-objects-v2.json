@@ -1,0 +1,34 @@
+{
+  "brokenTestObjects": [
+    {
+      "approved": true,
+      "testObjectId": "Object Repository/Page_Employee Sustainability Page/path",
+      "brokenLocator": "",
+      "brokenLocatorMethod": "XPATH",
+      "proposedLocator": "internal:role\u003dbutton",
+      "proposedLocatorMethod": "SMART_LOCATOR",
+      "recoveryMethod": "SMART_LOCATOR",
+      "pathToScreenshot": "Reports/20250507_100334/User Profile/20250507_100334/Object Repository/Page_Employee Sustainability Page/path_SMART_LOCATOR.png"
+    },
+    {
+      "approved": true,
+      "testObjectId": "Object Repository/Page_Employee Sustainability Page/strong_My Profile",
+      "brokenLocator": "//div[@id\u003d\u0027root\u0027]/div/nav/div/div[2]/div/a/span/span[2]/strong",
+      "brokenLocatorMethod": "XPATH",
+      "proposedLocator": "(.//*[normalize-space(text()) and normalize-space(.)\u003d\u0027Employee Sustainability Portal\u0027])[1]/following::strong[1]",
+      "proposedLocatorMethod": "XPATH",
+      "recoveryMethod": "XPATH",
+      "pathToScreenshot": "Reports/20250507_100334/User Profile/20250507_100334/Object Repository/Page_Employee Sustainability Page/strong_My Profile_neighbor.png"
+    },
+    {
+      "approved": true,
+      "testObjectId": "Object Repository/Page_Employee Sustainability Page/div_My ProfileFootprint CalculatorAnalytics_0db291",
+      "brokenLocator": "//div[@id\u003d\u0027root\u0027]/div/nav/div/div[2]/div",
+      "brokenLocatorMethod": "XPATH",
+      "proposedLocator": "(.//*[normalize-space(text()) and normalize-space(.)\u003d\u0027Employee Sustainability Portal\u0027])[1]/following::div[4]",
+      "proposedLocatorMethod": "XPATH",
+      "recoveryMethod": "XPATH",
+      "pathToScreenshot": "Reports/20250507_100334/User Profile/20250507_100334/Object Repository/Page_Employee Sustainability Page/div_My ProfileFootprint CalculatorAnalytics_0db291_neighbor.png"
+    }
+  ]
+}

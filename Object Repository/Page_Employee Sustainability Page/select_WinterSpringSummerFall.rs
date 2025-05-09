@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>select_WinterSpringSummerFall</name>
+   <tag></tag>
+   <elementGuidId>7b66a3f1-d2ed-4462-9d06-00989f5322c0</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>select</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div/div/div/div/div/select</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>div >> internal:has-text=/^SeasonWinterSpringSummerFallYearModeFast Mode Quick Assessment \(18 questions\)$/ >> internal:role=combobox</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>select</value>
+      <webElementGuid>75fc70a4-bab2-4c66-8004-0f4a436f3cc8</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>WinterSpringSummerFall</value>
+      <webElementGuid>6c128a61-d357-41de-82fe-080e4d21dcff</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[@class=&quot;columns is-vcentered mb-4&quot;]/div[@class=&quot;column&quot;]/div[@class=&quot;field&quot;]/div[@class=&quot;control&quot;]/div[@class=&quot;select is-fullwidth&quot;]/select[1]</value>
+      <webElementGuid>e4adadb2-2898-429b-a0f7-59946de1f43c</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div/div/div/div/div/select</value>
+      <webElementGuid>110cf3d6-fda6-484c-b5d2-30e9c90932c6</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Season'])[1]/following::select[1]</value>
+      <webElementGuid>b4f843d4-af7e-4c33-aff7-a71225fc9847</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Seasonal Carbon Footprint Calculator'])[1]/following::select[1]</value>
+      <webElementGuid>5b398ac8-2121-41a9-89c6-d9826cd9c275</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Year'])[1]/preceding::select[1]</value>
+      <webElementGuid>d9653eb3-f201-4558-97c9-ca29f5336bcd</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Mode'])[1]/preceding::select[1]</value>
+      <webElementGuid>bceff841-77ba-4f81-8611-2716e6ecdbfe</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//select</value>
+      <webElementGuid>8850b07f-3d60-4a79-bfc0-1dafa06c5bac</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//select[(text() = 'WinterSpringSummerFall' or . = 'WinterSpringSummerFall')]</value>
+      <webElementGuid>dc75cabd-1ecb-407d-8c39-fae4b668fdbf</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_My ProfileFootprint CalculatorAnalytics_0db291</name>
+   <tag></tag>
+   <elementGuidId>6e089834-c961-435b-a3bf-ff288fc6536a</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.navbar-start</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/nav/div/div[2]/div</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;My ProfileFootprint CalculatorAnalyticsExploreScheduleRewardsLogout&quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>82c026ec-987e-42fa-8cac-a702cee48d4b</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>navbar-start</value>
+      <webElementGuid>bcaed9d3-75da-4949-8e9b-dbbd024f0c47</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>My ProfileFootprint CalculatorAnalyticsExploreScheduleRewardsLogout</value>
+      <webElementGuid>7e35ee40-189d-49c3-867f-c04aedaf4818</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/nav[@class=&quot;navbar is-light is-spaced has-shadow p-3&quot;]/div[@class=&quot;container&quot;]/div[@class=&quot;navbar-menu is-centered&quot;]/div[@class=&quot;navbar-start&quot;]</value>
+      <webElementGuid>a237f603-e484-4806-b899-0e2109d0b71d</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/nav/div/div[2]/div</value>
+      <webElementGuid>0ce35307-b573-437f-bdff-6b0e19219d17</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Employee Sustainability Portal'])[1]/following::div[4]</value>
+      <webElementGuid>33cdd322-4795-4962-b646-be3544a010d4</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[2]/div</value>
+      <webElementGuid>7008cb5c-43b5-40f5-9a63-c26f55e5f29d</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = 'My ProfileFootprint CalculatorAnalyticsExploreScheduleRewardsLogout' or . = 'My ProfileFootprint CalculatorAnalyticsExploreScheduleRewardsLogout')]</value>
+      <webElementGuid>5a81b772-6d34-4271-8f1e-5f451d9f39f7</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

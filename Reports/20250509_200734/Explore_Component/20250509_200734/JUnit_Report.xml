@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Explore_Component" time="71.923" tests="1" failures="0" errors="0">
+   <testsuite name="Explore_Component" tests="1" failures="0" errors="0" time="71.923" skipped="0" timestamp="09-05-2025T20:07:42" hostname="Anna - DESKTOP-3UT53HP" id="Test Suites/Explore_Component">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="C:\\Users\\Anna\\git\\K548-ESP\\Reports\\20250509_200734\\Explore_Component\\20250509_200734"/>
+         <property name="logFiles" value="C:\\Users\\Anna\\git\\K548-ESP\\Reports\\20250509_200734\\Explore_Component\\20250509_200734\\execution0.log"/>
+         <property name="attachments" value=""/>
+         <property name="hostName" value="Anna - DESKTOP-3UT53HP"/>
+         <property name="os" value="Windows 10 64bit"/>
+         <property name="katalonVersion" value="9.4.0.212"/>
+         <property name="browser" value="Chrome 136.0.0.0"/>
+         <property name="hostAddress" value="192.168.56.1"/>
+         <property name="sessionId" value="df7fad40377fee777b46bf8292172559"/>
+         <property name="seleniumVersion" value="3.141.59"/>
+         <property name="proxyInformation" value="ProxyInformation { proxyOption=NO_PROXY, proxyServerType=HTTP, username=, password=********, proxyServerAddress=, proxyServerPort=0, executionList=&quot;&quot;, isApplyToDesiredCapabilities=true }"/>
+         <property name="platform" value="Windows 10"/>
+      </properties>
+      <testcase name="Test Cases/Explore_Component" time="71.664" classname="Test Cases/Explore_Component" status="PASSED">
+         <system-out><![CDATA[09-05-2025T20:07:43 - [TEST_CASE][PASSED] - Test Cases/Explore_Component: Test Cases/Explore_Component
+
+09-05-2025T20:07:43 - [TEST_STEP][PASSED] - openBrowser(""): Browser is opened with url: ''
+
+09-05-2025T20:07:43 - [MESSAGE][INFO] - Starting 'Chrome' driver
+
+09-05-2025T20:07:43 - [MESSAGE][INFO] - Action delay is set to 0 milliseconds
+
+09-05-2025T20:07:47 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+09-05-2025T20:07:47 - [TEST_STEP][PASSED] - navigateToUrl("http://localhost:3000/"): Navigate to 'http://localhost:3000/' successfully
+
+09-05-2025T20:07:49 - [MESSAGE][PASSED] - Navigate to 'http://localhost:3000/' successfully
+
+09-05-2025T20:07:49 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Username_input"), "anna"): Text 'anna' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Username_input'
+
+09-05-2025T20:07:50 - [MESSAGE][PASSED] - Text 'anna' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Username_input'
+
+09-05-2025T20:07:50 - [TEST_STEP][PASSED] - setEncryptedText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Password_input"), "aeHFOx8jV/A="): Text ****** has been set on object 'Object Repository/Page_Employee Sustainability Page/input_Password_input'
+
+09-05-2025T20:07:51 - [MESSAGE][PASSED] - Text ****** has been set on object 'Object Repository/Page_Employee Sustainability Page/input_Password_input'
+
+09-05-2025T20:07:51 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/svg")): Object: 'Object Repository/Page_Employee Sustainability Page/svg' is clicked on
+
+09-05-2025T20:07:51 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/svg' is clicked on
+
+09-05-2025T20:07:51 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/a_Explore")): Object: 'Object Repository/Page_Employee Sustainability Page/a_Explore' is clicked on
+
+09-05-2025T20:07:52 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/a_Explore' is clicked on
+
+09-05-2025T20:07:52 - [TEST_STEP][PASSED] - selectOptionByValue(findTestObject("Object Repository/Page_Employee Sustainability Page/select_NewestOldest"), "oldest", true): All options with value 'oldest' are selected in object 'Object Repository/Page_Employee Sustainability Page/select_NewestOldest'  using regular expression
+
+09-05-2025T20:07:53 - [MESSAGE][PASSED] - All options with value 'oldest' are selected in object 'Object Repository/Page_Employee Sustainability Page/select_NewestOldest'  using regular expression
+
+09-05-2025T20:07:53 - [TEST_STEP][PASSED] - selectOptionByValue(findTestObject("Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic"), "Environmental", true): All options with value 'Environmental' are selected in object 'Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic'  using regular expression
+
+09-05-2025T20:07:54 - [MESSAGE][PASSED] - All options with value 'Environmental' are selected in object 'Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic'  using regular expression
+
+09-05-2025T20:07:54 - [TEST_STEP][PASSED] - selectOptionByValue(findTestObject("Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic"), "Social", true): All options with value 'Social' are selected in object 'Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic'  using regular expression
+
+09-05-2025T20:07:55 - [MESSAGE][PASSED] - All options with value 'Social' are selected in object 'Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic'  using regular expression
+
+09-05-2025T20:07:55 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/a_View Details")): Object: 'Object Repository/Page_Employee Sustainability Page/a_View Details' is clicked on
+
+09-05-2025T20:07:56 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/a_View Details' is clicked on
+
+09-05-2025T20:07:56 - [TEST_STEP][PASSED] - verifyElementText(findTestObject("Object Repository/Page_Employee Sustainability Page/h1_Take the Sustainability Challenge in Kaunas"), "Take the Sustainability Challenge in Kaunas"): Actual text and expected text of test object 'Object Repository/Page_Employee Sustainability Page/h1_Take the Sustainability Challenge in Kaunas' are matched.
+
+09-05-2025T20:07:56 - [MESSAGE][PASSED] - Actual text and expected text of test object 'Object Repository/Page_Employee Sustainability Page/h1_Take the Sustainability Challenge in Kaunas' are matched.
+
+09-05-2025T20:07:56 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/strong_Posted by"), 0): Object 'Object Repository/Page_Employee Sustainability Page/strong_Posted by' is present
+
+09-05-2025T20:07:56 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:07:56 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/strong_Posted by' is present
+
+09-05-2025T20:07:56 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/span_tag10"), 0): Object 'Object Repository/Page_Employee Sustainability Page/span_tag10' is present
+
+09-05-2025T20:07:56 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:07:57 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/span_tag10' is present
+
+09-05-2025T20:07:57 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/span_tag5"), 0): Object 'Object Repository/Page_Employee Sustainability Page/span_tag5' is present
+
+09-05-2025T20:07:57 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:07:57 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/span_tag5' is present
+
+09-05-2025T20:07:57 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57")): Object: 'Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57' is clicked on
+
+09-05-2025T20:07:57 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57' is clicked on
+
+09-05-2025T20:07:57 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57"), 0): Object 'Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57' is present
+
+09-05-2025T20:07:57 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:07:57 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57' is present
+
+09-05-2025T20:07:57 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_n"), "n"): Text 'n' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_n'
+
+09-05-2025T20:07:58 - [MESSAGE][PASSED] - Text 'n' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_n'
+
+09-05-2025T20:07:58 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nu"), "nu"): Text 'nu' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nu'
+
+09-05-2025T20:07:59 - [MESSAGE][PASSED] - Text 'nu' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nu'
+
+09-05-2025T20:07:59 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nuc"), "nuc"): Text 'nuc' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nuc'
+
+09-05-2025T20:07:59 - [MESSAGE][PASSED] - Text 'nuc' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nuc'
+
+09-05-2025T20:07:59 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nuce"), "nuce"): Text 'nuce' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nuce'
+
+09-05-2025T20:08:00 - [MESSAGE][PASSED] - Text 'nuce' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nuce'
+
+09-05-2025T20:08:00 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nuc"), "nuc"): Text 'nuc' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nuc'
+
+09-05-2025T20:08:00 - [MESSAGE][PASSED] - Text 'nuc' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nuc'
+
+09-05-2025T20:08:00 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nu"), "nu"): Text 'nu' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nu'
+
+09-05-2025T20:08:01 - [MESSAGE][PASSED] - Text 'nu' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nu'
+
+09-05-2025T20:08:01 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_n"), "n"): Text 'n' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_n'
+
+09-05-2025T20:08:02 - [MESSAGE][PASSED] - Text 'n' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_n'
+
+09-05-2025T20:08:02 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_ni"), "ni"): Text 'ni' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_ni'
+
+09-05-2025T20:08:02 - [MESSAGE][PASSED] - Text 'ni' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_ni'
+
+09-05-2025T20:08:02 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nic"), "nic"): Text 'nic' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nic'
+
+09-05-2025T20:08:03 - [MESSAGE][PASSED] - Text 'nic' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nic'
+
+09-05-2025T20:08:03 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/textarea_nice"), "nice"): Text 'nice' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nice'
+
+09-05-2025T20:08:03 - [MESSAGE][PASSED] - Text 'nice' is set on object 'Object Repository/Page_Employee Sustainability Page/textarea_nice'
+
+09-05-2025T20:08:03 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_Post Comment")): Object: 'Object Repository/Page_Employee Sustainability Page/button_Post Comment' is clicked on
+
+09-05-2025T20:08:04 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_Post Comment' is clicked on
+
+09-05-2025T20:08:04 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/img")): Object: 'Object Repository/Page_Employee Sustainability Page/img' is clicked on
+
+09-05-2025T20:08:04 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/img' is clicked on
+
+09-05-2025T20:08:04 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button")): Object: 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' is clicked on
+
+09-05-2025T20:08:35 - [MESSAGE][INFO] - Unable to find the element located by 'By.xpath: //div[@id='root']/div/div/div[2]/div/form/div[3]/button'. Please recheck the objects properties to make sure the desired element is located. 
+
+09-05-2025T20:08:35 - [MESSAGE][WARNING] - [SELF-HEALING] Failed to find element with id 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button'. Try using Self-healing.
+
+09-05-2025T20:08:36 - [MESSAGE][INFO] - [SELF-HEALING] Failed Locator: '//div[@id='root']/div/div/div[2]/div/form/div[3]/button'.
+
+09-05-2025T20:08:36 - [MESSAGE][INFO] - [SELF-HEALING] Failed Locator: '(.//*[normalize-space(text()) and normalize-space(.)='Password'])[1]/following::button[1]'.
+
+09-05-2025T20:08:36 - [MESSAGE][INFO] - [SELF-HEALING] Failed Locator: '(.//*[normalize-space(text()) and normalize-space(.)='Username'])[1]/following::button[1]'.
+
+09-05-2025T20:08:36 - [MESSAGE][INFO] - [SELF-HEALING] Working Locator: '//button'.
+
+09-05-2025T20:08:37 - [MESSAGE][INFO] - [SELF-HEALING] Screenshot: C:/Users/Anna/git/K548-ESP/Reports/Self-healing/Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button_position.png
+
+09-05-2025T20:08:37 - [MESSAGE][WARNING] - [SELF-HEALING] The current locator of test object 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' was broken. Propose an alternative one: '//button'.
+
+09-05-2025T20:08:54 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' is clicked on]]></system-out>
+         <system-err><![CDATA[]]></system-err>
+      </testcase>
+      <system-out><![CDATA[09-05-2025T20:07:42 - [TEST_SUITE][PASSED] - Explore_Component: Test Cases/Explore_Component]]></system-out>
+      <system-err><![CDATA[]]></system-err>
+   </testsuite>
+</testsuites>

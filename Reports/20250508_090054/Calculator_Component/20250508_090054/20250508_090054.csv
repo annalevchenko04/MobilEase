@@ -1,0 +1,5 @@
+Suite/Test/Step Name,Browser,Description,Tag,Start time,End time,Duration,Status
+Calculator_Component,Chrome 136.0.0.0,,,08-05-2025 09:01:10,08-05-2025 09:02:23,1m - 12.315s,FAILED
+,,,,,,,
+Test Cases/Calculator_Component,Chrome 136.0.0.0,,,08-05-2025 09:02:22,08-05-2025 09:02:23,0.067s,FAILED
+"openBrowser("""")",Chrome 136.0.0.0,,,08-05-2025 09:02:23,08-05-2025 09:02:23,0.019s,FAILED
