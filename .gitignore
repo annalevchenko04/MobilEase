@@ -14,7 +14,7 @@ venv/
 .vscode/
 
 # Environment variables
-.env
+../K548-ESPv2.10.04.2025/.env
 *.env
 
 # Logs

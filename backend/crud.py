@@ -303,13 +303,14 @@ def get_users(db: Session):
     return user_responses
 
 
-def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict, season=None, year=None):
+def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict, category_breakdown=None, season=None, year=None):
     if not user_id:
         raise ValueError("User ID is missing. Only authenticated users can submit their footprint.")
 
     combined_details = {
-        **details['numeric_data'],
-        **details['non_numeric_data']
+        "numeric_data": details["numeric_data"],
+        "non_numeric_data": details["non_numeric_data"],
+        "category_breakdown": category_breakdown or {}
     }
 
     logging.info(f"Saving Combined Details: {combined_details}")
