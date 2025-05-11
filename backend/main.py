@@ -944,6 +944,7 @@ def reset_user_progress(
     db.commit()
     return {"message": "User progress reset successfully"}
 
+
 @app.get("/company/footprint-stats")
 def get_company_footprint_stats(
     db: Session = Depends(get_db),

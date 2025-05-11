@@ -11,9 +11,6 @@ cryptography
 bcrypt
 email-validator
 sendgrid~=6.11.0
-<<<<<<< Updated upstream
 axios
 alembic
 react-chartjs-2
-=======
->>>>>>> Stashed changes
