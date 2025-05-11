@@ -1,0 +1,23 @@
+Suite/Test/Step Name,Browser,Description,Tag,Start time,End time,Duration,Status
+Schedule_Component,Chrome 136.0.0.0,,,08-05-2025 09:29:35,08-05-2025 09:30:52,1m - 16.916s,PASSED
+,,,,,,,
+Test Cases/Schedule_Component,Chrome 136.0.0.0,,,08-05-2025 09:29:36,08-05-2025 09:30:52,1m - 16.722s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,08-05-2025 09:29:36,08-05-2025 09:29:39,3.378s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,08-05-2025 09:29:39,08-05-2025 09:29:42,2.263s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""annlev"")",Chrome 136.0.0.0,,,08-05-2025 09:29:42,08-05-2025 09:29:43,0.824s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,08-05-2025 09:29:43,08-05-2025 09:29:43,0.409s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button""))",Chrome 136.0.0.0,,,08-05-2025 09:29:43,08-05-2025 09:29:43,0.365s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/a_Schedule""))",Chrome 136.0.0.0,,,08-05-2025 09:29:43,08-05-2025 09:29:44,1.098s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_New Event""))",Chrome 136.0.0.0,,,08-05-2025 09:29:44,08-05-2025 09:29:45,0.405s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""Morning running"")",Chrome 136.0.0.0,,,08-05-2025 09:29:45,08-05-2025 09:29:48,3.145s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""let's do sport"")",Chrome 136.0.0.0,,,08-05-2025 09:29:48,08-05-2025 09:29:52,3.962s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""2025-05-08"")",Chrome 136.0.0.0,,,08-05-2025 09:29:52,08-05-2025 09:29:56,3.984s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_Duration (minutes)""))",Chrome 136.0.0.0,,,08-05-2025 09:29:56,08-05-2025 09:29:58,1.995s,PASSED
+"rightClick(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""))",Chrome 136.0.0.0,,,08-05-2025 09:29:58,08-05-2025 09:30:03,5.202s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""60"")",Chrome 136.0.0.0,,,08-05-2025 09:30:03,08-05-2025 09:30:07,3.814s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_PublicPrivate""))",Chrome 136.0.0.0,,,08-05-2025 09:30:07,08-05-2025 09:30:09,1.977s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""10"")",Chrome 136.0.0.0,,,08-05-2025 09:30:09,08-05-2025 09:30:13,3.998s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""Gedimino 20"")",Chrome 136.0.0.0,,,08-05-2025 09:30:13,08-05-2025 09:30:17,4.053s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Save Event""))",Chrome 136.0.0.0,,,08-05-2025 09:30:17,08-05-2025 09:30:19,1.954s,PASSED
+"verifyElementPresent(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_Morning running163000""), 0)",Chrome 136.0.0.0,,,08-05-2025 09:30:19,08-05-2025 09:30:21,1.941s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings""))",Chrome 136.0.0.0,,,08-05-2025 09:30:21,08-05-2025 09:30:52,31.587s,PASSED

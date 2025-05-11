@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>select_Please, choose optionRarelyEvery yea_e7df67</name>
+   <tag></tag>
+   <elementGuidId>f45bc885-e7a6-4849-99d9-28097d45c029</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>div.box > div.field > div.control > div.select.is-fullwidth > select</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[3]/div/div/div/select</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>select</value>
+      <webElementGuid>a99610fc-8a54-420c-ae4a-8bfb5a7bd622</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Please, choose optionRarelyEvery yearEvery 2 years</value>
+      <webElementGuid>15d5b111-dadc-4bf9-92cf-c084c7c6448d</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[@class=&quot;box&quot;]/div[@class=&quot;field&quot;]/div[@class=&quot;control&quot;]/div[@class=&quot;select is-fullwidth&quot;]/select[1]</value>
+      <webElementGuid>2766dc34-7155-4f11-b1b2-7bceb6c5fdaa</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[3]/div/div/div/select</value>
+      <webElementGuid>bb7c31b1-d6a7-466f-ad46-37d00fce9c81</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='How often do you replace electronics?'])[1]/following::select[1]</value>
+      <webElementGuid>bf65c85b-a9fe-4736-b5b4-4c8013bf4a8f</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='← Previous'])[1]/preceding::select[1]</value>
+      <webElementGuid>04b96d4e-217e-4229-994c-89293957485e</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[3]/div/div/div/select</value>
+      <webElementGuid>f7d106c2-4fc3-4503-9e94-91894508c695</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//select[(text() = 'Please, choose optionRarelyEvery yearEvery 2 years' or . = 'Please, choose optionRarelyEvery yearEvery 2 years')]</value>
+      <webElementGuid>34ccbb2c-35ad-476c-9d68-e0e49de60503</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

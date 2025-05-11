@@ -1,0 +1,30 @@
+Suite/Test/Step Name,Browser,Description,Tag,Start time,End time,Duration,Status
+User Profile,Chrome 136.0.0.0,,,07-05-2025 10:03:45,07-05-2025 10:06:08,2m - 22.714s,PASSED
+,,,,,,,
+Test Cases/User_SignIn,Chrome 136.0.0.0,,,07-05-2025 10:03:46,07-05-2025 10:04:30,44.766s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,07-05-2025 10:03:46,07-05-2025 10:03:49,2.751s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,07-05-2025 10:03:49,07-05-2025 10:03:51,2.181s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/a_Back to Register""))",Chrome 136.0.0.0,,,07-05-2025 10:03:51,07-05-2025 10:03:51,0.556s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""vika"")",Chrome 136.0.0.0,,,07-05-2025 10:03:51,07-05-2025 10:03:52,0.713s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Name_input""), ""Vika"")",Chrome 136.0.0.0,,,07-05-2025 10:03:52,07-05-2025 10:03:53,0.595s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Surname_input""), ""Ushkalo"")",Chrome 136.0.0.0,,,07-05-2025 10:03:53,07-05-2025 10:03:53,0.620s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Age_input""), ""16"")",Chrome 136.0.0.0,,,07-05-2025 10:03:53,07-05-2025 10:03:54,0.651s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Phone_input""), ""+3859668575"")",Chrome 136.0.0.0,,,07-05-2025 10:03:54,07-05-2025 10:03:55,0.635s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Email Address_input""), ""vika@ktu.lt"")",Chrome 136.0.0.0,,,07-05-2025 10:03:55,07-05-2025 10:03:55,0.587s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_Select GenderMaleFemale""), ""female"", true)",Chrome 136.0.0.0,,,07-05-2025 10:03:55,07-05-2025 10:03:56,0.881s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,07-05-2025 10:03:56,07-05-2025 10:03:56,0.366s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Confirm Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,07-05-2025 10:03:56,07-05-2025 10:03:57,0.351s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/path""))",Chrome 136.0.0.0,,,07-05-2025 10:03:57,07-05-2025 10:04:30,33.636s,PASSED
+,,,,,,,
+Test Cases/User_Login,Chrome 136.0.0.0,,,07-05-2025 10:04:30,07-05-2025 10:06:08,1m - 37.725s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,07-05-2025 10:04:30,07-05-2025 10:04:32,1.232s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,07-05-2025 10:04:32,07-05-2025 10:04:34,2.524s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""vika"")",Chrome 136.0.0.0,,,07-05-2025 10:04:34,07-05-2025 10:04:35,0.705s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,07-05-2025 10:04:35,07-05-2025 10:04:35,0.341s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_My Profile""))",Chrome 136.0.0.0,,,07-05-2025 10:04:35,07-05-2025 10:05:07,31.841s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_My ProfileFootprint CalculatorAnalytics_0db291""))",Chrome 136.0.0.0,,,07-05-2025 10:05:07,07-05-2025 10:05:39,32.102s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Footprint Calculator""))",Chrome 136.0.0.0,,,07-05-2025 10:05:39,07-05-2025 10:06:07,27.373s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Analytics""))",Chrome 136.0.0.0,,,07-05-2025 10:06:07,07-05-2025 10:06:07,0.566s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Explore""))",Chrome 136.0.0.0,,,07-05-2025 10:06:07,07-05-2025 10:06:08,0.327s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Schedule""))",Chrome 136.0.0.0,,,07-05-2025 10:06:08,07-05-2025 10:06:08,0.322s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/span_Schedule_icon""))",Chrome 136.0.0.0,,,07-05-2025 10:06:08,07-05-2025 10:06:08,0.318s,PASSED

@@ -1,0 +1,14 @@
+{
+  "brokenTestObjects": [
+    {
+      "approved": true,
+      "testObjectId": "Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings",
+      "brokenLocator": "//div[@id\u003d\u0027root\u0027]/div/div/div[2]/div/div[3]/button",
+      "brokenLocatorMethod": "XPATH",
+      "proposedLocator": "(.//*[normalize-space(text()) and normalize-space(.)\u003d\u0027New Event\u0027])[7]/following::button[1]",
+      "proposedLocatorMethod": "XPATH",
+      "recoveryMethod": "XPATH",
+      "pathToScreenshot": "Reports/20250508_092216/Schedule_Component/20250508_092216/Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings_neighbor.png"
+    }
+  ]
+}

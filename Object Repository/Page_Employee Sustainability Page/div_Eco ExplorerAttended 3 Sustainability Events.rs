@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>div_Eco ExplorerAttended 3 Sustainability Events</name>
+   <tag></tag>
+   <elementGuidId>6c166adf-7cfa-4e8f-8ae1-cb2d1f460275</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[2]/div/div[2]/div</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;Eco ExplorerAttended 3 Sustainability Events&quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>div</value>
+      <webElementGuid>24e25d7f-f700-44ad-b5ad-1401ff179dc5</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>badge-info</value>
+      <webElementGuid>e08bffd7-630c-4df7-9eaa-243b63e732e2</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>  Eco ExplorerAttended 3 Sustainability Events</value>
+      <webElementGuid>2c767b54-07bb-4eb2-9f96-19a368c76df1</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[@class=&quot;app-container&quot;]/div[@class=&quot;profile-badges&quot;]/div[@class=&quot;badges-container&quot;]/div[@class=&quot;badge&quot;]/div[@class=&quot;badge-info&quot;]</value>
+      <webElementGuid>b6dca796-6904-4aec-b4ed-8b2e32bbb939</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[2]/div/div[2]/div</value>
+      <webElementGuid>cc80dbd0-57cc-43c4-b4f2-d3d5b5069abf</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Green Ambassador'])[1]/following::div[2]</value>
+      <webElementGuid>bd435a95-ac76-4211-bcc8-f7c21a3da8c8</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>//*/text()[normalize-space(.)='Attended 3 Sustainability Events']/parent::*</value>
+      <webElementGuid>a246e6e2-c93c-4e27-b98d-5d68e090f7bf</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[2]/div/div[2]/div/div[2]/div</value>
+      <webElementGuid>c9e22069-2383-44b6-93a8-33d06256e5d1</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//div[(text() = '  Eco ExplorerAttended 3 Sustainability Events' or . = '  Eco ExplorerAttended 3 Sustainability Events')]</value>
+      <webElementGuid>652dd92d-6693-411f-bea0-03085b27fe52</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

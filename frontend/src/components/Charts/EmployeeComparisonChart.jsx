@@ -36,13 +36,20 @@ const EmployeeComparisonChart = ({ employees }) => {
       title: { display: true, text: "Employee Carbon Footprint Comparison" }
     },
     scales: {
-      y: {
-        beginAtZero: true
-      }
-    }
+  y: {
+    beginAtZero: true,
+    suggestedMax: 1000  // adjust as needed based on typical max footprint
+  }
+}
+
   };
 
-  return <Bar data={chartData} options={options} />;
+  return (
+  <div style={{ height: "380px" }}>
+    <Bar data={chartData} options={options} />
+  </div>
+);
+
 };
 
 export default EmployeeComparisonChart;

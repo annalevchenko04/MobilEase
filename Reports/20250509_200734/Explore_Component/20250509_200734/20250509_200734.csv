@@ -1,0 +1,33 @@
+Suite/Test/Step Name,Browser,Description,Tag,Start time,End time,Duration,Status
+Explore_Component,Chrome 136.0.0.0,,,09-05-2025 20:07:42,09-05-2025 20:08:54,1m - 11.923s,PASSED
+,,,,,,,
+Test Cases/Explore_Component,Chrome 136.0.0.0,,,09-05-2025 20:07:43,09-05-2025 20:08:54,1m - 11.664s,PASSED
+"openBrowser("""")",Chrome 136.0.0.0,,,09-05-2025 20:07:43,09-05-2025 20:07:47,3.634s,PASSED
+"navigateToUrl(""http://localhost:3000/"")",Chrome 136.0.0.0,,,09-05-2025 20:07:47,09-05-2025 20:07:49,2.787s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Username_input""), ""anna"")",Chrome 136.0.0.0,,,09-05-2025 20:07:49,09-05-2025 20:07:50,0.996s,PASSED
+"setEncryptedText(findTestObject(""Object Repository/Page_Employee Sustainability Page/input_Password_input""), ""aeHFOx8jV/A="")",Chrome 136.0.0.0,,,09-05-2025 20:07:50,09-05-2025 20:07:51,0.398s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/svg""))",Chrome 136.0.0.0,,,09-05-2025 20:07:51,09-05-2025 20:07:51,0.404s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/a_Explore""))",Chrome 136.0.0.0,,,09-05-2025 20:07:51,09-05-2025 20:07:52,1.160s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_NewestOldest""), ""oldest"", true)",Chrome 136.0.0.0,,,09-05-2025 20:07:52,09-05-2025 20:07:53,0.963s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic""), ""Environmental"", true)",Chrome 136.0.0.0,,,09-05-2025 20:07:53,09-05-2025 20:07:54,1.058s,PASSED
+"selectOptionByValue(findTestObject(""Object Repository/Page_Employee Sustainability Page/select_All CategoriesEnvironmentalSocialEconomic""), ""Social"", true)",Chrome 136.0.0.0,,,09-05-2025 20:07:54,09-05-2025 20:07:55,0.931s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/a_View Details""))",Chrome 136.0.0.0,,,09-05-2025 20:07:55,09-05-2025 20:07:56,0.360s,PASSED
+"verifyElementText(findTestObject(""Object Repository/Page_Employee Sustainability Page/h1_Take the Sustainability Challenge in Kaunas""), ""Take the Sustainability Challenge in Kaunas"")",Chrome 136.0.0.0,,,09-05-2025 20:07:56,09-05-2025 20:07:56,0.332s,PASSED
+"verifyElementPresent(findTestObject(""Object Repository/Page_Employee Sustainability Page/strong_Posted by""), 0)",Chrome 136.0.0.0,,,09-05-2025 20:07:56,09-05-2025 20:07:56,0.285s,PASSED
+"verifyElementPresent(findTestObject(""Object Repository/Page_Employee Sustainability Page/span_tag10""), 0)",Chrome 136.0.0.0,,,09-05-2025 20:07:56,09-05-2025 20:07:57,0.269s,PASSED
+"verifyElementPresent(findTestObject(""Object Repository/Page_Employee Sustainability Page/span_tag5""), 0)",Chrome 136.0.0.0,,,09-05-2025 20:07:57,09-05-2025 20:07:57,0.284s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57""))",Chrome 136.0.0.0,,,09-05-2025 20:07:57,09-05-2025 20:07:57,0.365s,PASSED
+"verifyElementPresent(findTestObject(""Object Repository/Page_Employee Sustainability Page/div_CommentsPost Commentannacool572025, 110_e6da57""), 0)",Chrome 136.0.0.0,,,09-05-2025 20:07:57,09-05-2025 20:07:57,0.292s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_n""), ""n"")",Chrome 136.0.0.0,,,09-05-2025 20:07:57,09-05-2025 20:07:58,0.593s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nu""), ""nu"")",Chrome 136.0.0.0,,,09-05-2025 20:07:58,09-05-2025 20:07:59,0.627s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nuc""), ""nuc"")",Chrome 136.0.0.0,,,09-05-2025 20:07:59,09-05-2025 20:07:59,0.574s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nuce""), ""nuce"")",Chrome 136.0.0.0,,,09-05-2025 20:07:59,09-05-2025 20:08:00,0.601s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nuc""), ""nuc"")",Chrome 136.0.0.0,,,09-05-2025 20:08:00,09-05-2025 20:08:00,0.588s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nu""), ""nu"")",Chrome 136.0.0.0,,,09-05-2025 20:08:00,09-05-2025 20:08:01,0.611s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_n""), ""n"")",Chrome 136.0.0.0,,,09-05-2025 20:08:01,09-05-2025 20:08:02,0.569s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_ni""), ""ni"")",Chrome 136.0.0.0,,,09-05-2025 20:08:02,09-05-2025 20:08:02,0.576s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nic""), ""nic"")",Chrome 136.0.0.0,,,09-05-2025 20:08:02,09-05-2025 20:08:03,0.605s,PASSED
+"setText(findTestObject(""Object Repository/Page_Employee Sustainability Page/textarea_nice""), ""nice"")",Chrome 136.0.0.0,,,09-05-2025 20:08:03,09-05-2025 20:08:03,0.585s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Post Comment""))",Chrome 136.0.0.0,,,09-05-2025 20:08:03,09-05-2025 20:08:04,0.321s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/img""))",Chrome 136.0.0.0,,,09-05-2025 20:08:04,09-05-2025 20:08:04,0.644s,PASSED
+"click(findTestObject(""Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button""))",Chrome 136.0.0.0,,,09-05-2025 20:08:04,09-05-2025 20:08:54,49.857s,PASSED

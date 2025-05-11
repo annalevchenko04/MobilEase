@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Schedule_Component" time="76.916" tests="1" failures="0" errors="0">
+   <testsuite name="Schedule_Component" tests="1" failures="0" errors="0" time="76.916" skipped="0" timestamp="08-05-2025T09:29:35" hostname="Anna - DESKTOP-3UT53HP" id="Test Suites/Schedule_Component">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="C:\\Users\\Anna\\git\\K548-ESP\\Reports\\20250508_092929\\Schedule_Component\\20250508_092929"/>
+         <property name="logFiles" value="C:\\Users\\Anna\\git\\K548-ESP\\Reports\\20250508_092929\\Schedule_Component\\20250508_092929\\execution0.log"/>
+         <property name="attachments" value=""/>
+         <property name="hostName" value="Anna - DESKTOP-3UT53HP"/>
+         <property name="os" value="Windows 10 64bit"/>
+         <property name="katalonVersion" value="9.4.0.212"/>
+         <property name="browser" value="Chrome 136.0.0.0"/>
+         <property name="hostAddress" value="192.168.56.1"/>
+         <property name="sessionId" value="23a190d9577a1c0dd6513b496a147231"/>
+         <property name="seleniumVersion" value="3.141.59"/>
+         <property name="proxyInformation" value="ProxyInformation { proxyOption=NO_PROXY, proxyServerType=HTTP, username=, password=********, proxyServerAddress=, proxyServerPort=0, executionList=&quot;&quot;, isApplyToDesiredCapabilities=true }"/>
+         <property name="platform" value="Windows 10"/>
+      </properties>
+      <testcase name="Test Cases/Schedule_Component" time="76.722" classname="Test Cases/Schedule_Component" status="PASSED">
+         <system-out><![CDATA[08-05-2025T09:29:36 - [TEST_CASE][PASSED] - Test Cases/Schedule_Component: Test Cases/Schedule_Component
+
+08-05-2025T09:29:36 - [TEST_STEP][PASSED] - openBrowser(""): Browser is opened with url: ''
+
+08-05-2025T09:29:36 - [MESSAGE][INFO] - Starting 'Chrome' driver
+
+08-05-2025T09:29:36 - [MESSAGE][INFO] - Action delay is set to 0 milliseconds
+
+08-05-2025T09:29:39 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+08-05-2025T09:29:39 - [TEST_STEP][PASSED] - navigateToUrl("http://localhost:3000/"): Navigate to 'http://localhost:3000/' successfully
+
+08-05-2025T09:29:42 - [MESSAGE][PASSED] - Navigate to 'http://localhost:3000/' successfully
+
+08-05-2025T09:29:42 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Username_input"), "annlev"): Text 'annlev' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Username_input'
+
+08-05-2025T09:29:43 - [MESSAGE][PASSED] - Text 'annlev' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Username_input'
+
+08-05-2025T09:29:43 - [TEST_STEP][PASSED] - setEncryptedText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Password_input"), "aeHFOx8jV/A="): Text ****** has been set on object 'Object Repository/Page_Employee Sustainability Page/input_Password_input'
+
+08-05-2025T09:29:43 - [MESSAGE][PASSED] - Text ****** has been set on object 'Object Repository/Page_Employee Sustainability Page/input_Password_input'
+
+08-05-2025T09:29:43 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button")): Object: 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' is clicked on
+
+08-05-2025T09:29:43 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' is clicked on
+
+08-05-2025T09:29:43 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/a_Schedule")): Object: 'Object Repository/Page_Employee Sustainability Page/a_Schedule' is clicked on
+
+08-05-2025T09:29:44 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/a_Schedule' is clicked on
+
+08-05-2025T09:29:44 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_New Event")): Object: 'Object Repository/Page_Employee Sustainability Page/button_New Event' is clicked on
+
+08-05-2025T09:29:45 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_New Event' is clicked on
+
+08-05-2025T09:29:45 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input"), "Morning running"): Text 'Morning running' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:29:48 - [MESSAGE][PASSED] - Text 'Morning running' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:29:48 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input"), "let's do sport"): Text 'let's do sport' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:29:52 - [MESSAGE][PASSED] - Text 'let's do sport' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:29:52 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input"), "2025-05-08"): Text '2025-05-08' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:29:56 - [MESSAGE][PASSED] - Text '2025-05-08' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:29:56 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/div_Duration (minutes)")): Object: 'Object Repository/Page_Employee Sustainability Page/div_Duration (minutes)' is clicked on
+
+08-05-2025T09:29:58 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/div_Duration (minutes)' is clicked on
+
+08-05-2025T09:29:58 - [TEST_STEP][PASSED] - rightClick(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input")): Object: 'Object Repository/Page_Employee Sustainability Page/input_Age_input' is right clicked on
+
+08-05-2025T09:30:03 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/input_Age_input' is right clicked on
+
+08-05-2025T09:30:03 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input"), "60"): Text '60' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:30:07 - [MESSAGE][PASSED] - Text '60' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:30:07 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/div_PublicPrivate")): Object: 'Object Repository/Page_Employee Sustainability Page/div_PublicPrivate' is clicked on
+
+08-05-2025T09:30:09 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/div_PublicPrivate' is clicked on
+
+08-05-2025T09:30:09 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input"), "10"): Text '10' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:30:13 - [MESSAGE][PASSED] - Text '10' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:30:13 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Age_input"), "Gedimino 20"): Text 'Gedimino 20' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:30:17 - [MESSAGE][PASSED] - Text 'Gedimino 20' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Age_input'
+
+08-05-2025T09:30:17 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_Save Event")): Object: 'Object Repository/Page_Employee Sustainability Page/button_Save Event' is clicked on
+
+08-05-2025T09:30:19 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_Save Event' is clicked on
+
+08-05-2025T09:30:19 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/div_Morning running163000"), 0): Object 'Object Repository/Page_Employee Sustainability Page/div_Morning running163000' is present
+
+08-05-2025T09:30:19 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+08-05-2025T09:30:21 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/div_Morning running163000' is present
+
+08-05-2025T09:30:21 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings")): Object: 'Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings' is clicked on
+
+08-05-2025T09:30:52 - [MESSAGE][INFO] - Unable to find the element located by 'By.xpath: //div[@id='root']/div/div/div[2]/div/div[3]/button'. Please recheck the objects properties to make sure the desired element is located. 
+
+08-05-2025T09:30:52 - [MESSAGE][WARNING] - [SELF-HEALING] Failed to find element with id 'Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings'. Try using Self-healing.
+
+08-05-2025T09:30:52 - [MESSAGE][WARNING] - [SELF-HEALING] The current locator of test object 'Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings' was broken. Propose an alternative one: '(.//*[normalize-space(text()) and normalize-space(.)='New Event'])[7]/following::button[1]'.
+
+08-05-2025T09:30:52 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_Show Event Bookings' is clicked on]]></system-out>
+         <system-err><![CDATA[]]></system-err>
+      </testcase>
+      <system-out><![CDATA[08-05-2025T09:29:35 - [TEST_SUITE][PASSED] - Schedule_Component: Test Cases/Schedule_Component]]></system-out>
+      <system-err><![CDATA[]]></system-err>
+   </testsuite>
+</testsuites>

@@ -118,7 +118,8 @@ def calculate_footprint_api(
             db,
             user_id=current_user.id,
             total_footprint=result['total_carbon_footprint_kg'],
-            details=result['unified_data']
+            details=result['unified_data'],
+            category_breakdown=result['category_breakdown']
         )
 
         return {
@@ -332,45 +333,6 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
 
 class CarbonFootprintRequest(BaseModel):
     answers: Dict[str, Union[str, float, int]]
-
-@app.post("/footprint")
-def calculate_footprint_api(
-        data: CarbonFootprintRequest,
-        db: Session = Depends(get_db),
-        current_user: models.User = Depends(get_current_user)
-):
-    logging.info(f"Incoming Token Data: {current_user}")
-    logging.info(f"Answers Received: {data.answers}")
-
-    # # 🔎 Log the questions before calculation
-    # logging.info("=== Questions Loaded for Calculation ===")
-    # for question in questions:
-    #     logging.info(f"ID: {question['id']} | Text: {question['text']} | Type: {question['type']}")
-    try:
-        result = calculate_footprint(data.answers)
-        logging.info(f"Calculation Result: {result}")
-        logging.info(f"Numeric Data: {result['unified_data']['numeric_data']}")
-
-        saved_footprint = crud.save_carbon_footprint(
-            db,
-            user_id=current_user.id,
-            total_footprint=result['total_carbon_footprint_kg'],
-            details=result['unified_data']
-        )
-
-        return {
-            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
-            "category_breakdown": result['category_breakdown'],
-            "recommendations": [
-                "Reduce car usage and consider public transport.",
-                "Switch to energy-efficient appliances to reduce electricity use.",
-                "Consider reducing red meat consumption for lower food emissions."
-            ],
-            "saved_footprint": saved_footprint
-        }
-    except Exception as e:
-        logging.error(f"Error in calculation: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error calculating footprint: {str(e)}")
 
 
 
@@ -922,5 +884,173 @@ def delete_comment_endpoint(comment_id: int, db: Session = Depends(get_db)):
     if crud.delete_comment(db, comment_id):
         return {"detail": "Comment deleted successfully"}
     raise HTTPException(status_code=400, detail="Failed to delete comment")
+
+
+@app.get("/api/rewards/day-off", response_model=schemas.DayOffRewardResponse)
+def get_day_off_reward(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    # Try to get "issued" reward first
+    issued_reward = db.query(models.Reward).filter_by(user_id=current_user.id, type="day_off", status="issued").first()
+    if issued_reward:
+        return {
+            "status": issued_reward.status,
+            "qr_code": issued_reward.qr_code
+        }
+
+    # Then check for "redeemed"
+    redeemed_reward = db.query(models.Reward).filter_by(user_id=current_user.id, type="day_off", status="redeemed").first()
+    if redeemed_reward:
+        return {
+            "status": redeemed_reward.status,
+            "qr_code": None
+        }
+
+    # Otherwise, return "not_earned"
+    return {
+        "status": "not_earned",
+        "qr_code": None
+    }
+
+
+def get_current_admin(user: models.User = Depends(get_current_user)):
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+    return user
+
+@app.post("/api/admin/rewards/redeem/{user_id}")
+def admin_redeem_day_off_reward(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    reward = db.query(models.Reward).filter_by(user_id=user_id, type="day_off", status="issued").first()
+    if not reward:
+        raise HTTPException(status_code=404, detail="Reward not found or already redeemed")
+
+    reward.status = "redeemed"
+    reward.redeemed_at = datetime.utcnow()
+    db.commit()
+
+    return {"message": "Reward redeemed successfully by admin"}
+
+
+@app.delete("/api/admin/reset-progress/{user_id}")
+def reset_user_progress(
+    user_id: int,
+    db: Session = Depends(get_db),
+    current_admin: models.User = Depends(get_current_admin)
+):
+    db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).delete()
+    # db.query(models.Reward).filter(models.Reward.user_id == user_id, models.Reward.type == "day_off").delete()
+    db.commit()
+    return {"message": "User progress reset successfully"}
+
+@app.get("/company/footprint-stats")
+def get_company_footprint_stats(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="User does not belong to a company")
+
+    print(f"🔍 Current user: {current_user.id}, company_id: {current_user.company_id}")
+
+    users = db.query(models.User).filter(models.User.company_id == current_user.company_id).all()
+
+    footprint_list = []
+    your_footprint = None
+
+    for user in users:
+        latest = db.query(models.CarbonFootprint) \
+                   .filter(models.CarbonFootprint.user_id == user.id) \
+                   .order_by(models.CarbonFootprint.created_at.desc()) \
+                   .first()
+
+        print(f"🧾 User {user.id} -> footprint: {latest.total_footprint if latest else 'None'}")
+
+        if latest:
+            footprint_list.append((user.id, latest.total_footprint))
+            if user.id == current_user.id:
+                your_footprint = latest.total_footprint
+
+    if not footprint_list:
+        raise HTTPException(status_code=404, detail="No footprint data found for your company")
+
+    values_only = [fp for _, fp in footprint_list]
+
+    return {
+        "average": sum(values_only) / len(values_only),
+        "maximum": max(values_only),
+        "your_footprint": your_footprint
+    }
+
+@app.get("/category-breakdown")
+def get_category_breakdown(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    footprint = db.query(models.CarbonFootprint) \
+                  .filter(models.CarbonFootprint.user_id == current_user.id) \
+                  .order_by(models.CarbonFootprint.created_at.desc()) \
+                  .first()
+    if not footprint:
+        raise HTTPException(status_code=404, detail="No footprint data found")
+
+    details = json.loads(footprint.details)
+
+    answers = {**details.get("numeric_data", {}), **details.get("non_numeric_data", {})}
+    result = calculate_footprint(answers)
+
+    return {"category_breakdown": result["category_breakdown"]}
+
+@app.get("/footprint/history")
+def get_footprint_history(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    entries = crud.get_footprint_history(db, current_user.id)
+    return [
+        {
+            "timestamp": entry.created_at.isoformat(),
+            "value": entry.total_footprint
+        }
+        for entry in entries
+    ]
+
+
+
+@app.get("/api/admin/rewards")
+def get_all_rewards(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
+    users = db.query(models.User).all()
+    results = []
+
+    for user in users:
+        rewards = (
+            db.query(models.Reward)
+            .filter_by(user_id=user.id, type="day_off")
+            .order_by(models.Reward.issued_at.desc())
+            .all()
+        )
+
+        reward_list = []
+        for reward in rewards:
+            reward_list.append({
+                "reward_id": reward.id,
+                "status": reward.status,
+                "qr_code": reward.qr_code if reward.status == "issued" else None,
+                "issued_at": reward.issued_at.isoformat(),
+                "redeemed_at": reward.redeemed_at.isoformat() if reward.redeemed_at else None
+            })
+
+        results.append({
+            "user_id": user.id,
+            "name": user.name,
+            "surname": user.surname,
+            "email": user.email,
+            "phone": user.phone,
+            "role": user.role,
+            "rewards": reward_list if reward_list else [],
+        })
+
+    return results
 
 

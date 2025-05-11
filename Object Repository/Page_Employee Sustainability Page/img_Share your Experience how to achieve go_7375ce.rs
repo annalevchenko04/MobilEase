@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>img_Share your Experience how to achieve go_7375ce</name>
+   <tag></tag>
+   <elementGuidId>c9d67825-6aed-4957-a39b-934f2bf082c8</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value></value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div/div[2]/div/div[2]/div/img</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>div:nth-child(2) > div > .is-fullwidth</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>img</value>
+      <webElementGuid>ee286559-2d09-4a87-af53-7973f2ed3cc8</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>src</name>
+      <type>Main</type>
+      <value>/images/arrow2.png</value>
+      <webElementGuid>d854be56-b3f0-40d1-abcb-98a3d4a3fbb3</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>alt</name>
+      <type>Main</type>
+      <value>Description of image</value>
+      <webElementGuid>aa28f06c-9271-4db6-80dd-56e207e2b557</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>is-fullwidth</value>
+      <webElementGuid>8cf710ea-8b4f-4496-b9f0-5961d1adfd09</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[@class=&quot;min-h-screen bg-gray-900 text-white&quot;]/div[@class=&quot;py-12 px-6 md:px-20 text-center&quot;]/div[@class=&quot;items-center&quot;]/div[@class=&quot;grid md:grid-cols-2 gap-8 items-center&quot;]/div[@class=&quot;p-6 bg-gray-700 rounded-xl shadow-lg w-full max-w-4xl mx-auto&quot;]/div[1]/img[@class=&quot;is-fullwidth&quot;]</value>
+      <webElementGuid>533fc6bb-4ddc-4949-8db7-2a384e4eafb2</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div/div[2]/div/div[2]/div/img</value>
+      <webElementGuid>69353c36-ac38-4abb-b4f1-313c11220384</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:img</name>
+      <type>Main</type>
+      <value>(//img[@alt='Description of image'])[4]</value>
+      <webElementGuid>61cf56ce-83ac-4e87-af7e-b98c2cefdeb4</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//div[2]/div/div/div[2]/div/div[2]/div/img</value>
+      <webElementGuid>6a374514-73ef-4e3d-b3b2-e3b688b77f20</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//img[@src = '/images/arrow2.png' and @alt = 'Description of image']</value>
+      <webElementGuid>11c0f875-f4e8-4b5d-bdb4-1267b3079eb8</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

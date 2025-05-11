@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>p_Protecting natural resources and reducing waste</name>
+   <tag></tag>
+   <elementGuidId>86e4f79b-406c-4ca9-9836-4a35aa09b365</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>p.text-gray-400</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[4]/div/p</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:text=&quot;Protecting natural resources and reducing waste.&quot;i</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>p</value>
+      <webElementGuid>329e1f57-3fb6-4591-9b45-737c9343b38d</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>text-gray-400</value>
+      <webElementGuid>30d8d4c2-c74f-4c5e-9c27-2421118ed3f1</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Protecting natural resources and reducing waste.</value>
+      <webElementGuid>2eb7bf63-f018-44d0-9993-8f735a5992a9</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[@class=&quot;min-h-screen bg-gray-900 text-white&quot;]/div[@class=&quot;grid md:grid-cols-3 gap-8 items-center&quot;]/div[@class=&quot;p-6 bg-gray-800 rounded-xl shadow-lg&quot;]/p[@class=&quot;text-gray-400&quot;]</value>
+      <webElementGuid>bc4262df-5814-4759-8a23-a77df57bb93a</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[4]/div/p</value>
+      <webElementGuid>2ab0de6b-9e70-46c3-ae71-3023c58291bc</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Environmental'])[1]/following::p[1]</value>
+      <webElementGuid>03ce9dcd-dbb0-456d-a93f-7558b96756ea</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Empower people to take action for a sustainable future.'])[1]/following::p[1]</value>
+      <webElementGuid>d0087058-7ed4-40de-95a2-2652ee05c29b</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Social'])[1]/preceding::p[1]</value>
+      <webElementGuid>613f54a5-6d1d-40be-96ba-cab0ca89448a</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Economic'])[1]/preceding::p[2]</value>
+      <webElementGuid>855f0d9a-65e0-4a07-8546-9cd61ebe5bc9</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>//*/text()[normalize-space(.)='Protecting natural resources and reducing waste.']/parent::*</value>
+      <webElementGuid>28e1faae-3f93-45a4-87cc-ec90e4e4c848</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//p</value>
+      <webElementGuid>2fcb84e3-93b0-4865-9f89-32eef97c61e5</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//p[(text() = 'Protecting natural resources and reducing waste.' or . = 'Protecting natural resources and reducing waste.')]</value>
+      <webElementGuid>1ea6f254-5acc-4534-b2d2-d51ddab1f5d7</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>
