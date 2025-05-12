@@ -24,7 +24,7 @@ const CategoryBreakdownChart = ({ data }) => {
 
   return (
     <div>
-      <h3>Carbon Footprint Category Breakdown</h3>
+      <h5 className="title is-5">Carbon Footprint Category Breakdown</h5>
       <Pie data={chartData} />
     </div>
   );

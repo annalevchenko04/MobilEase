@@ -34,8 +34,7 @@ const FootprintHistoryChart = ({ data }) => {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
-      legend: { position: 'top' },
-      title: { display: true, text: 'Your Carbon Footprint Over Time' }
+      legend: { position: 'top' }
     },
     scales: {
       y: {
@@ -44,7 +43,10 @@ const FootprintHistoryChart = ({ data }) => {
     }
   };
 
-  return <div style={{ height: "300px" }}><Line data={chartData} options={options} /></div>;
+  return <div style={{ height: "300px" }}>
+     <h5 className="title is-5">Your Carbon Footprint Over Time</h5>
+    <Line data={chartData} options={options}/>
+  </div>;
 };
 
 export default FootprintHistoryChart;

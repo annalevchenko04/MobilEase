@@ -46,26 +46,38 @@ const BenchmarkingGaugeChart = ({ currentValue, targetValue }) => {
   };
 
   return (
-    <div style={{ maxWidth: '300px', margin: '2rem auto', textAlign: 'center' }}>
-      <h3>Benchmarking Gauge</h3>
-      <div style={{ position: 'relative' }}>
-        <Doughnut data={chartData} options={options} />
-        <div
+      <div
           style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
-            pointerEvents: 'none',
-            fontSize: '1rem',
-            fontWeight: 600,
-            color: '#333',
+              height: '380px',
+              justifyContent: 'center',
+              alignItems: 'center'
           }}
-        >
-          {currentValue} / {targetValue} kg CO₂e
-        </div>
+      >
+          <h5 className="title is-5">Benchmarking Gauge</h5>
+          <div style={{position: 'relative'}}>
+              <Doughnut
+                  data={chartData}
+                  options={options}
+                  width={1200}
+                  height={1200}
+              />
+
+              <div
+                  style={{
+                      position: 'absolute',
+                      top: '50%',
+                      left: '50%',
+                      transform: 'translate(-50%, -50%)',
+                      pointerEvents: 'none',
+                      fontSize: '1rem',
+                      fontWeight: 600,
+                      color: '#333',
+                  }}
+              >
+                  {currentValue} / {targetValue} kg CO₂e
+              </div>
+          </div>
       </div>
-    </div>
   );
 };
 

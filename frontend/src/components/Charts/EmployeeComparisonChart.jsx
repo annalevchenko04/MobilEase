@@ -32,8 +32,7 @@ const EmployeeComparisonChart = ({ employees }) => {
     responsive: true,
     maintainAspectRatio: false, // Fill container
     plugins: {
-      legend: { position: "top" },
-      title: { display: true, text: "Employee Carbon Footprint Comparison" }
+      legend: { position: "top" }
     },
     scales: {
   y: {
@@ -45,10 +44,11 @@ const EmployeeComparisonChart = ({ employees }) => {
   };
 
   return (
-  <div style={{ height: "380px" }}>
-    <Bar data={chartData} options={options} />
-  </div>
-);
+      <div style={{height: "380px"}}>
+        <h5 className="title is-5">Employee Carbon Footprint Comparison</h5>
+        <Bar data={chartData} options={options}/>
+      </div>
+  );
 
 };
 
