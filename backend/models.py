@@ -350,6 +350,7 @@ class UserProgress(Base):
     progress = Column(Integer, nullable=False, default=0)  # 0-100 percentage
     completed = Column(Boolean, nullable=False, default=False)
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    details = Column(Text, nullable=True)  # Add this line for details JSON
 
     # Ensure a user has only one progress entry per initiative
     __table_args__ = (UniqueConstraint('user_id', 'initiative_id', name='unique_user_initiative_progress'),)

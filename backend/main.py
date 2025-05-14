@@ -10,7 +10,6 @@ from jose import JWTError, jwt
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
-
 from database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated, List, Dict, Union
@@ -67,12 +66,19 @@ REFRESH_TOKEN_EXPIRE_DAYS = 10
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+
+
+from fastapi import Query
+from calculator import calculate_footprint, generate_seasonal_recommendations
+
+
+
 class CarbonFootprintRequest(BaseModel):
     answers: Dict[str, Union[str, float, int]]
 
 
 def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    logging.info(f"Incoming Token: {token}")  # NEW: Log token received
+    logging.info(f"Incoming Token: {token}")
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
@@ -80,26 +86,24 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logging.info(f"Decoded Token Payload: {payload}")  # NEW: Log payload
-
+        logging.info(f"Decoded Token Payload: {payload}")
         user_id: int = payload.get("id")
-        if user_id is None:
+        username: str = payload.get("username")
+        role: str = payload.get("role")
+        if user_id is None or username is None or role is None:
             raise credentials_exception
 
+        # Ensure user_id is an integer
+        user_id = int(user_id)
 
-    except JWTError:
+    except (JWTError, ValueError):
         raise credentials_exception
 
     user = db.query(models.User).filter(models.User.id == user_id).first()
-    logging.info(f"Database User Found: {user}")  # NEW: Log user data
+    logging.info(f"Database User Found: {user}")
     if user is None:
         raise credentials_exception
     return user
-
-
-from fastapi import Query
-from calculator import calculate_footprint, generate_seasonal_recommendations
-
 
 # Update the existing footprint endpoint
 @app.post("/footprint")
@@ -344,37 +348,9 @@ async def list_users(db: db_dependency):
     return users
 
 
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    logging.info(f"Incoming Token: {token}")
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        logging.info(f"Decoded Token Payload: {payload}")
-        user_id: int = payload.get("id")
-        username: str = payload.get("username")
-        role: str = payload.get("role")
-        if user_id is None or username is None or role is None:
-            raise credentials_exception
-
-        # Ensure user_id is an integer
-        user_id = int(user_id)
-
-    except (JWTError, ValueError):
-        raise credentials_exception
-
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    logging.info(f"Database User Found: {user}")
-    if user is None:
-        raise credentials_exception
-    return user
 
 
-class CarbonFootprintRequest(BaseModel):
-    answers: Dict[str, Union[str, float, int]]
+
 
 @app.post("/footprint")
 def calculate_footprint_api(
@@ -963,20 +939,23 @@ def create_initiative_endpoint(
         db: Session = Depends(get_db),
         current_user: models.User = Depends(get_current_user)
 ):
-    # Check if user already has a pending initiative for this month/year
-    existing_initiatives = db.query(models.Initiative).filter(
-        models.Initiative.created_by == current_user.id,
-        models.Initiative.month == initiative.month,
-        models.Initiative.year == initiative.year,
-        models.Initiative.status == "pending"
-    ).all()
+    # First check if the user can suggest an initiative
+    suggestion_status = can_suggest_initiative(db, current_user)
 
-    if existing_initiatives:
+    if not suggestion_status["can_suggest"]:
         raise HTTPException(
             status_code=400,
-            detail="You have already submitted an initiative for this month. Only one initiative per month is allowed."
+            detail="You cannot suggest an initiative at this time."
         )
 
+    # Ensure month/year match what's allowed
+    if suggestion_status["target_month"] != initiative.month or suggestion_status["target_year"] != initiative.year:
+        raise HTTPException(
+            status_code=400,
+            detail=f"You can only suggest initiatives in the last week of current month, for the next month."
+        )
+
+    # Create the initiative
     return crud.create_initiative(db, initiative, current_user.id, current_user.company_id)
 
 
@@ -1261,35 +1240,109 @@ def get_company_progress_endpoint(
 
 
 # Check if user can suggest an initiative for next month
-@app.get("/initiatives/can-suggest")
+# Update can_suggest_initiative function to give admins special privileges
+@app.get("/initiatives/can-suggest", response_model=dict)
 def can_suggest_initiative(
         db: Session = Depends(get_db),
         current_user: models.User = Depends(get_current_user)
 ):
     """Check if a user can suggest a new initiative."""
     try:
-        # Check if user already has a pending initiative for the next month
-        current_date = datetime.now()
-        next_month_date = current_date.replace(day=1) + timedelta(days=32)
-        next_month = next_month_date.month
-        next_year = next_month_date.year
+        # Admins can always suggest initiatives for the current month
+        if current_user.role == "admin":
+            current_date = datetime.now()
+            current_month = current_date.month
+            current_year = current_date.year
 
-        pending_initiative = db.query(models.Initiative).filter(
+            # Admins can always suggest for the current month
+            return {
+                "can_suggest": True,
+                "target_month": current_month,
+                "target_year": current_year,
+                "is_admin": True
+            }
+
+        # For regular users, continue with the existing logic
+        # Get current date information
+        current_date = datetime.now()
+        current_month = current_date.month
+        current_year = current_date.year
+
+        # Get next month/year
+        next_month = current_month + 1 if current_month < 12 else 1
+        next_year = current_year if current_month < 12 else current_year + 1
+
+        # Calculate days until next month
+        last_day_of_month = 28
+        if current_month in [1, 3, 5, 7, 8, 10, 12]:  # 31-day months
+            last_day_of_month = 31
+        elif current_month in [4, 6, 9, 11]:  # 30-day months
+            last_day_of_month = 30
+        elif current_month == 2:  # February
+            last_day_of_month = 29 if (
+                        (current_year % 4 == 0 and current_year % 100 != 0) or current_year % 400 == 0) else 28
+
+        days_until_next_month = last_day_of_month - current_date.day + 1
+
+        # Check if there's an active initiative for the current month
+        active_initiative = db.query(models.Initiative).filter(
+            models.Initiative.company_id == current_user.company_id,
+            models.Initiative.status == "active",
+            models.Initiative.month == current_month,
+            models.Initiative.year == current_year
+        ).first()
+
+        # Regular users can suggest for next month if we're in the last 7 days
+        can_suggest_next_month = days_until_next_month <= 7
+        # Only suggest for current month if no active initiative exists
+        can_suggest_current_month = not active_initiative
+
+        # Check if user already has a pending initiative for relevant months
+        has_current_month_initiative = db.query(models.Initiative).filter(
+            models.Initiative.created_by == current_user.id,
+            models.Initiative.month == current_month,
+            models.Initiative.year == current_year,
+            models.Initiative.status.in_(["pending", "active"])
+        ).first() is not None
+
+        has_next_month_initiative = db.query(models.Initiative).filter(
             models.Initiative.created_by == current_user.id,
             models.Initiative.month == next_month,
             models.Initiative.year == next_year,
             models.Initiative.status.in_(["pending", "active"])
-        ).first()
+        ).first() is not None
 
-        can_suggest = pending_initiative is None
-        return {"can_suggest": can_suggest}
+        # Determine what the user can do
+        if can_suggest_next_month and not has_next_month_initiative:
+            target_month = next_month
+            target_year = next_year
+            can_suggest = True
+        elif can_suggest_current_month and not has_current_month_initiative:
+            target_month = current_month
+            target_year = current_year
+            can_suggest = True
+        else:
+            can_suggest = False
+            target_month = next_month if can_suggest_next_month else current_month
+            target_year = next_year if can_suggest_next_month and current_month == 12 else current_year
+
+        return {
+            "can_suggest": can_suggest,
+            "target_month": target_month,
+            "target_year": target_year,
+            "days_until_next_month": days_until_next_month,
+            "has_active_initiative": active_initiative is not None
+        }
 
     except Exception as e:
         # Log the error for debugging
         print(f"Error in can_suggest_initiative: {str(e)}")
         # Return a default response
-        return {"can_suggest": True, "error": str(e)}
-
+        return {
+            "can_suggest": False,
+            "error": str(e),
+            "reason": "An error occurred checking initiative suggestion status"
+        }
 
 # Modified POST endpoint with additional checks
 @app.post("/initiatives/", response_model=schemas.Initiative, status_code=status.HTTP_201_CREATED)
@@ -1322,37 +1375,47 @@ def create_initiative_endpoint(
 
 
 # Admin endpoint to deactivate initiative and start voting
-@app.post("/initiatives/{initiative_id}/deactivate", response_model=dict)
-def deactivate_initiative_endpoint(
-        initiative_id: int,
+@app.post("/initiatives/", response_model=schemas.Initiative, status_code=status.HTTP_201_CREATED)
+def create_initiative_endpoint(
+        initiative: schemas.InitiativeCreate,
         db: Session = Depends(get_db),
         current_user: models.User = Depends(get_current_user)
 ):
-    # Only admins can deactivate initiatives
-    if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Only admins can deactivate initiatives")
+    # Check if user already has a pending initiative for this month/year
+    if current_user.role != "admin":  # Skip this check for admins
+        has_pending = crud.check_user_has_pending_initiative(db, current_user.id)
+        if has_pending:
+            raise HTTPException(
+                status_code=400,
+                detail="You have already submitted an initiative for the upcoming month."
+            )
 
-    initiative = crud.get_initiative(db, initiative_id)
-    if not initiative:
-        raise HTTPException(status_code=404, detail="Initiative not found")
+    # For regular users, enforce next month requirement
+    # For admins, allow current or next month
+    current_date = datetime.now()
+    next_month_date = current_date.replace(day=1) + timedelta(days=32)
+    next_month = next_month_date.month
+    next_year = next_month_date.year
 
-    # Check if it belongs to admin's company
-    if initiative.company_id != current_user.company_id:
-        raise HTTPException(status_code=403, detail="Not authorized to deactivate this initiative")
+    if current_user.role != "admin":  # Only enforce for non-admins
+        if initiative.month != next_month or initiative.year != next_year:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Initiatives must be submitted for the next month ({next_month}/{next_year})."
+            )
+    else:
+        # For admins, allow current month or next month
+        current_month = current_date.month
+        current_year = current_date.year
+        valid_months = [(current_month, current_year), (next_month, next_year)]
 
-    # Check if it's locked
-    if initiative.is_locked:
-        raise HTTPException(status_code=400, detail="Cannot deactivate a locked initiative")
+        if (initiative.month, initiative.year) not in valid_months:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Initiatives can only be created for the current month ({current_month}/{current_year}) or next month ({next_month}/{next_year})."
+            )
 
-    voting_end_date = crud.deactivate_initiative(db, initiative_id)
-    if not voting_end_date:
-        raise HTTPException(status_code=400, detail="Failed to deactivate initiative")
-
-    return {
-        "message": "Initiative deactivated. A 3-day voting period has started.",
-        "voting_end_date": voting_end_date
-    }
-
+    return crud.create_initiative(db, initiative, current_user.id, current_user.company_id)
 
 # Run scheduled tasks (this would normally be run by a scheduler like Celery)
 @app.post("/admin/run-scheduled-tasks", response_model=dict)
@@ -1472,3 +1535,60 @@ def get_all_rewards(db: Session = Depends(get_db), current_user: models.User = D
 
     return results
 
+
+@app.post("/initiatives/", response_model=schemas.Initiative, status_code=status.HTTP_201_CREATED)
+def create_initiative_endpoint(
+        initiative: schemas.InitiativeCreate,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Get the suggestion status to validate
+    suggestion_status = can_suggest_initiative(db, current_user)
+
+    if not suggestion_status["can_suggest"]:
+        raise HTTPException(
+            status_code=400,
+            detail="You cannot suggest an initiative at this time."
+        )
+
+    # Ensure month/year match what's allowed
+    if suggestion_status["target_month"] != initiative.month or suggestion_status["target_year"] != initiative.year:
+        raise HTTPException(
+            status_code=400,
+            detail=f"You can only suggest initiatives in the last week of current month, for the next month."
+        )
+
+    return crud.create_initiative(db, initiative, current_user.id, current_user.company_id)
+
+
+
+@app.post("/initiatives/{initiative_id}/deactivate", response_model=dict)
+def deactivate_initiative_endpoint(
+        initiative_id: int,
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user)
+):
+    # Only admins can deactivate initiatives
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can deactivate initiatives")
+
+    initiative = crud.get_initiative(db, initiative_id)
+    if not initiative:
+        raise HTTPException(status_code=404, detail="Initiative not found")
+
+    # Check if it belongs to admin's company
+    if initiative.company_id != current_user.company_id:
+        raise HTTPException(status_code=403, detail="Not authorized to deactivate this initiative")
+
+    # Check if it's locked
+    if initiative.is_locked:
+        raise HTTPException(status_code=400, detail="Cannot deactivate a locked initiative")
+
+    voting_end_date = crud.deactivate_initiative(db, initiative_id)
+    if not voting_end_date:
+        raise HTTPException(status_code=400, detail="Failed to deactivate initiative")
+
+    return {
+        "message": "Initiative deactivated. A 3-day voting period has started.",
+        "voting_end_date": voting_end_date
+    }

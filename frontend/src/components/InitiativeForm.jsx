@@ -1,26 +1,50 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
+import { UserContext } from "../context/UserContext"; // Import UserContext
 
 const InitiativeForm = ({ onSubmit, onCancel }) => {
+  const [token, userRole] = useContext(UserContext); // Get userRole from context
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [month, setMonth] = useState(0);
   const [year, setYear] = useState(0);
+  const [currentMonth, setCurrentMonth] = useState(0);
+  const [nextMonth, setNextMonth] = useState(0);
+  const [currentYear, setCurrentYear] = useState(0);
+  const [nextYear, setNextYear] = useState(0);
 
-  // Calculate next month on component load
+  // Calculate current and next month on component load
   useEffect(() => {
     const currentDate = new Date();
-    let nextMonth = currentDate.getMonth() + 2; // JavaScript months are 0-indexed, and we want next month
-    let nextYear = currentDate.getFullYear();
+
+    // Current month (1-12)
+    let currMonth = currentDate.getMonth() + 1;
+    let currYear = currentDate.getFullYear();
+
+    // Next month calculation
+    let nxtMonth = currMonth + 1;
+    let nxtYear = currYear;
 
     // If next month would be January (13), roll over to next year
-    if (nextMonth > 12) {
-      nextMonth = 1;
-      nextYear += 1;
+    if (nxtMonth > 12) {
+      nxtMonth = 1;
+      nxtYear += 1;
     }
 
-    setMonth(nextMonth);
-    setYear(nextYear);
-  }, []);
+    setCurrentMonth(currMonth);
+    setCurrentYear(currYear);
+    setNextMonth(nxtMonth);
+    setNextYear(nxtYear);
+
+    // For non-admins, always set to next month
+    // For admins, default to current month
+    if (userRole === "admin") {
+      setMonth(currMonth);
+      setYear(currYear);
+    } else {
+      setMonth(nxtMonth);
+      setYear(nxtYear);
+    }
+  }, [userRole]);
 
   const getMonthName = (monthNumber) => {
     const months = [
@@ -78,15 +102,41 @@ const InitiativeForm = ({ onSubmit, onCancel }) => {
           </div>
         </div>
 
-        <div className="field">
-          <label className="label">Target Month</label>
-          <div className="control">
-            <div className="notification is-info is-light">
-              <p>This initiative will be proposed for <strong>{getMonthName(month)} {year}</strong></p>
-              <p className="is-size-7 mt-2">Initiatives are automatically scheduled for the upcoming month.</p>
+        {/* Display month selector for admins */}
+        {userRole === "admin" ? (
+          <div className="field">
+            <label className="label">Target Month</label>
+            <div className="control">
+              <div className="select">
+                <select
+                  value={`${month}-${year}`}
+                  onChange={(e) => {
+                    const [m, y] = e.target.value.split('-').map(Number);
+                    setMonth(m);
+                    setYear(y);
+                  }}
+                >
+                  <option value={`${currentMonth}-${currentYear}`}>
+                    Current Month ({getMonthName(currentMonth)} {currentYear})
+                  </option>
+                  <option value={`${nextMonth}-${nextYear}`}>
+                    Next Month ({getMonthName(nextMonth)} {nextYear})
+                  </option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="field">
+            <label className="label">Target Month</label>
+            <div className="control">
+              <div className="notification is-info is-light">
+                <p>This initiative will be proposed for <strong>{getMonthName(month)} {year}</strong></p>
+                <p className="is-size-7 mt-2">Initiatives are automatically scheduled for the upcoming month.</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         <div className="field is-grouped is-grouped-right">
           <div className="control">

@@ -14,6 +14,8 @@ const DailyCheckInTracker = ({ initiativeId }) => {
   const [currentYear, setCurrentYear] = useState("");
   const [checkableStartDate, setCheckableStartDate] = useState(null);
   const [checkableEndDate, setCheckableEndDate] = useState(null);
+  const [saveInProgress, setSaveInProgress] = useState(false); // New state for save button
+  const [successMessage, setSuccessMessage] = useState(""); // New state for success message
 
   // Generate array of days for the current month
   useEffect(() => {
@@ -78,128 +80,181 @@ const DailyCheckInTracker = ({ initiativeId }) => {
   }, []);
 
   // Fetch the user's progress for this initiative
-  const fetchUserProgress = useCallback(async () => {
-    if (!initiativeId) return;
+  const fetchUserProgress = useCallback(async (initiativeId) => {
+  if (!initiativeId) return;
 
-    try {
-      setLoading(true);
-      const response = await fetch(`http://localhost:8000/progress/?initiative_id=${initiativeId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+  try {
+    setLoading(true);
+    const response = await fetch(`http://localhost:8000/progress/?initiative_id=${initiativeId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      if (!response.ok) {
-        throw new Error(`Failed to fetch progress: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log("User progress data:", data);
-
-      if (data && data.length > 0) {
-        // Get the checked days from the details field
-        const progress = data[0];
-
-        try {
-          // Parse details if it's a string, or use directly if it's already an object
-          const details = typeof progress.details === 'string'
-            ? JSON.parse(progress.details)
-            : progress.details;
-
-          setCheckedDays(details?.checkedDays || []);
-          setCompleted(progress.completed || false);
-
-          // Calculate percentage based on checked days vs. total days in month
-          const percentage = Math.floor((details?.checkedDays?.length || 0) / daysInMonth * 100);
-          setProgressPercentage(percentage);
-        } catch (e) {
-          console.error("Error parsing progress details:", e);
-          setCheckedDays([]);
-        }
-      } else {
-        setCheckedDays([]);
-        setCompleted(false);
-        setProgressPercentage(0);
-      }
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching user progress:", error);
-      setError("Error loading progress");
-      setLoading(false);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch progress: ${response.status}`);
     }
-  }, [initiativeId, token, daysInMonth]);
+
+    const data = await response.json();
+    console.log("User progress data:", data);
+
+    if (data && data.length > 0) {
+      // Get the checked days from the details field
+      const progress = data[0];
+
+      try {
+        // Parse details if it's a string
+        let details;
+
+        if (typeof progress.details === 'string') {
+          details = JSON.parse(progress.details);
+          // Handle potential double encoding
+          if (typeof details === 'string') {
+            details = JSON.parse(details);
+          }
+        } else {
+          details = progress.details;
+        }
+
+        console.log("Parsed details:", details);
+
+        // Ensure checkedDays is an array
+        const daysList = details?.checkedDays || [];
+        console.log("Days list:", daysList);
+
+        // Convert to numbers if they're strings
+        const checkedDaysNumbers = daysList.map(d =>
+          typeof d === 'string' ? parseInt(d, 10) : d
+        );
+
+        console.log("Final checked days:", checkedDaysNumbers);
+        setCheckedDays(checkedDaysNumbers);
+        setCompleted(progress.completed || false);
+
+        // Calculate percentage based on checked days vs. total days in month
+        const percentage = Math.floor(checkedDaysNumbers.length / daysInMonth * 100);
+        setProgressPercentage(percentage);
+      } catch (e) {
+        console.error("Error parsing progress details:", e);
+        setCheckedDays([]);
+      }
+    } else {
+      setCheckedDays([]);
+      setCompleted(false);
+      setProgressPercentage(0);
+    }
+    setLoading(false);
+  } catch (error) {
+    console.error("Error fetching user progress:", error);
+    setError("Error loading progress");
+    setLoading(false);
+  }
+}, [token, daysInMonth]);
 
   useEffect(() => {
     if (initiativeId) {
-      fetchUserProgress();
+      fetchUserProgress(initiativeId);
     }
   }, [initiativeId, fetchUserProgress]);
 
   // Toggle check-in for a day
-  const toggleDayCheck = async (day) => {
+  const toggleDayCheck = (day) => {
     // Only allow checking/unchecking checkable days
     if (!day.isCheckable) {
       alert("You can only check in for today and the previous 2 days.");
       return;
     }
 
-    try {
-      // Create a new array of checked days
-      let newCheckedDays;
+    // Clear any previous messages
+    setError("");
+    setSuccessMessage("");
 
-      if (checkedDays.includes(day.day)) {
-        // If already checked, uncheck it
-        newCheckedDays = checkedDays.filter(d => d !== day.day);
-      } else {
-        // If not checked, check it
-        newCheckedDays = [...checkedDays, day.day];
-      }
+    // Create a new array of checked days
+    let newCheckedDays;
 
-      // Calculate new progress percentage
-      const newPercentage = Math.floor(newCheckedDays.length / daysInMonth * 100);
-      const isCompleted = newPercentage === 100;
-
-      // Update the state immediately for better UX
-      setCheckedDays(newCheckedDays);
-      setProgressPercentage(newPercentage);
-
-      // Save to the server
-      const response = await fetch("http://localhost:8000/progress/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          initiative_id: initiativeId,
-          progress: newPercentage,
-          completed: isCompleted,
-          details: {
-            checkedDays: newCheckedDays
-          }
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update check-in");
-      }
-
-      // If now complete, update the completed state
-      if (isCompleted && !completed) {
-        setCompleted(true);
-        alert("Congratulations! You've completed this initiative and earned a badge!");
-      } else {
-        setCompleted(isCompleted);
-      }
-
-      console.log("Check-in updated successfully");
-    } catch (error) {
-      console.error("Error updating check-in:", error);
-      setError("Failed to update check-in");
-      // Revert the state change on error
-      fetchUserProgress();
+    if (checkedDays.includes(day.day)) {
+      // If already checked, uncheck it
+      newCheckedDays = checkedDays.filter(d => d !== day.day);
+    } else {
+      // If not checked, check it
+      newCheckedDays = [...checkedDays, day.day];
     }
+
+    // Calculate new progress percentage
+    const newPercentage = Math.floor(newCheckedDays.length / daysInMonth * 100);
+
+    // Update the state immediately for better UX
+    setCheckedDays(newCheckedDays);
+    setProgressPercentage(newPercentage);
   };
+
+  // New function to save progress to server
+  const saveProgress = async () => {
+  if (!initiativeId) {
+    setError("No active initiative found");
+    return;
+  }
+
+  try {
+    setSaveInProgress(true);
+
+    // Calculate progress percentage
+    const newPercentage = Math.floor(checkedDays.length / daysInMonth * 100);
+    const isCompleted = newPercentage === 100;
+
+    console.log("Saving progress for initiative:", initiativeId);
+    console.log("Checked days to save:", checkedDays);
+
+    const response = await fetch("http://localhost:8000/progress/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        initiative_id: parseInt(initiativeId, 10),
+        progress: newPercentage,
+        completed: isCompleted,
+        details: {
+          checkedDays: checkedDays
+        }
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error("Server error response:", errorText);
+      throw new Error(`Failed to save progress: ${response.status}`);
+    }
+
+    // Log successful save
+    const responseData = await response.json();
+    console.log("Progress saved successfully", responseData);
+
+    // Set success message
+    setSuccessMessage("Progress saved successfully!");
+
+    // If now complete, update the completed state
+    if (isCompleted && !completed) {
+      setCompleted(true);
+      alert("Congratulations! You've completed this initiative and earned a badge!");
+    } else {
+      setCompleted(isCompleted);
+    }
+
+    // Clear success message after 3 seconds
+    setTimeout(() => setSuccessMessage(""), 3000);
+
+    // Fetch the updated progress to ensure state is in sync with backend
+    await fetchUserProgress(initiativeId);
+
+  } catch (error) {
+    console.error("Error saving progress:", error);
+    setError("Failed to save progress: " + error.message);
+  } finally {
+    setSaveInProgress(false);
+  }
+};
 
   // Format date as "Month Day"
   const formatDate = (date) => {
@@ -209,6 +264,9 @@ const DailyCheckInTracker = ({ initiativeId }) => {
       day: 'numeric'
     });
   };
+
+
+
 
   // Format checkable date range for display
   const formatCheckableDateRange = () => {
@@ -258,6 +316,36 @@ const DailyCheckInTracker = ({ initiativeId }) => {
           Track your daily participation in this initiative
         </p>
       </div>
+
+
+      {/* Success or Error Messages */}
+      {successMessage && (
+        <div style={{
+          margin: '0 20px 20px',
+          backgroundColor: '#ecfdf5',
+          padding: '12px 16px',
+          borderRadius: '6px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <span style={{ color: '#10b981', marginRight: '8px' }}>✓</span>
+          <span style={{ color: '#065f46', fontSize: '14px' }}>{successMessage}</span>
+        </div>
+      )}
+
+      {error && (
+        <div style={{
+          margin: '0 20px 20px',
+          backgroundColor: '#fee2e2',
+          padding: '12px 16px',
+          borderRadius: '6px',
+          display: 'flex',
+          alignItems: 'center'
+        }}>
+          <span style={{ color: '#ef4444', marginRight: '8px' }}>!</span>
+          <span style={{ color: '#b91c1c', fontSize: '14px' }}>{error}</span>
+        </div>
+      )}
 
       {/* Progress Circle */}
       <div style={{
@@ -371,7 +459,7 @@ const DailyCheckInTracker = ({ initiativeId }) => {
                       color: '#6b7280',
                       marginTop: '2px'
                     }}>
-                      Apr {day.day}
+                      {day.date && day.date.toLocaleString('default', { month: 'short' })} {day.day}
                     </div>
 
                     {/* Check mark for checked days */}
@@ -420,6 +508,48 @@ const DailyCheckInTracker = ({ initiativeId }) => {
           </p>
         </div>
 
+        {/* Add the Save Progress button */}
+        <div style={{ textAlign: 'center', marginTop: '30px' }}>
+          <button
+            onClick={saveProgress}
+            disabled={saveInProgress}
+            style={{
+              backgroundColor: saveInProgress ? '#9ca3af' : '#3b82f6',
+              color: 'white',
+              border: 'none',
+              padding: '12px 24px',
+              borderRadius: '6px',
+              fontSize: '16px',
+              fontWeight: '600',
+              cursor: saveInProgress ? 'not-allowed' : 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              transition: 'background-color 0.2s',
+              boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)'
+            }}
+          >
+            {saveInProgress ? (
+              <>
+                <span style={{
+                  display: 'inline-block',
+                  width: '16px',
+                  height: '16px',
+                  border: '2px solid rgba(255,255,255,0.3)',
+                  borderTopColor: 'white',
+                  borderRadius: '50%',
+                  animation: 'spin 1s linear infinite'
+                }}></span>
+                <span>Saving...</span>
+              </>
+            ) : (
+              <>
+                <span>Save Progress</span>
+              </>
+            )}
+          </button>
+        </div>
         {/* Progress footer */}
         <div style={{
           display: 'flex',

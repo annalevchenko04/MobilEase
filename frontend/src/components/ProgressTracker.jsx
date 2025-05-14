@@ -8,6 +8,7 @@ const ProgressTracker = () => {
   const [hasJoined, setHasJoined] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [progressLoaded, setProgressLoaded] = useState(false); // Add this new state
 
   // Use useCallback to memoize the fetchUserProgress function
   const fetchUserProgress = useCallback(async (initiativeId, signal) => {
@@ -30,6 +31,7 @@ const ProgressTracker = () => {
       // If we have any progress data, the user has joined
       setHasJoined(data && data.length > 0);
       setLoading(false);
+      setProgressLoaded(true); // Mark progress as loaded regardless of result
     } catch (error) {
       if (error.name === 'AbortError') {
         console.log('Fetch aborted');
@@ -38,6 +40,7 @@ const ProgressTracker = () => {
       console.error("Error fetching user progress:", error);
       setError("Error loading progress");
       setLoading(false);
+      setProgressLoaded(true); // Still mark as loaded even on error
     }
   }, [token]);
 
@@ -69,11 +72,16 @@ const ProgressTracker = () => {
         // Fetch progress if we have an active initiative
         if (active.id) {
           await fetchUserProgress(active.id, signal);
+        } else {
+          // If no active ID, still update loading states
+          setLoading(false);
+          setProgressLoaded(true);
         }
       } else {
         console.log("No active initiative found");
         setActiveInitiative(null);
         setLoading(false);
+        setProgressLoaded(true); // Make sure we mark as loaded even if no initiative
       }
     } catch (error) {
       if (error.name === 'AbortError') {
@@ -83,6 +91,7 @@ const ProgressTracker = () => {
       console.error("Error fetching active initiative:", error);
       setError("Error loading active initiative");
       setLoading(false);
+      setProgressLoaded(true); // Make sure we mark as loaded even on error
     }
   }, [token, fetchUserProgress]);
 
@@ -103,6 +112,7 @@ const ProgressTracker = () => {
 
     try {
       console.log("Joining initiative:", activeInitiative.id);
+      setLoading(true); // Set loading true while joining
 
       const response = await fetch("http://localhost:8000/progress/", {
         method: "POST",
@@ -125,10 +135,12 @@ const ProgressTracker = () => {
       }
 
       setHasJoined(true);
+      setLoading(false); // Set loading false after joining
       alert("You have successfully joined the initiative!");
     } catch (error) {
       console.error("Error joining initiative:", error);
       setError("Error joining initiative");
+      setLoading(false); // Make sure loading is set to false on error
     }
   };
 
@@ -239,8 +251,17 @@ const ProgressTracker = () => {
               Join this initiative to track your progress
             </p>
           </div>
-        ) : (
+        ) : progressLoaded ? (
+          // Only render DailyCheckInTracker when progress is loaded
           <DailyCheckInTracker initiativeId={activeInitiative.id} />
+        ) : (
+          // Show a loading message while waiting for progress data
+          <div style={{ textAlign: 'center', padding: '20px' }}>
+            <p>Loading daily check-in tracker...</p>
+            <div style={{ marginTop: '10px', height: '4px', width: '100%', backgroundColor: '#f3f3f3', borderRadius: '2px' }}>
+              <div style={{ height: '100%', width: '30%', backgroundColor: '#3b82f6', borderRadius: '2px', animation: 'loading 1.5s infinite ease-in-out' }}></div>
+            </div>
+          </div>
         )}
       </div>
     </div>

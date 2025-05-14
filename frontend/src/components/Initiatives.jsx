@@ -341,7 +341,8 @@ const Initiatives = () => {
       )}
 
       {/* Active Initiative Progress Tracker */}
-      {!loading && <ProgressTracker key={activeInitiative?.id} />}
+      {!loading && activeInitiative &&
+  <ProgressTracker key={activeInitiative.id} initiativeId={activeInitiative.id} />}
 
       {/* Voting Period Notification */}
       {votingEndDate && (

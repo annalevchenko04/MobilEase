@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, EmailStr, field_validator, Field
 from typing import List, Optional, Dict
 from datetime import datetime
@@ -313,13 +313,17 @@ class ProgressBase(BaseModel):
 
 
 class ProgressCreate(ProgressBase):
-    pass
+    initiative_id: int
+    progress: int
+    completed: bool
+    details: Optional[Union[dict, str]] = None
 
 
 class Progress(ProgressBase):
     id: int
     user_id: int
     updated_at: datetime
+    details: Optional[Union[dict, str]] = None
 
     class Config:
         from_attributes = True

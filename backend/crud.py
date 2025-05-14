@@ -862,23 +862,28 @@ def activate_initiative(db: Session, initiative_id: int):
     if not db_initiative:
         return None
 
-    # Get the month and year of the initiative
-    activation_month = db_initiative.month
-    activation_year = db_initiative.year
-    company_id = db_initiative.company_id
+    # Update: Always set to current month and year when manually activated by admin
+    current_date = datetime.now()
+
+    # Update the initiative to current month/year
+    db_initiative.month = current_date.month
+    db_initiative.year = current_date.year
 
     # First, set all active initiatives to completed
-    active_initiatives = db.query(models.Initiative).filter(models.Initiative.status == "active").all()
+    active_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.status == "active",
+        models.Initiative.company_id == db_initiative.company_id  # Only affect same company's initiatives
+    ).all()
+
     for initiative in active_initiatives:
         initiative.status = "completed"
 
-    # Then, set all other pending initiatives from the same month/year to "archived"
-    # This effectively hides them from the voting list
+    # Set all other pending initiatives from the same month/year to "archived"
     pending_initiatives = db.query(models.Initiative).filter(
         models.Initiative.status == "pending",
-        models.Initiative.month == activation_month,
-        models.Initiative.year == activation_year,
-        models.Initiative.company_id == company_id,
+        models.Initiative.month == current_date.month,
+        models.Initiative.year == current_date.year,
+        models.Initiative.company_id == db_initiative.company_id,
         models.Initiative.id != initiative_id  # Exclude the initiative being activated
     ).all()
 
@@ -966,36 +971,73 @@ def get_voting_results(db: Session, company_id: int, month: int, year: int):
 
 # Progress CRUD operations
 def create_or_update_progress(db: Session, user_id: int, progress: schemas.ProgressCreate):
+    """Create or update progress for a user on an initiative."""
     # Check if progress entry already exists
     db_progress = db.query(models.UserProgress).filter(
         models.UserProgress.user_id == user_id,
         models.UserProgress.initiative_id == progress.initiative_id
     ).first()
 
+    # Handle the details field properly
+    details_json = None
+    if progress.details:
+        # If it's already a string, use it directly or fix it
+        if isinstance(progress.details, str):
+            try:
+                # Try to parse it to ensure it's valid JSON
+                json.loads(progress.details)
+                details_json = progress.details
+            except:
+                # If not valid JSON, try to handle it as a dict-like string
+                try:
+                    # Instead of discarding, try to salvage the data
+                    print(f"Warning: Invalid JSON in progress.details: {progress.details}")
+                    # If it's a dict-like value, convert it properly
+                    if isinstance(progress.details, dict):
+                        details_json = json.dumps(progress.details)
+                    else:
+                        # Last resort fallback
+                        details_json = json.dumps({"checkedDays": []})
+                except:
+                    details_json = json.dumps({"checkedDays": []})
+        else:
+            # If it's a dict or any other type, convert to JSON
+            try:
+                details_json = json.dumps(progress.details)
+                print(f"Converted dict to JSON: {details_json}")
+            except Exception as e:
+                print(f"Error converting details to JSON: {e}")
+                details_json = json.dumps({"checkedDays": []})
+    else:
+        # Default empty details
+        details_json = json.dumps({"checkedDays": []})
+
+    # For debugging - print exactly what we're saving
+    print(f"Type of details before saving: {type(progress.details)}")
+    print(f"Saving progress with details: {details_json}")
+
     if db_progress:
         db_progress.progress = progress.progress
         db_progress.completed = progress.completed
+        db_progress.details = details_json
     else:
         db_progress = models.UserProgress(
             user_id=user_id,
             initiative_id=progress.initiative_id,
             progress=progress.progress,
-            completed=progress.completed
+            completed=progress.completed,
+            details=details_json
         )
         db.add(db_progress)
 
     db.commit()
     db.refresh(db_progress)
+
+    # Validate what was actually saved
+    print(f"Saved progress ID: {db_progress.id}")
+    print(f"Saved details in DB: {db_progress.details}")
+
     return db_progress
-
-
-def get_user_progress(db: Session, user_id: int, initiative_id: Optional[int] = None):
-    query = db.query(models.UserProgress).filter(models.UserProgress.user_id == user_id)
-
-    if initiative_id:
-        query = query.filter(models.UserProgress.initiative_id == initiative_id)
-
-    return query.all()
 
 
 def get_company_progress(db: Session, company_id: int, initiative_id: int):
@@ -1383,3 +1425,40 @@ def check_day_off_eligibility_and_issue(db: Session, user_id: int):
     db.add(reward)
     db.commit()
 
+def get_user_progress(db: Session, user_id: int, initiative_id: Optional[int] = None):
+    query = db.query(models.UserProgress).filter(models.UserProgress.user_id == user_id)
+
+    if initiative_id:
+        query = query.filter(models.UserProgress.initiative_id == initiative_id)
+
+    return query.all()
+
+def deactivate_initiative(db: Session, initiative_id: int):
+    """Deactivate an initiative and start a 3-day voting period."""
+    initiative = get_initiative(db, initiative_id)
+    if not initiative or initiative.status != "active":
+        return None
+
+    # Can't deactivate locked initiative
+    if initiative.is_locked:
+        return None
+
+    # Set initiative as completed
+    initiative.status = "completed"
+
+    # Set voting end date for 3 days from now
+    voting_end_date = datetime.now() + timedelta(days=3)
+
+    # Update all pending initiatives with the voting end date
+    pending_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.company_id == initiative.company_id,
+        models.Initiative.month == initiative.month,
+        models.Initiative.year == initiative.year,
+        models.Initiative.status == "pending"
+    ).all()
+
+    for pending in pending_initiatives:
+        pending.voting_end_date = voting_end_date
+
+    db.commit()
+    return voting_end_date
