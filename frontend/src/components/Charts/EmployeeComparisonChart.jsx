@@ -14,7 +14,7 @@ import {
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const EmployeeComparisonChart = ({ employees }) => {
-  const labels = employees.map(emp => emp.name);
+  const labels = employees.map(emp => `${emp.name} ${emp.surname}`);
   const footprints = employees.map(emp => emp.totalFootprint);
 
   const chartData = {

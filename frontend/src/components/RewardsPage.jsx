@@ -12,6 +12,7 @@ export default function RewardsPage() {
   const [token, userRole, username, userId,] = useContext(UserContext);  // Getting the token from context
   const navigate = useNavigate();
   const [allRewards, setAllRewards] = useState([]);
+  const [adminInfo, setAdminInfo] = useState(null);
 
 
   const fetchAllRewards = async () => {

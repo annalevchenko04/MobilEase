@@ -362,16 +362,23 @@ def get_company_employees(
     )
 
     user_list = []
-    for e in employees:
         # Query the most recent carbon footprint entry for this user
         # If your CarbonFootprint model has a timestamp, you might order_by that descending.
         # Otherwise, order_by id descending to get the latest entry.
+    for e in employees:
         latest_footprint = (
-            db.query(models.CarbonFootprint)
-            .filter(models.CarbonFootprint.user_id == e.id)
-            .first()
+                db.query(models.CarbonFootprint)
+                .filter(models.CarbonFootprint.user_id == e.id)
+                .order_by(models.CarbonFootprint.id.desc())  # recommended to get the latest
+                .first()
         )
-        print(f"Employee {e.id} footprint value:", latest_footprint.total_footprint)
+
+        if latest_footprint:
+                print(f"Employee {e.id} footprint value:", latest_footprint.total_footprint)
+                total_footprint_value = latest_footprint.total_footprint
+        else:
+                print(f"Employee {e.id} has no footprint data.")
+                total_footprint_value = None
 
 
         user_data = {
@@ -384,7 +391,7 @@ def get_company_employees(
             "email": e.email,
             "phone": e.phone,
             "role": e.role,
-            "total_footprint": latest_footprint.total_footprint
+            "total_footprint": total_footprint_value
         }
         user_list.append(user_data)
 
@@ -1021,7 +1028,12 @@ def get_footprint_history(
 
 @app.get("/api/admin/rewards")
 def get_all_rewards(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
-    users = db.query(models.User).all()
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # ✅ Filter only users from the same company as the current admin
+    users = db.query(models.User).filter(models.User.company_id == current_user.company_id).all()
+
     results = []
 
     for user in users:

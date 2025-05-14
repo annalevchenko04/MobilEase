@@ -920,8 +920,10 @@ def check_day_off_eligibility_and_issue(db: Session, user_id: int):
         return
 
     # Check if already has voucher
-    existing = db.query(models.Reward).filter_by(user_id=user_id, type="day_off").first()
-    if existing and existing.status == "issued":
+    existing = db.query(models.Reward).filter_by(
+        user_id=user_id, type="day_off", status="issued"
+    ).first()
+    if existing:
         return
 
     # ✅ Issue reward and generate QR

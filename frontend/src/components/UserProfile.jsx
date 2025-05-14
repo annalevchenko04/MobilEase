@@ -6,7 +6,7 @@ import EditorComponent from "./EditorComponent";
 const UserProfile = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [error, setError] = useState(null);
-    const [token, , username, userId,] = useContext(UserContext); // Get the token from context
+    const [token, userRole, username, userId,] = useContext(UserContext); // Get the token from context
     const [avatarFile, setAvatarFile] = useState(null); // Holds the selected file (before upload)
     const [avatarUrl, setAvatarUrl] = useState(null);    // Holds the uploaded avatar URL
     const [avatarId, setAvatarId] = useState(null); // Use this to store avatarId
@@ -709,6 +709,7 @@ const handleRemoveTag = (tag) => {
 
             </div>
             <br/>
+            {userRole !== "admin" && (
             <div className="has-text-centered">
                 <button
                     className="button is-primary is-outlined is-medium"
@@ -726,10 +727,12 @@ const handleRemoveTag = (tag) => {
                     {isCreating ? <i className="fas fa-times"></i> : "Create Post"}
                 </button>
             </div>
+            )}
 
 
             <br/>
             <br/>
+
             {isCreating && (
                 <div className="box" style={{border: '3px solid #00d1b2'}}>
                     <h3 className="title is-primary">Create a New Post</h3>
@@ -1092,6 +1095,8 @@ const handleRemoveTag = (tag) => {
             {successMessage &&
                 <p className="notification is-primary is-light has-text-centered"><strong>{successMessage}</strong></p>}
 
+            {userRole !== "admin" && (
+  <>
             <h3 className="title is-large">My Posts</h3>
             <div className="box" style={{
                 border: '3px solid #00d1b2',
@@ -1189,6 +1194,8 @@ const handleRemoveTag = (tag) => {
                     </div>
                 )}
             </div>
+             </>
+)}
 
             {isModalOpen && (
                 <div className="modal is-active">

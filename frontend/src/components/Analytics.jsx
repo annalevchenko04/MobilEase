@@ -49,7 +49,8 @@ const Analytics = () => {
           return;
         }
         const data = await res.json();
-        setEmployees(data);
+        const uniqueEmployees = Array.from(new Map(data.map(emp => [emp.id, emp])).values());
+        setEmployees(uniqueEmployees);
       } catch (err) {
         console.error("Error fetching employees:", err);
       }
@@ -119,11 +120,13 @@ const Analytics = () => {
     employeeComparisonData = employees.map(emp => ({
       id: emp.id,
       name: emp.name,
+      surname: emp.surname,
       totalFootprint: emp.total_footprint || fallbackValues[emp.id] || 0,
     }));
   } else {
     employeeComparisonData = employees.map(emp => ({
       name: emp.name,
+      surname: emp.surname,
       totalFootprint: emp.totalFootprint,
     }));
   }
