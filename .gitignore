@@ -101,3 +101,5 @@ Pipfile.lock
 .mypy_cache/
 .pylint.d/
 pytest_cache/
+
+alembic/versions/
