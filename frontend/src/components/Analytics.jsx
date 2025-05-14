@@ -82,9 +82,9 @@ const Analytics = () => {
         const data = await res.json();
 
         setEmployees([
-          { id: 1, name: "You", totalFootprint: data.your_footprint || 0 },
-          { id: 2, name: "Company Avg", totalFootprint: data.average },
-          { id: 3, name: "Max in Company", totalFootprint: data.maximum },
+          { id: 1, name: "You", surname: "", totalFootprint: data.your_footprint || 0 },
+          { id: 2, name: "Company Avg", surname: "", totalFootprint: data.average },
+          { id: 3, name: "Max in Company", surname: "", totalFootprint: data.maximum },
         ]);
 
         setCurrentFootprint(data.your_footprint || 0);
