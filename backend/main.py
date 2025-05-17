@@ -1148,7 +1148,7 @@ def create_or_update_progress_endpoint(
         raise HTTPException(status_code=400, detail="Progress must be between 0 and 100")
 
     # If the progress is complete (100%), award a badge
-    if progress.progress == 100 and progress.completed:
+    if progress.progress == 9:
         crud.award_initiative_completion_badge(db, current_user.id)
 
     return crud.create_or_update_progress(db, current_user.id, progress)

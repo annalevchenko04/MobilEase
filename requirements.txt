@@ -15,4 +15,3 @@ axios
 alembic
 qrcode
 pillow
-react-chartjs-2

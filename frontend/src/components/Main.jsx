@@ -74,7 +74,7 @@ export default function SustainabilityPage() {
                               <br/>
                               <br/>
                               <h3 className="title is-5 is-size-4-mobile is-size-3-tablet is-size-2-desktop">
-                                  Share your Experience how to achieve goals </h3>
+                                  Suggest and Vote for Monthly Challenge </h3>
                               <img
                                   src="/images/arrow2.png"
                                   alt="Description of image"

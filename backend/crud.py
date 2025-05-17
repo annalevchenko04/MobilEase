@@ -568,7 +568,7 @@ def check_and_assign_popular_post_badge(db: Session, post_id: int):
     popular_post_badge_name = "Trendsetter"
     favorite_count = count_favorites(db, post_id)
 
-    if favorite_count >= 3:
+    if favorite_count >= 5:
         # Check if the "Popular Post" badge already exists
         existing_badge = db.query(models.Badge).filter(models.Badge.name == popular_post_badge_name).first()
 
@@ -1056,14 +1056,20 @@ def get_company_progress(db: Session, company_id: int, initiative_id: int):
 
 
 def award_initiative_completion_badge(db: Session, user_id: int):
-    # Create a badge for initiative completion if it doesn't exist
+    # Ensure user exists
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        print(f"[ERROR] User ID {user_id} not found.")
+        return False
+
+    # Create badge if not exists
     badge_name = "Initiative Champion"
     initiative_badge = db.query(models.Badge).filter(models.Badge.name == badge_name).first()
 
     if not initiative_badge:
         initiative_badge = models.Badge(
             name=badge_name,
-            description="Awarded for completing a company sustainability initiative"
+            description="Completed a company monthly challenge."
         )
         db.add(initiative_badge)
         db.commit()
@@ -1076,14 +1082,22 @@ def award_initiative_completion_badge(db: Session, user_id: int):
     ).first()
 
     if not existing_badge:
-        user_badge = models.UserBadge(
-            user_id=user_id,
-            badge_id=initiative_badge.id
-        )
-        db.add(user_badge)
-        db.commit()
+        try:
+            user_badge = models.UserBadge(user_id=user_id, badge_id=initiative_badge.id)
+            db.add(user_badge)
+            db.commit()
+        except Exception as e:
+            print(f"[ERROR] Failed to assign user badge: {e}")
+            db.rollback()
+            return False
+    else:
+        print(f"[INFO] User {user_id} already has the Initiative Champion badge.")
 
+    # Call this after badge is awarded
+    check_day_off_eligibility_and_issue(db, user_id)
     return True
+
+
 
 
 # Add these functions to crud.py
@@ -1347,11 +1361,9 @@ def check_and_assign_climate_champion_badge(db: Session, user_id: int, total_foo
 
     check_day_off_eligibility_and_issue(db, user_id)
 
-
 def has_earned_day_off(db: Session, user_id: int) -> bool:
     badge_count = db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).count()
-    return badge_count >= 4
-
+    return badge_count >= 5
 
 def generate_qr_code_data(user_id: int, db: Session) -> str:
     # Fetch user details from the database
@@ -1376,7 +1388,7 @@ def generate_qr_code_data(user_id: int, db: Session) -> str:
         "company_industry": company.industry,  # Company industry
         "company_domain": company.domain,  # Company domain
         "reward": "day_off",  # You can replace this if different reward types are added
-        "issued_at": datetime.datetime.utcnow().isoformat(),  # Add current timestamp
+        "issued_at": datetime.utcnow().isoformat(),  # Add current timestamp
         "status": "issued",  # Example of reward status
     }
 
@@ -1464,4 +1476,6 @@ def deactivate_initiative(db: Session, initiative_id: int):
         pending.voting_end_date = voting_end_date
 
     db.commit()
+
+
     return voting_end_date

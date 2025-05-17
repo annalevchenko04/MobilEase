@@ -694,6 +694,13 @@ const handleRemoveTag = (tag) => {
                                   className="badge-image"
                                 />
                               )
+                                    : badge.id === 5 ? (
+                                <img
+                                  src="http://localhost:8000/images/ESP_badge_5.png"  // Image for badge id 5
+                                  alt={badge.name}
+                                  className="badge-image"
+                                />
+                              )
                                 : null}
                             <div className="badge-info">  {/* Wrapper to group name and description */}
                                 <strong>{badge.name}</strong>

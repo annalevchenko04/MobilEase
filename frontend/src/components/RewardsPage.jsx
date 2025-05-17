@@ -159,7 +159,7 @@ const handleResetProgress = async (targetUserId) => {
                     {icon: "📸", text: "Post 3 times", key: "post3", path: "/profile"},
                     {icon: "❤️", text: "Get 5 likes", key: "likes5", path: "/explore"},
                     {icon: "🌱", text: "Attend 3 sustainability events", key: "events3", path: "/schedule"},
-                    {icon: "🏁", text: "Complete a challenge", key: "challenge1", path: "/explore"},
+                    {icon: "🏁", text: "Complete a challenge", key: "challenge1", path: "/initiatives"},
                     {icon: "🌍", text: "Reach the 2030 CO₂ goal", key: "co2goal", path: "/footprint"},
                   ].map((item) => (
                       <li
