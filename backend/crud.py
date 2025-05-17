@@ -12,10 +12,12 @@ from send_company_email import send_company_registration_email
 from sqlalchemy.exc import IntegrityError
 import json
 import logging
+from typing import Optional, List
 from qrcode import QRCode
 import datetime
 import base64
 from io import BytesIO
+
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -793,6 +795,496 @@ def delete_comment(db: Session, comment_id: int):
     return True
 
 
+# Initiative CRUD operations
+def create_initiative(db: Session, initiative: schemas.InitiativeCreate, user_id: int, company_id: int):
+    db_initiative = models.Initiative(
+        title=initiative.title,
+        description=initiative.description,
+        created_by=user_id,
+        month=initiative.month,
+        year=initiative.year,
+        company_id=company_id,
+        status="pending"
+    )
+    db.add(db_initiative)
+    db.commit()
+    db.refresh(db_initiative)
+    return db_initiative
+
+
+def get_initiative(db: Session, initiative_id: int):
+    return db.query(models.Initiative).filter(models.Initiative.id == initiative_id).first()
+
+
+# Update the function in crud.py
+def get_initiatives(db: Session, company_id: int, status: Optional[str] = None, month: Optional[int] = None,
+                    year: Optional[int] = None, include_archived: bool = False):
+    query = db.query(models.Initiative).filter(models.Initiative.company_id == company_id)
+
+    if status:
+        query = query.filter(models.Initiative.status == status)
+    elif not include_archived:
+        # By default, exclude archived initiatives unless explicitly requested
+        query = query.filter(models.Initiative.status != "archived")
+
+    if month:
+        query = query.filter(models.Initiative.month == month)
+    if year:
+        query = query.filter(models.Initiative.year == year)
+
+    return query.all()
+
+
+def update_initiative(db: Session, initiative_id: int, initiative: schemas.InitiativeCreate):
+    db_initiative = get_initiative(db, initiative_id)
+    if db_initiative:
+        db_initiative.title = initiative.title
+        db_initiative.description = initiative.description
+        db_initiative.month = initiative.month
+        db_initiative.year = initiative.year
+        db.commit()
+        db.refresh(db_initiative)
+    return db_initiative
+
+
+def delete_initiative(db: Session, initiative_id: int):
+    db_initiative = get_initiative(db, initiative_id)
+    if db_initiative:
+        db.delete(db_initiative)
+        db.commit()
+        return True
+    return False
+
+
+# Update this function in crud.py
+def activate_initiative(db: Session, initiative_id: int):
+    # Get the initiative to be activated
+    db_initiative = get_initiative(db, initiative_id)
+    if not db_initiative:
+        return None
+
+    # Update: Always set to current month and year when manually activated by admin
+    current_date = datetime.now()
+
+    # Update the initiative to current month/year
+    db_initiative.month = current_date.month
+    db_initiative.year = current_date.year
+
+    # First, set all active initiatives to completed
+    active_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.status == "active",
+        models.Initiative.company_id == db_initiative.company_id  # Only affect same company's initiatives
+    ).all()
+
+    for initiative in active_initiatives:
+        initiative.status = "completed"
+
+    # Set all other pending initiatives from the same month/year to "archived"
+    pending_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.status == "pending",
+        models.Initiative.month == current_date.month,
+        models.Initiative.year == current_date.year,
+        models.Initiative.company_id == db_initiative.company_id,
+        models.Initiative.id != initiative_id  # Exclude the initiative being activated
+    ).all()
+
+    for initiative in pending_initiatives:
+        initiative.status = "archived"
+
+    # Finally, activate the selected initiative
+    db_initiative.status = "active"
+    db.commit()
+    db.refresh(db_initiative)
+
+    return db_initiative
+
+
+def get_active_initiative(db: Session, company_id: int):
+    """Get the currently active initiative for a company."""
+    return db.query(models.Initiative).filter(
+        models.Initiative.company_id == company_id,
+        models.Initiative.status == "active"
+    ).first()
+
+
+# Vote CRUD operations
+def create_vote(db: Session, user_id: int, initiative_id: int):
+    # Check if user has already voted for this initiative
+    existing_vote = db.query(models.Vote).filter(
+        models.Vote.user_id == user_id,
+        models.Vote.initiative_id == initiative_id
+    ).first()
+
+    if existing_vote:
+        return existing_vote
+
+    db_vote = models.Vote(
+        user_id=user_id,
+        initiative_id=initiative_id
+    )
+    db.add(db_vote)
+    db.commit()
+    db.refresh(db_vote)
+    return db_vote
+
+
+def delete_vote(db: Session, user_id: int, initiative_id: int):
+    db_vote = db.query(models.Vote).filter(
+        models.Vote.user_id == user_id,
+        models.Vote.initiative_id == initiative_id
+    ).first()
+
+    if db_vote:
+        db.delete(db_vote)
+        db.commit()
+        return True
+    return False
+
+
+def get_votes_by_initiative(db: Session, initiative_id: int):
+    return db.query(models.Vote).filter(models.Vote.initiative_id == initiative_id).all()
+
+
+def get_voting_results(db: Session, company_id: int, month: int, year: int):
+    # Get all initiatives for the specified month and year
+    initiatives = db.query(models.Initiative).filter(
+        models.Initiative.company_id == company_id,
+        models.Initiative.month == month,
+        models.Initiative.year == year
+    ).all()
+
+    results = []
+    for initiative in initiatives:
+        vote_count = db.query(models.Vote).filter(models.Vote.initiative_id == initiative.id).count()
+        results.append({
+            "id": initiative.id,
+            "title": initiative.title,
+            "description": initiative.description,
+            "created_by": initiative.created_by,
+            "vote_count": vote_count
+        })
+
+    # Sort by vote count (descending)
+    results.sort(key=lambda x: x["vote_count"], reverse=True)
+
+    return results
+
+
+# Progress CRUD operations
+def create_or_update_progress(db: Session, user_id: int, progress: schemas.ProgressCreate):
+    """Create or update progress for a user on an initiative."""
+    # Check if progress entry already exists
+    db_progress = db.query(models.UserProgress).filter(
+        models.UserProgress.user_id == user_id,
+        models.UserProgress.initiative_id == progress.initiative_id
+    ).first()
+
+    # Handle the details field properly
+    details_json = None
+    if progress.details:
+        # If it's already a string, use it directly or fix it
+        if isinstance(progress.details, str):
+            try:
+                # Try to parse it to ensure it's valid JSON
+                json.loads(progress.details)
+                details_json = progress.details
+            except:
+                # If not valid JSON, try to handle it as a dict-like string
+                try:
+                    # Instead of discarding, try to salvage the data
+                    print(f"Warning: Invalid JSON in progress.details: {progress.details}")
+                    # If it's a dict-like value, convert it properly
+                    if isinstance(progress.details, dict):
+                        details_json = json.dumps(progress.details)
+                    else:
+                        # Last resort fallback
+                        details_json = json.dumps({"checkedDays": []})
+                except:
+                    details_json = json.dumps({"checkedDays": []})
+        else:
+            # If it's a dict or any other type, convert to JSON
+            try:
+                details_json = json.dumps(progress.details)
+                print(f"Converted dict to JSON: {details_json}")
+            except Exception as e:
+                print(f"Error converting details to JSON: {e}")
+                details_json = json.dumps({"checkedDays": []})
+    else:
+        # Default empty details
+        details_json = json.dumps({"checkedDays": []})
+
+    # For debugging - print exactly what we're saving
+    print(f"Type of details before saving: {type(progress.details)}")
+    print(f"Saving progress with details: {details_json}")
+
+    if db_progress:
+        db_progress.progress = progress.progress
+        db_progress.completed = progress.completed
+        db_progress.details = details_json
+    else:
+        db_progress = models.UserProgress(
+            user_id=user_id,
+            initiative_id=progress.initiative_id,
+            progress=progress.progress,
+            completed=progress.completed,
+            details=details_json
+        )
+        db.add(db_progress)
+
+    db.commit()
+    db.refresh(db_progress)
+
+    # Validate what was actually saved
+    print(f"Saved progress ID: {db_progress.id}")
+    print(f"Saved details in DB: {db_progress.details}")
+
+    return db_progress
+
+
+def get_company_progress(db: Session, company_id: int, initiative_id: int):
+    # Get all users in the company
+    users = db.query(models.User).filter(models.User.company_id == company_id).all()
+    user_ids = [user.id for user in users]
+
+    # Get progress for these users on the specific initiative
+    progress_entries = db.query(models.UserProgress).filter(
+        models.UserProgress.user_id.in_(user_ids),
+        models.UserProgress.initiative_id == initiative_id
+    ).all()
+
+    return progress_entries
+
+
+def award_initiative_completion_badge(db: Session, user_id: int):
+    # Create a badge for initiative completion if it doesn't exist
+    badge_name = "Initiative Champion"
+    initiative_badge = db.query(models.Badge).filter(models.Badge.name == badge_name).first()
+
+    if not initiative_badge:
+        initiative_badge = models.Badge(
+            name=badge_name,
+            description="Awarded for completing a company sustainability initiative"
+        )
+        db.add(initiative_badge)
+        db.commit()
+        db.refresh(initiative_badge)
+
+    # Check if user already has this badge
+    existing_badge = db.query(models.UserBadge).filter(
+        models.UserBadge.user_id == user_id,
+        models.UserBadge.badge_id == initiative_badge.id
+    ).first()
+
+    if not existing_badge:
+        user_badge = models.UserBadge(
+            user_id=user_id,
+            badge_id=initiative_badge.id
+        )
+        db.add(user_badge)
+        db.commit()
+
+    return True
+
+
+# Add these functions to crud.py
+
+from datetime import datetime, timedelta
+from sqlalchemy import and_, func
+
+
+def check_user_has_pending_initiative(db: Session, user_id: int):
+    """Check if the user already has a pending initiative for the next month."""
+    try:
+        # Import required modules if not already at the top of the file
+        from datetime import datetime, timedelta
+
+        current_date = datetime.now()
+        next_month_date = current_date.replace(day=1) + timedelta(days=32)
+        next_month = next_month_date.month
+        next_year = next_month_date.year
+
+        pending_initiative = db.query(models.Initiative).filter(
+            models.Initiative.created_by == user_id,
+            models.Initiative.month == next_month,
+            models.Initiative.year == next_year,
+            models.Initiative.status.in_(["pending", "active"])
+        ).first()
+
+        return pending_initiative is not None
+    except Exception as e:
+        # Log the error but don't break the application
+        print(f"Error in check_user_has_pending_initiative: {str(e)}")
+        # Default to False (allow creating) in case of error
+        return False
+
+def mark_initiatives_as_failed(db: Session, company_id: int, month: int, year: int, exclude_initiative_id: int = None):
+    """Mark all pending initiatives for a month as failed, except the one being activated."""
+    # Calculate auto-delete date (15th of the current month)
+    auto_delete_date = datetime(year, month, 15)
+
+    # Get all pending initiatives for this month/year except the one being activated
+    query = db.query(models.Initiative).filter(
+        models.Initiative.company_id == company_id,
+        models.Initiative.month == month,
+        models.Initiative.year == year,
+        models.Initiative.status == "pending"
+    )
+
+    if exclude_initiative_id:
+        query = query.filter(models.Initiative.id != exclude_initiative_id)
+
+    initiatives = query.all()
+
+    # Mark as failed and set auto-delete date
+    for initiative in initiatives:
+        initiative.status = "failed"
+        initiative.auto_delete_date = auto_delete_date
+
+    db.commit()
+    return initiatives
+
+
+def auto_activate_top_initiative(db: Session, company_id: int, month: int, year: int):
+    """Automatically activate the initiative with the most votes."""
+    # First, get all pending initiatives
+    pending_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.company_id == company_id,
+        models.Initiative.month == month,
+        models.Initiative.year == year,
+        models.Initiative.status == "pending"
+    ).all()
+
+    if not pending_initiatives:
+        return None
+
+    # Count votes for each initiative
+    initiatives_with_votes = []
+    for initiative in pending_initiatives:
+        vote_count = db.query(models.Vote).filter(
+            models.Vote.initiative_id == initiative.id
+        ).count()
+        initiatives_with_votes.append((initiative, vote_count))
+
+    # Sort by vote count (descending)
+    initiatives_with_votes.sort(key=lambda x: x[1], reverse=True)
+
+    if not initiatives_with_votes:
+        return None
+
+    # Take the top initiative
+    top_initiative, _ = initiatives_with_votes[0]
+
+    # Mark all others as failed
+    mark_initiatives_as_failed(db, company_id, month, year, top_initiative.id)
+
+    # Set the top initiative as active and locked
+    top_initiative.status = "active"
+    top_initiative.is_locked = True
+
+    # First, set all active initiatives to completed
+    active_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.company_id == company_id,
+        models.Initiative.status == "active"
+    ).all()
+
+    for initiative in active_initiatives:
+        initiative.status = "completed"
+
+    db.commit()
+    db.refresh(top_initiative)
+
+    return top_initiative
+
+
+def deactivate_initiative(db: Session, initiative_id: int):
+    """Deactivate an initiative and start a 3-day voting period."""
+    initiative = get_initiative(db, initiative_id)
+    if not initiative or initiative.status != "active":
+        return None
+
+    # Can't deactivate locked initiative
+    if initiative.is_locked:
+        return None
+
+    # Set initiative as completed
+    initiative.status = "completed"
+
+    # Set voting end date for 3 days from now
+    voting_end_date = datetime.now() + timedelta(days=3)
+
+    # Update all pending initiatives with the voting end date
+    pending_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.company_id == initiative.company_id,
+        models.Initiative.month == initiative.month,
+        models.Initiative.year == initiative.year,
+        models.Initiative.status == "pending"
+    ).all()
+
+    for pending in pending_initiatives:
+        pending.voting_end_date = voting_end_date
+
+    db.commit()
+    return voting_end_date
+
+
+def check_expired_voting_periods(db: Session):
+    """Check for any expired voting periods and activate the top initiative."""
+    current_time = datetime.now()
+
+    # Get initiatives with expired voting periods
+    initiatives_with_expired_voting = db.query(models.Initiative).filter(
+        models.Initiative.voting_end_date <= current_time,
+        models.Initiative.status == "pending"
+    ).all()
+
+    if not initiatives_with_expired_voting:
+        return
+
+    # Group by company_id, month, year
+    grouped_initiatives = {}
+    for initiative in initiatives_with_expired_voting:
+        key = (initiative.company_id, initiative.month, initiative.year)
+        if key not in grouped_initiatives:
+            grouped_initiatives[key] = []
+        grouped_initiatives[key].append(initiative)
+
+    # For each group, activate the top initiative
+    for (company_id, month, year), _ in grouped_initiatives.items():
+        auto_activate_top_initiative(db, company_id, month, year)
+
+
+def check_monthly_auto_activation(db: Session):
+    """Check if it's the 1st of the month and activate initiatives."""
+    current_date = datetime.now()
+
+    # Only run on the 1st of the month
+    if current_date.day != 1:
+        return
+
+    # Get all companies
+    companies = db.query(models.Company).all()
+
+    for company in companies:
+        # Activate the top initiative for each company
+        auto_activate_top_initiative(db, company.id, current_date.month, current_date.year)
+
+
+def cleanup_failed_initiatives(db: Session):
+    """Delete failed initiatives that have reached their auto-delete date."""
+    current_time = datetime.now()
+
+    # Get initiatives that should be deleted
+    initiatives_to_delete = db.query(models.Initiative).filter(
+        models.Initiative.auto_delete_date <= current_time,
+        models.Initiative.status == "failed"
+    ).all()
+
+    # Delete them
+    for initiative in initiatives_to_delete:
+        db.delete(initiative)
+
+    db.commit()
+    return len(initiatives_to_delete)
 
 
 def check_and_assign_sustainability_badge(db: Session, user_id: int):
@@ -936,6 +1428,40 @@ def check_day_off_eligibility_and_issue(db: Session, user_id: int):
     db.add(reward)
     db.commit()
 
+def get_user_progress(db: Session, user_id: int, initiative_id: Optional[int] = None):
+    query = db.query(models.UserProgress).filter(models.UserProgress.user_id == user_id)
 
+    if initiative_id:
+        query = query.filter(models.UserProgress.initiative_id == initiative_id)
 
+    return query.all()
 
+def deactivate_initiative(db: Session, initiative_id: int):
+    """Deactivate an initiative and start a 3-day voting period."""
+    initiative = get_initiative(db, initiative_id)
+    if not initiative or initiative.status != "active":
+        return None
+
+    # Can't deactivate locked initiative
+    if initiative.is_locked:
+        return None
+
+    # Set initiative as completed
+    initiative.status = "completed"
+
+    # Set voting end date for 3 days from now
+    voting_end_date = datetime.now() + timedelta(days=3)
+
+    # Update all pending initiatives with the voting end date
+    pending_initiatives = db.query(models.Initiative).filter(
+        models.Initiative.company_id == initiative.company_id,
+        models.Initiative.month == initiative.month,
+        models.Initiative.year == initiative.year,
+        models.Initiative.status == "pending"
+    ).all()
+
+    for pending in pending_initiatives:
+        pending.voting_end_date = voting_end_date
+
+    db.commit()
+    return voting_end_date

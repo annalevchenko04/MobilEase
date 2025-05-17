@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, EmailStr, field_validator, Field
 from typing import List, Optional, Dict
 from datetime import datetime
@@ -264,6 +264,69 @@ class CompanyResponse(CompanyCreate):
     class Config:
         from_attributes = True
 
+# Update the Initiative schema in schemas.py
+class InitiativeBase(BaseModel):
+    title: str
+    description: str
+    month: int
+    year: int
+
+
+class InitiativeCreate(InitiativeBase):
+    pass
+
+
+class Initiative(InitiativeBase):
+    id: int
+    created_by: int
+    created_at: datetime
+    status: str
+    company_id: int
+    vote_count: Optional[int] = None
+    is_locked: Optional[bool] = False
+    voting_end_date: Optional[datetime] = None
+    auto_delete_date: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+# Vote schemas
+class VoteCreate(BaseModel):
+    initiative_id: int
+
+
+class Vote(BaseModel):
+    id: int
+    user_id: int
+    initiative_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# Progress schemas
+class ProgressBase(BaseModel):
+    initiative_id: int
+    progress: int  # 0-100 percentage
+    completed: bool = False
+
+
+class ProgressCreate(ProgressBase):
+    initiative_id: int
+    progress: int
+    completed: bool
+    details: Optional[Union[dict, str]] = None
+
+
+class Progress(ProgressBase):
+    id: int
+    user_id: int
+    updated_at: datetime
+    details: Optional[Union[dict, str]] = None
+
+    class Config:
+        from_attributes = True
 
 class DayOffRewardResponse(BaseModel):
     status: str  # "not_earned", "issued", "redeemed"

@@ -21,6 +21,15 @@ class User(Base):
     hashed_password = Column(String(255), nullable=False)
     role = Column(String(10), nullable=False)
 
+    # Initiatives created by the user
+    created_initiatives = relationship("Initiative", foreign_keys="Initiative.created_by", back_populates="creator")
+
+    # Votes cast by the user
+    votes = relationship("Vote", back_populates="user")
+
+    # Progress entries
+    progress_entries = relationship("UserProgress", back_populates="user")
+
     __table_args__ = (
         CheckConstraint(
             "role IN ('admin', 'member')", name="check_valid_roles"
@@ -289,6 +298,66 @@ class Company(Base):
     def __repr__(self):
         return f"<Company(name={self.name}, industry={self.industry}, domain={self.domain})>"
 
+# Update the Initiative model in models.py to include new fields and statuses
+class Initiative(Base):
+    __tablename__ = "initiatives"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, nullable=False)
+    description = Column(Text, nullable=False)
+    created_by = Column(Integer, ForeignKey("users.id"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+    # Update status options: pending, active, completed, failed, archived
+    status = Column(String, nullable=False, default="pending")
+    month = Column(Integer, nullable=False)
+    year = Column(Integer, nullable=False)
+    company_id = Column(Integer, ForeignKey("companies.id"), nullable=False)
+
+    # New fields for automatic management
+    voting_end_date = Column(DateTime, nullable=True)
+    auto_delete_date = Column(DateTime, nullable=True)
+    is_locked = Column(Boolean, default=False)  # To prevent changes when auto-activated
+
+    # Relationships
+    creator = relationship("User", foreign_keys=[created_by], back_populates="created_initiatives")
+    company = relationship("Company")
+    votes = relationship("Vote", back_populates="initiative", cascade="all, delete-orphan")
+    progress_entries = relationship("UserProgress", back_populates="initiative", cascade="all, delete-orphan")
+
+
+class Vote(Base):
+    __tablename__ = "votes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    initiative_id = Column(Integer, ForeignKey("initiatives.id"), nullable=False)
+    created_at = Column(DateTime, server_default=func.now())
+
+    # Ensure a user can only vote once per initiative
+    __table_args__ = (UniqueConstraint('user_id', 'initiative_id', name='unique_user_initiative_vote'),)
+
+    # Relationships
+    user = relationship("User")
+    initiative = relationship("Initiative", back_populates="votes")
+
+
+class UserProgress(Base):
+    __tablename__ = "user_progress"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    initiative_id = Column(Integer, ForeignKey("initiatives.id"), nullable=False)
+    progress = Column(Integer, nullable=False, default=0)  # 0-100 percentage
+    completed = Column(Boolean, nullable=False, default=False)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+    details = Column(Text, nullable=True)  # Add this line for details JSON
+
+    # Ensure a user has only one progress entry per initiative
+    __table_args__ = (UniqueConstraint('user_id', 'initiative_id', name='unique_user_initiative_progress'),)
+
+    # Relationships
+    user = relationship("User")
+    initiative = relationship("Initiative", back_populates="progress_entries")
 
 class Reward(Base):
     __tablename__ = "rewards"
@@ -299,5 +368,4 @@ class Reward(Base):
     qr_code = Column(Text)  # base64 image or a code string
     issued_at = Column(DateTime, default=datetime.utcnow)
     redeemed_at = Column(DateTime, nullable=True)
-
 

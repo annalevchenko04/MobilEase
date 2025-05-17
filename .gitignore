@@ -101,11 +101,11 @@ Pipfile.lock
 .mypy_cache/
 .pylint.d/
 pytest_cache/
+
+alembic/versions/
 /bin/
 /Libs/
 /.settings/
 /.classpath
 .svn/
-
-
 Object Repository/**/div_Uncaught runtime errors*
