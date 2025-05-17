@@ -10,6 +10,8 @@ from jose import JWTError, jwt
 from fastapi.staticfiles import StaticFiles
 from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
+import json
+
 from database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated, List, Dict, Union
@@ -105,96 +107,45 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         raise credentials_exception
     return user
 
-# Update the existing footprint endpoint
 @app.post("/footprint")
 def calculate_footprint_api(
         data: CarbonFootprintRequest,
-        season: str = Query(None, enum=["Winter", "Spring", "Summer", "Fall"]),  # Optional
-        year: int = Query(None, gt=2000, lt=2050),  # Optional
         db: Session = Depends(get_db),
         current_user: models.User = Depends(get_current_user)
 ):
     logging.info(f"Incoming Token Data: {current_user}")
     logging.info(f"Answers Received: {data.answers}")
-    logging.info(f"Season: {season}, Year: {year}")
 
+    # # 🔎 Log the questions before calculation
+    # logging.info("=== Questions Loaded for Calculation ===")
+    # for question in questions:
+    #     logging.info(f"ID: {question['id']} | Text: {question['text']} | Type: {question['type']}")
     try:
-        # Calculate footprint with season if provided
-        result = calculate_footprint(data.answers, season=season)
+        result = calculate_footprint(data.answers)
         logging.info(f"Calculation Result: {result}")
+        logging.info(f"Numeric Data: {result['unified_data']['numeric_data']}")
 
-        # Save with season and year if provided
         saved_footprint = crud.save_carbon_footprint(
             db,
             user_id=current_user.id,
             total_footprint=result['total_carbon_footprint_kg'],
             details=result['unified_data'],
-            season=season,
-            year=year
+            category_breakdown=result['category_breakdown']
         )
 
-        # Generate recommendations based on season
-        if season:
-            recommendations = generate_seasonal_recommendations(season, result['category_breakdown'])
-        else:
-            recommendations = [
+        return {
+            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
+            "category_breakdown": result['category_breakdown'],
+            "recommendations": [
                 "Reduce car usage and consider public transport.",
                 "Switch to energy-efficient appliances to reduce electricity use.",
                 "Consider reducing red meat consumption for lower food emissions."
-            ]
-
-        response_data = {
-            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
-            "category_breakdown": result['category_breakdown'],
-            "recommendations": recommendations,
+            ],
             "saved_footprint": saved_footprint
         }
-
-        # Add season-specific data if available
-        if season:
-            response_data["season"] = season
-            response_data["year"] = year
-            response_data["benchmarks"] = result.get('benchmarks', {})
-
-        return response_data
     except Exception as e:
         logging.error(f"Error in calculation: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error calculating footprint: {str(e)}")
-
-
-# Add new endpoint for footprint history
-@app.get("/footprint/history")
-def get_footprint_history_api(
-        db: Session = Depends(get_db),
-        current_user: models.User = Depends(get_current_user)
-):
-    """Get historical footprint data for the current user."""
-    try:
-        footprint_entries = crud.get_footprint_history(db, current_user.id)
-
-        # Format the response
-        history_data = []
-        for entry in footprint_entries:
-            entry_data = {
-                "id": entry.id,
-                "total_footprint": entry.total_footprint,
-                "created_at": entry.created_at
-            }
-
-            # Add seasonal data if available
-            if entry.season and entry.year:
-                entry_data["season"] = entry.season
-                entry_data["year"] = entry.year
-                entry_data["is_seasonal"] = True
-            else:
-                entry_data["is_seasonal"] = False
-
-            history_data.append(entry_data)
-
-        return {"history": history_data}
-    except Exception as e:
-        logging.error(f"Error retrieving history: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error retrieving data: {str(e)}")
 
 
 default_values = {
@@ -238,6 +189,20 @@ mapping_corrections = {
     "flight_economy": "flight_economy",
     "flight_first_class": "flight_first_class"
 }
+
+@app.get("/get_footprint")
+def get_footprint_api(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    footprint = db.query(models.CarbonFootprint) \
+        .filter(models.CarbonFootprint.user_id == current_user.id) \
+        .order_by(models.CarbonFootprint.id.desc()) \
+        .first()
+    if not footprint:
+        raise HTTPException(status_code=404, detail="No footprint record found")
+    details = json.loads(footprint.details)
+    return {
+        "total_carbon_footprint_kg": footprint.total_footprint,
+        "details": details
+    }
 
 
 @app.get("/user/{username}", response_model=schemas.UserResponse, tags=["Users"])
@@ -352,45 +317,6 @@ async def list_users(db: db_dependency):
 
 
 
-@app.post("/footprint")
-def calculate_footprint_api(
-        data: CarbonFootprintRequest,
-        db: Session = Depends(get_db),
-        current_user: models.User = Depends(get_current_user)
-):
-    logging.info(f"Incoming Token Data: {current_user}")
-    logging.info(f"Answers Received: {data.answers}")
-
-    # # 🔎 Log the questions before calculation
-    # logging.info("=== Questions Loaded for Calculation ===")
-    # for question in questions:
-    #     logging.info(f"ID: {question['id']} | Text: {question['text']} | Type: {question['type']}")
-    try:
-        result = calculate_footprint(data.answers)
-        logging.info(f"Calculation Result: {result}")
-        logging.info(f"Numeric Data: {result['unified_data']['numeric_data']}")
-
-        saved_footprint = crud.save_carbon_footprint(
-            db,
-            user_id=current_user.id,
-            total_footprint=result['total_carbon_footprint_kg'],
-            details=result['unified_data']
-        )
-
-        return {
-            "total_carbon_footprint_kg": result['total_carbon_footprint_kg'],
-            "category_breakdown": result['category_breakdown'],
-            "recommendations": [
-                "Reduce car usage and consider public transport.",
-                "Switch to energy-efficient appliances to reduce electricity use.",
-                "Consider reducing red meat consumption for lower food emissions."
-            ],
-            "saved_footprint": saved_footprint
-        }
-    except Exception as e:
-        logging.error(f"Error in calculation: {str(e)}")
-        raise HTTPException(status_code=500, detail=f"Error calculating footprint: {str(e)}")
-
 
 
 @app.get("/user/profile", response_model=schemas.UserResponse, tags=["Users"])
@@ -400,40 +326,59 @@ async def get_user_profile(
 ):
     return crud.get_user(db, current_user.username)
 
-@app.get("/admin/company-employees", response_model=List[schemas.UserResponse])
+@app.get("/admin/company-employees")
 def get_company_employees(
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user),
-):
-    print("✅ get_company_employees called by:", current_user.username, "| Role:", current_user.role)
-
+        db: Session = Depends(get_db),
+        current_user: models.User = Depends(get_current_user),
+) -> List[dict]:
+    """
+    Returns a list of employees for the current admin user.
+    Includes each employee's most recent total footprint.
+    """
     if current_user.role != "admin":
-        print("⛔ Not an admin")
         raise HTTPException(status_code=403, detail="Only admins can access this.")
 
-    employees = db.query(models.User).filter(models.User.company_id == current_user.company_id).all()
-    print(f"👥 Found {len(employees)} employees for company_id {current_user.company_id}")
+    employees = (
+        db.query(models.User)
+        .filter(models.User.company_id == current_user.company_id)
+        .all()
+    )
 
-    try:
-        return [
-            schemas.UserResponse.model_validate({
-                "id": e.id,
-                "username": e.username,
-                "name": e.name,
-                "surname": e.surname,
-                "age": e.age,
-                "gender": e.gender,
-                "email": e.email,
-                "phone": e.phone,
-                "role": e.role,
-                "member_details": {
-                    "membership_status": getattr(e, "membership_status", None)
-                } if e.role == "member" else None
-            }) for e in employees
-        ]
-    except Exception as e:
-        print(" Exception while building employee list:", str(e))
-        raise
+    user_list = []
+        # Query the most recent carbon footprint entry for this user
+        # If your CarbonFootprint model has a timestamp, you might order_by that descending.
+        # Otherwise, order_by id descending to get the latest entry.
+    for e in employees:
+        latest_footprint = (
+                db.query(models.CarbonFootprint)
+                .filter(models.CarbonFootprint.user_id == e.id)
+                .order_by(models.CarbonFootprint.id.desc())  # recommended to get the latest
+                .first()
+        )
+
+        if latest_footprint:
+                print(f"Employee {e.id} footprint value:", latest_footprint.total_footprint)
+                total_footprint_value = latest_footprint.total_footprint
+        else:
+                print(f"Employee {e.id} has no footprint data.")
+                total_footprint_value = None
+
+
+        user_data = {
+            "id": e.id,
+            "username": e.username,
+            "name": e.name,
+            "surname": e.surname,
+            "age": e.age,
+            "gender": e.gender,
+            "email": e.email,
+            "phone": e.phone,
+            "role": e.role,
+            "total_footprint": total_footprint_value
+        }
+        user_list.append(user_data)
+
+    return user_list
 
 
 # Update a user
@@ -1500,9 +1445,88 @@ def reset_user_progress(
     return {"message": "User progress reset successfully"}
 
 
+@app.get("/company/footprint-stats")
+def get_company_footprint_stats(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if not current_user.company_id:
+        raise HTTPException(status_code=400, detail="User does not belong to a company")
+
+    print(f"🔍 Current user: {current_user.id}, company_id: {current_user.company_id}")
+
+    users = db.query(models.User).filter(models.User.company_id == current_user.company_id).all()
+
+    footprint_list = []
+    your_footprint = None
+
+    for user in users:
+        latest = db.query(models.CarbonFootprint) \
+                   .filter(models.CarbonFootprint.user_id == user.id) \
+                   .order_by(models.CarbonFootprint.created_at.desc()) \
+                   .first()
+
+        print(f"🧾 User {user.id} -> footprint: {latest.total_footprint if latest else 'None'}")
+
+        if latest:
+            footprint_list.append((user.id, latest.total_footprint))
+            if user.id == current_user.id:
+                your_footprint = latest.total_footprint
+
+    if not footprint_list:
+        raise HTTPException(status_code=404, detail="No footprint data found for your company")
+
+    values_only = [fp for _, fp in footprint_list]
+
+    return {
+        "average": sum(values_only) / len(values_only),
+        "maximum": max(values_only),
+        "your_footprint": your_footprint
+    }
+
+@app.get("/category-breakdown")
+def get_category_breakdown(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    footprint = db.query(models.CarbonFootprint) \
+                  .filter(models.CarbonFootprint.user_id == current_user.id) \
+                  .order_by(models.CarbonFootprint.created_at.desc()) \
+                  .first()
+    if not footprint:
+        raise HTTPException(status_code=404, detail="No footprint data found")
+
+    details = json.loads(footprint.details)
+
+    answers = {**details.get("numeric_data", {}), **details.get("non_numeric_data", {})}
+    result = calculate_footprint(answers)
+
+    return {"category_breakdown": result["category_breakdown"]}
+
+@app.get("/footprint/history")
+def get_footprint_history(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    entries = crud.get_footprint_history(db, current_user.id)
+    return [
+        {
+            "timestamp": entry.created_at.isoformat(),
+            "value": entry.total_footprint
+        }
+        for entry in entries
+    ]
+
+
+
 @app.get("/api/admin/rewards")
 def get_all_rewards(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_admin)):
-    users = db.query(models.User).all()
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # ✅ Filter only users from the same company as the current admin
+    users = db.query(models.User).filter(models.User.company_id == current_user.company_id).all()
+
     results = []
 
     for user in users:

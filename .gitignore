@@ -14,7 +14,7 @@ venv/
 .vscode/
 
 # Environment variables
-.env
+../K548-ESPv2.10.04.2025/.env
 *.env
 
 # Logs
@@ -103,3 +103,9 @@ Pipfile.lock
 pytest_cache/
 
 alembic/versions/
+/bin/
+/Libs/
+/.settings/
+/.classpath
+.svn/
+Object Repository/**/div_Uncaught runtime errors*

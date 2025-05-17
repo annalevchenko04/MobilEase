@@ -457,10 +457,10 @@ const Calculator = () => {
                 <div style={{marginTop: "30px"}}>
                     <div className="notification is-primary">
                         <h3 className="title is-3">
-                            {result.season ? `Your ${result.season} ${result.year} Carbon Footprint` : "Your Carbon Footprint"}
+                            {result.season ? `Your ${result.season} ${result.year} Carbon Footprint:` : "Your Carbon Footprint:"}
                         </h3>
-                        <h4 className="subtitle is-4">{result.total_carbon_footprint_kg} kg CO₂</h4>
-                        <p className="has-text-grey-light">Calculated using {mode === "fast" ? "Fast" : "Detailed"} mode</p>
+                        <h5 className="subtitle is-4">{result.total_carbon_footprint_kg} kg CO₂</h5>
+                        <h6 className="subtitle is-6">Calculated using {mode === "fast" ? "Fast" : "Detailed"} mode</h6>
                     </div>
 
                     <div className="columns">

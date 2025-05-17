@@ -305,13 +305,14 @@ def get_users(db: Session):
     return user_responses
 
 
-def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict, season=None, year=None):
+def save_carbon_footprint(db: Session, user_id: int, total_footprint: float, details: dict, category_breakdown=None, season=None, year=None):
     if not user_id:
         raise ValueError("User ID is missing. Only authenticated users can submit their footprint.")
 
     combined_details = {
-        **details['numeric_data'],
-        **details['non_numeric_data']
+        "numeric_data": details["numeric_data"],
+        "non_numeric_data": details["non_numeric_data"],
+        "category_breakdown": category_breakdown or {}
     }
 
     logging.info(f"Saving Combined Details: {combined_details}")
@@ -1411,8 +1412,10 @@ def check_day_off_eligibility_and_issue(db: Session, user_id: int):
         return
 
     # Check if already has voucher
-    existing = db.query(models.Reward).filter_by(user_id=user_id, type="day_off").first()
-    if existing and existing.status == "issued":
+    existing = db.query(models.Reward).filter_by(
+        user_id=user_id, type="day_off", status="issued"
+    ).first()
+    if existing:
         return
 
     # ✅ Issue reward and generate QR

@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<WebElementEntity>
+   <description></description>
+   <name>button_Decline</name>
+   <tag></tag>
+   <elementGuidId>eb0b1292-60fc-4cb7-bc02-85ca69bce4d3</elementGuidId>
+   <selectorCollection>
+      <entry>
+         <key>CSS</key>
+         <value>tr:nth-of-type(2) > td:nth-of-type(5) > ul > li:nth-of-type(2) > button.button.is-danger.is-small</value>
+      </entry>
+      <entry>
+         <key>XPATH</key>
+         <value>//div[@id='root']/div/div/div[2]/div/div[3]/div/div/table/tbody/tr[2]/td[5]/ul/li[2]/button</value>
+      </entry>
+   </selectorCollection>
+   <selectorMethod>XPATH</selectorMethod>
+   <smartLocatorCollection>
+      <entry>
+         <key>SMART_LOCATOR</key>
+         <value>internal:role=row[name=&quot;Clean Forest 2025-04-16 12:40:00 vlad@ktu.lt Decline anna@ktu.lt Decline 8&quot;i] >> internal:role=button >> nth=1</value>
+      </entry>
+   </smartLocatorCollection>
+   <smartLocatorEnabled>false</smartLocatorEnabled>
+   <useRalativeImagePath>true</useRalativeImagePath>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>tag</name>
+      <type>Main</type>
+      <value>button</value>
+      <webElementGuid>c67d53a8-6b31-434d-bd44-8379c1411d08</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>class</name>
+      <type>Main</type>
+      <value>button is-danger is-small</value>
+      <webElementGuid>f621b607-2eb9-4fef-8c9e-6d5d174ebb4e</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>text</name>
+      <type>Main</type>
+      <value>Decline</value>
+      <webElementGuid>321d5e02-f4b7-4323-9129-b95a877b2d93</webElementGuid>
+   </webElementProperties>
+   <webElementProperties>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath</name>
+      <type>Main</type>
+      <value>id(&quot;root&quot;)/div[@class=&quot;app-container&quot;]/div[@class=&quot;columns&quot;]/div[@class=&quot;column m-5 is-two-thirds&quot;]/div[1]/div[3]/div[1]/div[1]/table[@class=&quot;table is-fullwidth is-bordered&quot;]/tbody[1]/tr[2]/td[5]/ul[1]/li[2]/button[@class=&quot;button is-danger is-small&quot;]</value>
+      <webElementGuid>f2d292af-947a-462b-a8f7-1330cb890988</webElementGuid>
+   </webElementProperties>
+   <webElementXpaths>
+      <isSelected>true</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:idRelative</name>
+      <type>Main</type>
+      <value>//div[@id='root']/div/div/div[2]/div/div[3]/div/div/table/tbody/tr[2]/td[5]/ul/li[2]/button</value>
+      <webElementGuid>f5fb5924-bd48-4fd5-8799-9f8f57ce05ef</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='anna@ktu.lt'])[2]/following::button[1]</value>
+      <webElementGuid>eba5122f-dfca-4d1e-8eec-62c33667cb82</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Decline'])[4]/following::button[1]</value>
+      <webElementGuid>6723a5e5-f530-4f68-a071-327a990aec4c</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='Awareness of sustainability 15/04'])[1]/preceding::button[1]</value>
+      <webElementGuid>f362d6c8-8df9-4839-b7b2-c8ded22c8cde</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:neighbor</name>
+      <type>Main</type>
+      <value>(.//*[normalize-space(text()) and normalize-space(.)='come'])[1]/preceding::button[1]</value>
+      <webElementGuid>32ca94d1-8df0-4477-b854-ea34865afb8e</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:position</name>
+      <type>Main</type>
+      <value>//tr[2]/td[5]/ul/li[2]/button</value>
+      <webElementGuid>ade22414-1e5f-40ee-a73a-f6f199bdfac0</webElementGuid>
+   </webElementXpaths>
+   <webElementXpaths>
+      <isSelected>false</isSelected>
+      <matchCondition>equals</matchCondition>
+      <name>xpath:customAttributes</name>
+      <type>Main</type>
+      <value>//button[(text() = 'Decline' or . = 'Decline')]</value>
+      <webElementGuid>fa9348d1-1aac-46b9-899e-c6d28f198fcd</webElementGuid>
+   </webElementXpaths>
+</WebElementEntity>

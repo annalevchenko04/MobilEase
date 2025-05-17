@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Main_Page" time="12.394" tests="1" failures="0" errors="0">
+   <testsuite name="Main_Page" tests="1" failures="0" errors="0" time="12.394" skipped="0" timestamp="09-05-2025T20:46:51" hostname="Anna - DESKTOP-3UT53HP" id="Test Suites/Main_Page">
+      <properties>
+         <property name="deviceName" value=""/>
+         <property name="devicePlatform" value=""/>
+         <property name="logFolder" value="C:\\Users\\Anna\\git\\K548-ESP\\Reports\\20250509_204634\\Main_Page\\20250509_204634"/>
+         <property name="logFiles" value="C:\\Users\\Anna\\git\\K548-ESP\\Reports\\20250509_204634\\Main_Page\\20250509_204634\\execution0.log"/>
+         <property name="attachments" value=""/>
+         <property name="hostName" value="Anna - DESKTOP-3UT53HP"/>
+         <property name="os" value="Windows 10 64bit"/>
+         <property name="katalonVersion" value="9.4.0.212"/>
+         <property name="browser" value="Chrome 136.0.0.0"/>
+         <property name="hostAddress" value="192.168.56.1"/>
+         <property name="sessionId" value="219a1ac1e18aabe3dfec73b9e1ad638a"/>
+         <property name="seleniumVersion" value="3.141.59"/>
+         <property name="proxyInformation" value="ProxyInformation { proxyOption=NO_PROXY, proxyServerType=HTTP, username=, password=********, proxyServerAddress=, proxyServerPort=0, executionList=&quot;&quot;, isApplyToDesiredCapabilities=true }"/>
+         <property name="platform" value="Windows 10"/>
+      </properties>
+      <testcase name="Test Cases/Main_Page" time="12.165" classname="Test Cases/Main_Page" status="PASSED">
+         <system-out><![CDATA[09-05-2025T20:46:51 - [TEST_CASE][PASSED] - Test Cases/Main_Page: Test Cases/Main_Page
+
+09-05-2025T20:46:51 - [TEST_STEP][PASSED] - openBrowser(""): Browser is opened with url: ''
+
+09-05-2025T20:46:52 - [MESSAGE][INFO] - Starting 'Chrome' driver
+
+09-05-2025T20:46:52 - [MESSAGE][INFO] - Action delay is set to 0 milliseconds
+
+09-05-2025T20:46:54 - [MESSAGE][PASSED] - Browser is opened with url: ''
+
+09-05-2025T20:46:54 - [TEST_STEP][PASSED] - navigateToUrl("http://localhost:3000/"): Navigate to 'http://localhost:3000/' successfully
+
+09-05-2025T20:46:56 - [MESSAGE][PASSED] - Navigate to 'http://localhost:3000/' successfully
+
+09-05-2025T20:46:56 - [TEST_STEP][PASSED] - setText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Username_input"), "anna"): Text 'anna' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Username_input'
+
+09-05-2025T20:46:57 - [MESSAGE][PASSED] - Text 'anna' is set on object 'Object Repository/Page_Employee Sustainability Page/input_Username_input'
+
+09-05-2025T20:46:57 - [TEST_STEP][PASSED] - setEncryptedText(findTestObject("Object Repository/Page_Employee Sustainability Page/input_Password_input"), "aeHFOx8jV/A="): Text ****** has been set on object 'Object Repository/Page_Employee Sustainability Page/input_Password_input'
+
+09-05-2025T20:46:58 - [MESSAGE][PASSED] - Text ****** has been set on object 'Object Repository/Page_Employee Sustainability Page/input_Password_input'
+
+09-05-2025T20:46:58 - [TEST_STEP][PASSED] - click(findTestObject("Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button")): Object: 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' is clicked on
+
+09-05-2025T20:46:58 - [MESSAGE][PASSED] - Object: 'Object Repository/Page_Employee Sustainability Page/button_Image ID 1_button' is clicked on
+
+09-05-2025T20:46:58 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/h3_Calculate your Footprint with Carbon Calculator"), 0): Object 'Object Repository/Page_Employee Sustainability Page/h3_Calculate your Footprint with Carbon Calculator' is present
+
+09-05-2025T20:46:58 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:46:59 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/h3_Calculate your Footprint with Carbon Calculator' is present
+
+09-05-2025T20:46:59 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/img_Calculate your Footprint with Carbon Ca_0fcbf2"), 0): Object 'Object Repository/Page_Employee Sustainability Page/img_Calculate your Footprint with Carbon Ca_0fcbf2' is present
+
+09-05-2025T20:46:59 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:46:59 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/img_Calculate your Footprint with Carbon Ca_0fcbf2' is present
+
+09-05-2025T20:46:59 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/img_Calculate your Footprint with Carbon Ca_6a1ca4"), 0): Object 'Object Repository/Page_Employee Sustainability Page/img_Calculate your Footprint with Carbon Ca_6a1ca4' is present
+
+09-05-2025T20:46:59 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:00 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/img_Calculate your Footprint with Carbon Ca_6a1ca4' is present
+
+09-05-2025T20:47:00 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/div_cool page_cdx-list__item-content"), 0): Object 'Object Repository/Page_Employee Sustainability Page/div_cool page_cdx-list__item-content' is present
+
+09-05-2025T20:47:00 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:00 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/div_cool page_cdx-list__item-content' is present
+
+09-05-2025T20:47:00 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/h3_Share your Experience how to achieve goals"), 0): Object 'Object Repository/Page_Employee Sustainability Page/h3_Share your Experience how to achieve goals' is present
+
+09-05-2025T20:47:00 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:00 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/h3_Share your Experience how to achieve goals' is present
+
+09-05-2025T20:47:00 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/img_Share your Experience how to achieve go_7375ce"), 0): Object 'Object Repository/Page_Employee Sustainability Page/img_Share your Experience how to achieve go_7375ce' is present
+
+09-05-2025T20:47:00 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:00 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/img_Share your Experience how to achieve go_7375ce' is present
+
+09-05-2025T20:47:00 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/h3_Explore Analytics and Posts to gain knowledge"), 0): Object 'Object Repository/Page_Employee Sustainability Page/h3_Explore Analytics and Posts to gain knowledge' is present
+
+09-05-2025T20:47:00 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:01 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/h3_Explore Analytics and Posts to gain knowledge' is present
+
+09-05-2025T20:47:01 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/img_Explore Analytics and Posts to gain kno_00649e"), 0): Object 'Object Repository/Page_Employee Sustainability Page/img_Explore Analytics and Posts to gain kno_00649e' is present
+
+09-05-2025T20:47:01 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:01 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/img_Explore Analytics and Posts to gain kno_00649e' is present
+
+09-05-2025T20:47:01 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/h3_Book you place in Sustainability Events"), 0): Object 'Object Repository/Page_Employee Sustainability Page/h3_Book you place in Sustainability Events' is present
+
+09-05-2025T20:47:01 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:01 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/h3_Book you place in Sustainability Events' is present
+
+09-05-2025T20:47:01 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/img_Explore Analytics and Posts to gain kno_00649e_1"), 0): Object 'Object Repository/Page_Employee Sustainability Page/img_Explore Analytics and Posts to gain kno_00649e_1' is present
+
+09-05-2025T20:47:01 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:02 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/img_Explore Analytics and Posts to gain kno_00649e_1' is present
+
+09-05-2025T20:47:02 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/h2_Empower people to take action for a sust_290382"), 0): Object 'Object Repository/Page_Employee Sustainability Page/h2_Empower people to take action for a sust_290382' is present
+
+09-05-2025T20:47:02 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:02 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/h2_Empower people to take action for a sust_290382' is present
+
+09-05-2025T20:47:02 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/p_Protecting natural resources and reducing waste"), 0): Object 'Object Repository/Page_Employee Sustainability Page/p_Protecting natural resources and reducing waste' is present
+
+09-05-2025T20:47:02 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:02 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/p_Protecting natural resources and reducing waste' is present
+
+09-05-2025T20:47:02 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/div_SocialEnsuring equality and well-being for all"), 0): Object 'Object Repository/Page_Employee Sustainability Page/div_SocialEnsuring equality and well-being for all' is present
+
+09-05-2025T20:47:02 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:02 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/div_SocialEnsuring equality and well-being for all' is present
+
+09-05-2025T20:47:02 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/div_EconomicBuilding stable economies that _ebbbf2"), 0): Object 'Object Repository/Page_Employee Sustainability Page/div_EconomicBuilding stable economies that _ebbbf2' is present
+
+09-05-2025T20:47:02 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:03 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/div_EconomicBuilding stable economies that _ebbbf2' is present
+
+09-05-2025T20:47:03 - [TEST_STEP][PASSED] - verifyElementPresent(findTestObject("Object Repository/Page_Employee Sustainability Page/img_Economic_image-motion"), 0): Object 'Object Repository/Page_Employee Sustainability Page/img_Economic_image-motion' is present
+
+09-05-2025T20:47:03 - [MESSAGE][WARNING] - Timeout '0' is invalid. Using default page load timeout: '30'
+
+09-05-2025T20:47:03 - [MESSAGE][PASSED] - Object 'Object Repository/Page_Employee Sustainability Page/img_Economic_image-motion' is present]]></system-out>
+         <system-err><![CDATA[]]></system-err>
+      </testcase>
+      <system-out><![CDATA[09-05-2025T20:46:51 - [TEST_SUITE][PASSED] - Main_Page: Test Cases/Main_Page]]></system-out>
+      <system-err><![CDATA[]]></system-err>
+   </testsuite>
+</testsuites>
