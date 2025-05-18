@@ -4,6 +4,7 @@ import PostImageGallery from "./PostImageGallery";
 import CommentsSection from "./CommentsSection";
 import {UserContext} from "../context/UserContext";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const PostDetail = () => {
   const { id } = useParams();  // Get the post ID from the URL
   const navigate = useNavigate();  // For navigating back to the explore page
@@ -23,7 +24,7 @@ const PostDetail = () => {
  useEffect(() => {
     const fetchPostDetail = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/post/${id}`);
+            const response = await fetch(`${API_URL}/post/${id}`);
             if (!response.ok) throw new Error("Error fetching post details");
             const data = await response.json();
             setPost(data);
@@ -118,7 +119,7 @@ const checkIfFavorited = async () => {
 
     try {
         // Fetch user's favorites
-        const response = await fetch(`http://localhost:8000/users/${userId}/favorites`, requestOptions);
+        const response = await fetch(`${API_URL}/users/${userId}/favorites`, requestOptions);
         if (!response.ok) throw new Error("Failed to load favorites");
 
         const favorites = await response.json();
@@ -137,7 +138,7 @@ const checkIfFavorited = async () => {
 
 const checkFavoriteCount = async () => {
     try {
-      const response = await fetch(`http://localhost:8000/posts/${id}/favorites/count`);
+      const response = await fetch(`${API_URL}/posts/${id}/favorites/count`);
       if (!response.ok) throw new Error("Failed to fetch favorite count");
       const data = await response.json();
       setFavoriteCount(data.favorite_count);
@@ -155,7 +156,7 @@ const toggleFavorite = async () => {
     };
 
     try {
-        const response = await fetch(`http://localhost:8000/users/${userId}/post/${id}/favorites`, requestOptions);
+        const response = await fetch(`${API_URL}/users/${userId}/post/${id}/favorites`, requestOptions);
         if (!response.ok) throw new Error("Could not update favorites");
         setIsFavorited(!isFavorited);
         checkFavoriteCount();

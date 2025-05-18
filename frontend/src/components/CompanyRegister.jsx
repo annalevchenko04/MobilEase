@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ErrorMessage from "./ErrorMessage";
 import { FaClipboardCheck, FaArrowLeft } from "react-icons/fa";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const CompanyRegister = () => {
   const navigate = useNavigate(); // Navigation Hook
 
@@ -58,7 +59,7 @@ const submitRegistration = async () => {
   console.log("📤 Sending Data:", JSON.stringify(requestData, null, 2));
 
   try {
-    const response = await fetch("http://localhost:8000/register-company/", {
+    const response = await fetch(`${API_URL}/register-company/`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestData),

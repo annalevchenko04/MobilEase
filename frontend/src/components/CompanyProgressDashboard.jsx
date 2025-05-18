@@ -2,6 +2,8 @@ import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+
 const CompanyProgressDashboard = ({ initiativeId }) => {
   const [token, userRole] = useContext(UserContext);
   const [progressData, setProgressData] = useState([]);
@@ -39,7 +41,7 @@ const CompanyProgressDashboard = ({ initiativeId }) => {
   const fetchInitiativeData = async () => {
     try {
       console.log("Fetching initiative data for ID:", initiativeId);
-      const response = await fetch(`http://localhost:8000/initiatives/${initiativeId}`, {
+      const response = await fetch(`${API_URL}/initiatives/${initiativeId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,7 +71,7 @@ const CompanyProgressDashboard = ({ initiativeId }) => {
       }
 
       console.log("Fetching company progress for initiative ID:", initiativeId);
-      const response = await fetch(`http://localhost:8000/initiatives/${initiativeId}/progress`, {
+      const response = await fetch(`${API_URL}/initiatives/${initiativeId}/progress`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

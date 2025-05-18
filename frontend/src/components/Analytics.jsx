@@ -8,7 +8,7 @@ import EmployeeComparisonChart from "./Charts/EmployeeComparisonChart";
 import BenchmarkingGaugeChart from "./Charts/BenchmarkingGaugeChart";
 import FootprintHistoryChart from "./Charts/FootprintHistoryChart";
 
-
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const Analytics = () => {
   const [employees, setEmployees] = useState([]);
   const [fallbackValues, setFallbackValues] = useState({});
@@ -39,7 +39,7 @@ const Analytics = () => {
       const token = localStorage.getItem("token");
       if (!token || userRole !== "admin") return;
       try {
-        const res = await fetch("http://localhost:8000/admin/company-employees", {
+        const res = await fetch(`${API_URL}/admin/company-employees`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -76,7 +76,7 @@ const Analytics = () => {
       if (userRole !== "member") return;
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch("http://localhost:8000/company/footprint-stats", {
+        const res = await fetch(`${API_URL}/company/footprint-stats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -101,7 +101,7 @@ const Analytics = () => {
       if (userRole !== "admin") return;
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch("http://localhost:8000/get_footprint", {
+        const res = await fetch(`${API_URL}/get_footprint`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
@@ -137,7 +137,7 @@ const Analytics = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:8000/category-breakdown", {
+      const res = await fetch(`${API_URL}/category-breakdown`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (!res.ok) {
@@ -164,7 +164,7 @@ useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await fetch("http://localhost:8000/footprint/history", {
+      const res = await fetch(`${API_URL}/footprint/history`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();

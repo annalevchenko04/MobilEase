@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const PostImageGallery = ({ postId }) => {
     const [post, setPost] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");
@@ -10,7 +11,7 @@ const PostImageGallery = ({ postId }) => {
     useEffect(() => {
         const fetchPost = async () => {
             try {
-                const response = await fetch(`http://localhost:8000/post/${postId}`);
+                const response = await fetch(`${API_URL}/post/${postId}`);
                 if (!response.ok) throw new Error("Post not found");
                 const data = await response.json();
                 setPost(data);
@@ -59,7 +60,7 @@ const PostImageGallery = ({ postId }) => {
                         <div className="column is-one-third" key={image.id}>
                             <figure className="image is-4by3">
                                 <img
-                                    src={`http://localhost:8000${image.url}`}
+                                    src={`${API_URL}${image.url}`}
                                     alt={post.title}
                                     style={{ objectFit: "cover", cursor: "pointer" }}
                                     onClick={() => handleImageClick(index)}
@@ -118,7 +119,7 @@ const PostImageGallery = ({ postId }) => {
                             {/* Selected Image */}
                             <figure className="image" style={{ textAlign: "center" }}>
                                 <img
-                                    src={`http://localhost:8000${post.images[selectedImageIndex].url}`}
+                                    src={`${API_URL}${post.images[selectedImageIndex].url}`}
                                     alt="Selected"
                                     style={{
                                         objectFit: "contain",

@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { UserContext } from "../context/UserContext";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => {
   const [token, userRole] = useContext(UserContext);
   const [name, setName] = useState(event ? event.name : '');
@@ -49,8 +50,8 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
     };
 
     const url = event?.id
-      ? `http://localhost:8000/event/${event.id}`
-      : 'http://localhost:8000/event';
+      ? `${API_URL}/event/${event.id}`
+      : `${API_URL}/event`;
 
     try {
       const response = await fetch(url, requestOptions);

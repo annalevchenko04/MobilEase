@@ -4,7 +4,7 @@ import ErrorMessage from './ErrorMessage';
 import { useNavigate } from 'react-router-dom';
 import UserAvatar from "./UserAvatar";
 
-
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 export default function RewardsPage() {
   const [reward, setReward] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
@@ -17,7 +17,7 @@ export default function RewardsPage() {
 
   const fetchAllRewards = async () => {
   try {
-    const res = await fetch("http://localhost:8000/api/admin/rewards", {
+    const res = await fetch(`${API_URL}/api/admin/rewards`, {
       method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ useEffect(() => {
   const fetchRewardData = async () => {
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:8000/api/rewards/day-off', {
+      const response = await fetch(`${API_URL}/api/rewards/day-off`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +80,7 @@ useEffect(() => {
 
 const handleAdminRedeem = async (targetUserId) => {
   try {
-    const res = await fetch(`http://localhost:8000/api/admin/rewards/redeem/${targetUserId}`, {
+    const res = await fetch(`${API_URL}/api/admin/rewards/redeem/${targetUserId}`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -96,7 +96,7 @@ const handleAdminRedeem = async (targetUserId) => {
 const handleResetProgress = async (targetUserId) => {
   if (!window.confirm("Reset this user's reward and badges?")) return;
   try {
-    const res = await fetch(`http://localhost:8000/api/admin/reset-progress/${targetUserId}`, {
+    const res = await fetch(`${API_URL}/api/admin/reset-progress/${targetUserId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

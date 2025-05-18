@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { UserContext } from "../context/UserContext";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+
 const DailyCheckInTracker = ({ initiativeId }) => {
   const [token, userRole, username, userId] = useContext(UserContext);
   const [flatDays, setFlatDays] = useState([]);
@@ -85,7 +87,7 @@ const DailyCheckInTracker = ({ initiativeId }) => {
 
   try {
     setLoading(true);
-    const response = await fetch(`http://localhost:8000/progress/?initiative_id=${initiativeId}`, {
+    const response = await fetch(`${API_URL}/progress/?initiative_id=${initiativeId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
@@ -205,7 +207,7 @@ const DailyCheckInTracker = ({ initiativeId }) => {
     console.log("Saving progress for initiative:", initiativeId);
     console.log("Checked days to save:", checkedDays);
 
-    const response = await fetch("http://localhost:8000/progress/", {
+    const response = await fetch(`${API_URL}/progress/`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -3,6 +3,7 @@ import { UserContext } from "../context/UserContext";
 import { Link } from "react-router-dom";
 import EditorComponent from "./EditorComponent";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const UserProfile = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [error, setError] = useState(null);
@@ -56,7 +57,7 @@ const UserProfile = () => {
                         Authorization: `Bearer ${token}`, // Include token for authentication
                     },
                 };
-                const response = await fetch(`http://localhost:8000/user/${username}`, requestOptions);
+                const response = await fetch(`${API_URL}/user/${username}`, requestOptions);
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch user profile.");
@@ -77,7 +78,7 @@ const UserProfile = () => {
                     Authorization: `Bearer ${token}`,
                 },
             };
-            const response = await fetch(`http://localhost:8000/users/${userId}/badges`, requestOptions);
+            const response = await fetch(`${API_URL}/users/${userId}/badges`, requestOptions);
             if (!response.ok) throw new Error("Failed to fetch badges.");
             const data = await response.json();
             setBadges(data); // Store badges in state
@@ -102,7 +103,7 @@ const UserProfile = () => {
         Authorization: `Bearer ${token}`,
       },
     };
-    const response = await fetch(`http://localhost:8000/users/${userId}/myposts`, requestOptions);
+    const response = await fetch(`${API_URL}/users/${userId}/myposts`, requestOptions);
     if (!response.ok) {
       throw new Error('Error fetching posts');
     } else {
@@ -131,7 +132,7 @@ useEffect(() => {
 
   const fetchUserAvatar = async () => {
     try {
-        const response = await fetch(`http://localhost:8000/users/${userId}/avatar`, {
+        const response = await fetch(`${API_URL}/users/${userId}/avatar`, {
             method: 'GET',
             headers: {
                 'Content-Type': 'application/json',
@@ -146,7 +147,7 @@ useEffect(() => {
         const data = await response.json();
 
         // Prepend the base URL to the relative path
-        const fullAvatarUrl = `http://localhost:8000${data.url}`;
+        const fullAvatarUrl = `${API_URL}${data.url}`;
         setAvatarUrl(fullAvatarUrl);
         setAvatarId(data.id);
     } catch (error) {
@@ -166,7 +167,7 @@ useEffect(() => {
     if (!userId || !token) return;
 
     try {
-        const response = await fetch(`http://localhost:8000/users/${userId}/avatar/${avatarId}`, {
+        const response = await fetch(`${API_URL}/users/${userId}/avatar/${avatarId}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json",
@@ -221,7 +222,7 @@ useEffect(() => {
   // Function to handle removing existing images
 const handleRemoveExistingImage = async (postId, imageId) => {
   try {
-    const response = await fetch(`http://localhost:8000/users/${userId}/post/${currentPostId}/image/${imageId}`, {
+    const response = await fetch(`${API_URL}/users/${userId}/post/${currentPostId}/image/${imageId}`, {
       method: "DELETE",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -250,7 +251,7 @@ const uploadImages = async (files, userId, postId) => {
           const formData = new FormData();
           formData.append("image_data", base64data);  // Send base64 as form data
 
-          const response = await fetch(`http://localhost:8000/users/${userId}/post/${postId}/image`, {
+          const response = await fetch(`${API_URL}/users/${userId}/post/${postId}/image`, {
             method: 'POST',
             headers: {
               Authorization: `Bearer ${token}`,
@@ -294,7 +295,7 @@ const uploadAvatars = async (file, userId) => {
         const formData = new FormData();
         formData.append("avatar_data", base64data); // Send base64 as form data
 
-        const response = await fetch(`http://localhost:8000/users/${userId}/avatar`, {
+        const response = await fetch(`${API_URL}/users/${userId}/avatar`, {
           method: 'POST',
           headers: {
             Authorization: `Bearer ${token}`,
@@ -332,7 +333,7 @@ const uploadAvatars = async (file, userId) => {
         // Upload the avatar only if avatarFile is not null
         if (avatarFile) {
             const uploadedAvatar = await uploadAvatars(avatarFile, userProfile.id);
-            const fullAvatarUrl = `http://localhost:8000${uploadedAvatar.url}`;
+            const fullAvatarUrl = `${API_URL}${uploadedAvatar.url}`;
             setAvatarUrl(fullAvatarUrl); // Update avatarUrl with the response URL
             setIsAvatarUploaded(true); // Mark the avatar as uploaded
             setSuccessMessage('Avatar updated successfully!'); // Show success message
@@ -409,7 +410,7 @@ const handleEditorChange = useCallback((content) => {
         tags: tags || [],
       }),
       };
-      const url = isEditing ? `http://localhost:8000/users/${userId}/post/${currentPostId}` : `http://localhost:8000/users/${userId}/post`;
+      const url = isEditing ? `${API_URL}/users/${userId}/post/${currentPostId}` : `${API_URL}/users/${userId}/post`;
       const response = await fetch(url, requestOptions);
 
       if (!response.ok) {
@@ -492,7 +493,7 @@ const handleEditorChange = useCallback((content) => {
           Authorization: `Bearer ${token}`, // Include token for authentication
         },
       };
-      const response = await fetch(`http://localhost:8000/users/${userId}/post/${id}`, requestOptions);
+      const response = await fetch(`${API_URL}/users/${userId}/post/${id}`, requestOptions);
       if (!response.ok) {
         throw new Error('Error deleting plan');
       }
@@ -670,33 +671,33 @@ const handleRemoveTag = (tag) => {
                         <div key={badge.id} className="badge">
                             {badge.id === 1 ? (
                                 <img
-                                  src="http://localhost:8000/images/ESP_badge_1.png"  // Image for badge id 1
+                                  src={`${API_URL}/images/ESP_badge_1.png`}  // Image for badge id 1
                                   alt={badge.name}
                                   className="badge-image"
                                 />
                               ) : badge.id === 2 ? (
                                 <img
-                                  src="http://localhost:8000/images/ESP_badge_2.png"  // Image for badge id 2
+                                  src={`${API_URL}/images/ESP_badge_2.png`} // Image for badge id 2
                                   alt={badge.name}
                                   className="badge-image"
                                 />
                               ) : badge.id === 3 ? (
                                 <img
-                                  src="http://localhost:8000/images/ESP_badge_3.png"  // Image for badge id 3
+                                  src={`${API_URL}/images/ESP_badge_3.png`}  // Image for badge id 3
                                   alt={badge.name}
                                   className="badge-image"
                                 />
                               )
                                 : badge.id === 4 ? (
                                 <img
-                                  src="http://localhost:8000/images/ESP_badge_4.png"  // Image for badge id 4
+                                  src={`${API_URL}/images/ESP_badge_4.png`}  // Image for badge id 4
                                   alt={badge.name}
                                   className="badge-image"
                                 />
                               )
                                     : badge.id === 5 ? (
                                 <img
-                                  src="http://localhost:8000/images/ESP_badge_5.png"  // Image for badge id 5
+                                  src={`${API_URL}/images/ESP_badge_5.png`} // Image for badge id 5
                                   alt={badge.name}
                                   className="badge-image"
                                 />
@@ -1055,7 +1056,7 @@ const handleRemoveTag = (tag) => {
                                             <li key={image.id}
                                                 style={{display: 'flex', alignItems: 'center', marginBottom: '10px'}}>
                                                 <img
-                                                    src={`http://localhost:8000${image.url}`}
+                                                    src={`${API_URL}${image.url}`}
                                                     alt={`image_id ${image.id}`}
                                                     width="100"
                                                     style={{marginRight: '10px'}} // Space between image and button
@@ -1150,7 +1151,7 @@ const handleRemoveTag = (tag) => {
                                         margin: 0
                                     }}>
                                         <img
-                                            src={`http://localhost:8000${post.images[0].url}`}
+                                            src={`${API_URL}${post.images[0].url}`}
                                             alt={post.title}
                                             style={{
                                                 width: '100%',

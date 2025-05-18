@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import UserAvatar from "./UserAvatar";
 
-
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const CommentsSection = () => {
   const { id } = useParams(); // Post ID
   const [comments, setComments] = useState([]);
@@ -16,7 +16,7 @@ const CommentsSection = () => {
 
 const fetchComments = async () => {
   try {
-    const response = await fetch(`http://localhost:8000/comments/post/${id}`);
+    const response = await fetch(`${API_URL}/comments/post/${id}`);
     if (!response.ok) throw new Error("Failed to fetch comments");
 
     const data = await response.json();
@@ -37,7 +37,7 @@ const fetchComments = async () => {
     e.preventDefault();
     if (!newComment.trim()) return;
     try {
-      const response = await fetch("http://localhost:8000/comments/", {
+      const response = await fetch(`${API_URL}/comments/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -3,6 +3,8 @@ import axios from "axios";
 import {UserContext} from "../context/UserContext";
 import {questions} from "../context/questions";  // Corrected Import Path
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+
 const Calculator = () => {
     const [answers, setAnswers] = useState({});
     const [step, setStep] = useState(0);
@@ -198,7 +200,7 @@ const Calculator = () => {
             console.log("Season:", season, "Year:", year);
 
             const response = await axios.post(
-                `http://localhost:8000/footprint?season=${season}&year=${year}`,
+                `${API_URL}/footprint?season=${season}&year=${year}`,
                 {answers: finalAnswers},
                 {
                     headers: {

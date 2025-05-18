@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import UserAvatar from "./UserAvatar";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const AdminBookings = () => {
   const [token, userRole, username, userId,] = useContext(UserContext);
   const [events, setEvents] = useState([]);
@@ -15,7 +16,7 @@ const AdminBookings = () => {
 
   const fetchEvents = async () => {
     try {
-      const response = await fetch("http://localhost:8000/events", {
+      const response = await fetch(`${API_URL}/events`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -35,7 +36,7 @@ const AdminBookings = () => {
 
   const fetchEventBookings = async (eventId) => {
     try {
-      const response = await fetch(`http://localhost:8000/events/${eventId}/bookings`, {
+      const response = await fetch(`${API_URL}/events/${eventId}/bookings`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -54,7 +55,7 @@ const AdminBookings = () => {
   const handleCancelBooking = async (bookingId) => {
   setLoading(true);
   try {
-    const response = await fetch(`http://localhost:8000/bookings/${bookingId}`, {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -5,6 +5,7 @@ import ErrorMessage from "./ErrorMessage";
 import { UserContext } from "../context/UserContext";
 import AdminBookings from "./AdminBookings";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const Schedule = () => {
   const [token, userRole, username, userId,] = useContext(UserContext);
   const [events, setEvents] = useState([]);
@@ -30,7 +31,7 @@ const Schedule = () => {
 
 const fetchBookings = async () => {
     try {
-      const response = await fetch("http://localhost:8000/bookings", {
+      const response = await fetch(`${API_URL}/bookings`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -55,14 +56,14 @@ const fetchBookings = async () => {
       },
     };
     try {
-      const userResponse = await fetch(`http://localhost:8000/verify-token/${token}`, requestOptions);
+      const userResponse = await fetch(`${API_URL}/verify-token/${token}`, requestOptions);
       if (!userResponse.ok) throw new Error("Failed to fetch user info");
       const userData = await userResponse.json();
       setCurrentUser(userData);
       console.log("Current User:", currentUser);
 
 
-      const response = await fetch('http://localhost:8000/events', requestOptions);
+      const response = await fetch(`${API_URL}/events`, requestOptions);
       if (!response.ok) throw new Error("Failed to fetch events");
       const data = await response.json();
       setEvents(data);
@@ -95,7 +96,7 @@ const fetchBookings = async () => {
         },
       };
       try {
-        const response = await fetch(`http://localhost:8000/event/${eventId}`, requestOptions);
+        const response = await fetch(`${API_URL}/event/${eventId}`, requestOptions);
         if (!response.ok) throw new Error("Failed to delete event");
         fetchEvents();
         setErrorMessage("");
@@ -135,7 +136,7 @@ const fetchBookings = async () => {
   };
 
   try {
-    const response = await fetch(`http://localhost:8000/events/${event.id}/book`, requestOptions);
+    const response = await fetch(`${API_URL}/events/${event.id}/book`, requestOptions);
     if (!response.ok) throw new Error("Failed to book event");
 
     const bookingData = await response.json();
@@ -151,7 +152,7 @@ const fetchBookings = async () => {
    const handleCancelBooking = async (bookingId) => {
   setLoading(true);
   try {
-    const response = await fetch(`http://localhost:8000/bookings/${bookingId}`, {
+    const response = await fetch(`${API_URL}/bookings/${bookingId}`, {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

@@ -36,7 +36,7 @@
       <matchCondition>equals</matchCondition>
       <name>src</name>
       <type>Main</type>
-      <value>http://localhost:8000/images/ESP_badge_2.png</value>
+      <value>${API_URL}/images/ESP_badge_2.png</value>
       <webElementGuid>c8325b84-72d5-4595-b343-8a7cb6b96706</webElementGuid>
    </webElementProperties>
    <webElementProperties>
@@ -92,7 +92,7 @@
       <matchCondition>equals</matchCondition>
       <name>xpath:customAttributes</name>
       <type>Main</type>
-      <value>//img[@src = 'http://localhost:8000/images/ESP_badge_2.png' and @alt = 'Green Ambassador']</value>
+      <value>//img[@src = '${API_URL}/images/ESP_badge_2.png' and @alt = 'Green Ambassador']</value>
       <webElementGuid>fecdc3e4-c64e-48c5-a69f-5430665360d8</webElementGuid>
    </webElementXpaths>
 </WebElementEntity>

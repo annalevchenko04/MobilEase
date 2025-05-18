@@ -7,6 +7,7 @@ import VotingResults from "./VotingResults";
 import CompanyProgressDashboard from "./CompanyProgressDashboard";
 import { FaPlus, FaChartBar, FaVoteYea, FaClock } from "react-icons/fa";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const Initiatives = () => {
   const [token, userRole, username, userId] = useContext(UserContext);
   const [initiatives, setInitiatives] = useState([]);
@@ -40,7 +41,7 @@ const Initiatives = () => {
   const checkCanSuggestInitiative = async () => {
     try {
       console.log("Checking if user can suggest initiative...");
-      const response = await fetch("http://localhost:8000/initiatives/can-suggest", {
+      const response = await fetch(`${API_URL}/initiatives/can-suggest`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -76,7 +77,7 @@ const Initiatives = () => {
     try {
       console.log("Fetching initiatives...");
       // Fetch all initiatives for the user's company
-      const response = await fetch("http://localhost:8000/initiatives/", {
+      const response = await fetch(`${API_URL}/initiatives/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -109,7 +110,7 @@ const Initiatives = () => {
       // Get user's votes only for pending initiatives
       const votes = {};
       for (const initiative of pending) {
-        const voteResponse = await fetch(`http://localhost:8000/initiatives/${initiative.id}/votes`, {
+        const voteResponse = await fetch(`${API_URL}/initiatives/${initiative.id}/votes`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -132,7 +133,7 @@ const Initiatives = () => {
 
   const handleCreateInitiative = async (initiativeData) => {
     try {
-      const response = await fetch("http://localhost:8000/initiatives/", {
+      const response = await fetch(`${API_URL}/initiatives/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -156,7 +157,7 @@ const Initiatives = () => {
 
   const handleUpdateInitiative = async (initiativeData) => {
     try {
-      const response = await fetch(`http://localhost:8000/initiatives/${editInitiative.id}`, {
+      const response = await fetch(`${API_URL}/initiatives/${editInitiative.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -190,7 +191,7 @@ const Initiatives = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/initiatives/${initiativeId}`, {
+      const response = await fetch(`${API_URL}/initiatives/${initiativeId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -212,7 +213,7 @@ const Initiatives = () => {
     const hasVoted = userVotes[initiativeId];
 
     try {
-      const response = await fetch(`http://localhost:8000/initiatives/${initiativeId}/vote`, {
+      const response = await fetch(`${API_URL}/initiatives/${initiativeId}/vote`, {
         method: hasVoted ? "DELETE" : "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -238,7 +239,7 @@ const Initiatives = () => {
 
   const activateInitiative = async (initiativeId) => {
     try {
-      const response = await fetch(`http://localhost:8000/initiatives/activate/${initiativeId}`, {
+      const response = await fetch(`${API_URL}/initiatives/activate/${initiativeId}`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -262,7 +263,7 @@ const Initiatives = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/initiatives/${initiativeId}/deactivate`, {
+      const response = await fetch(`${API_URL}/initiatives/${initiativeId}/deactivate`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -289,7 +290,7 @@ const Initiatives = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/run-scheduled-tasks`, {
+      const response = await fetch(`${API_URL}/admin/run-scheduled-tasks`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

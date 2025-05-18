@@ -36,7 +36,7 @@ export const UserProvider = (props) => {
 
     const verifyToken = async (token) => {
         try {
-            const response = await fetch(`http://localhost:8000/verify-token/${token}`, {
+            const response = await fetch(`${API_URL}/verify-token/${token}`, {
                 method: "GET",
                 headers: {
                     Authorization: `Bearer ${token}`
@@ -65,7 +65,7 @@ export const UserProvider = (props) => {
 
     const refreshToken = async () => {
         try {
-            const response = await fetch(`http://localhost:8000/refresh-token`, {
+            const response = await fetch(`${API_URL}/refresh-token`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

@@ -3,6 +3,7 @@ import { UserContext } from "../context/UserContext";
 import ErrorMessage from "./ErrorMessage";
 import { FaClipboardCheck } from "react-icons/fa";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const Register = ({ toggleForm }) => {
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -35,7 +36,7 @@ const Register = ({ toggleForm }) => {
 
 
     try {
-      const response = await fetch("http://localhost:8000/register", {
+      const response = await fetch(`${API_URL}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
@@ -51,7 +52,7 @@ const Register = ({ toggleForm }) => {
       formDetails.append("username", username);
       formDetails.append("password", password);
 
-      const loginResponse = await fetch("http://localhost:8000/token", {
+      const loginResponse = await fetch(`${API_URL}/token`, {
         method: "POST",
         headers: {
           "Content-Type": "application/x-www-form-urlencoded",

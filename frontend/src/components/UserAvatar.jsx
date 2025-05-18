@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const UserAvatar = ({ user_id }) => {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [avatarId, setAvatarId] = useState(null);
@@ -9,7 +10,7 @@ const UserAvatar = ({ user_id }) => {
   useEffect(() => {
     const fetchUserAvatar = async () => {
       try {
-        const response = await fetch(`http://localhost:8000/users/${user_id}/avatar`, {
+        const response = await fetch(`${API_URL}/users/${user_id}/avatar`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -22,7 +23,7 @@ const UserAvatar = ({ user_id }) => {
         }
 
         const data = await response.json();
-        const fullAvatarUrl = `http://localhost:8000${data.url}`;
+        const fullAvatarUrl = `${API_URL}${data.url}`;
         setAvatarUrl(fullAvatarUrl);
         setAvatarId(data.id);
       } catch (error) {

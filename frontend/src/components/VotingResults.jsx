@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+
 const VotingResults = ({ month, year }) => {
   const [token, userRole] = useContext(UserContext);
   const [results, setResults] = useState([]);
@@ -20,7 +22,7 @@ const VotingResults = ({ month, year }) => {
   const fetchVotingResults = async () => {
     try {
       const response = await fetch(
-        `http://localhost:8000/initiatives/voting-results/${month}/${year}`,
+        `${API_URL}/initiatives/voting-results/${month}/${year}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -44,7 +46,7 @@ const VotingResults = ({ month, year }) => {
   const activateInitiative = async (initiativeId) => {
     try {
       const response = await fetch(
-        `http://localhost:8000/initiatives/activate/${initiativeId}`,
+        `${API_URL}/initiatives/activate/${initiativeId}`,
         {
           method: "POST",
           headers: {

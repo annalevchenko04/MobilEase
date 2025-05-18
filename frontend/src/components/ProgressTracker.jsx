@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { UserContext } from "../context/UserContext";
 import DailyCheckInTracker from "./DailyCheckInTracker";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const ProgressTracker = () => {
   const [token, userRole, username, userId] = useContext(UserContext);
   const [activeInitiative, setActiveInitiative] = useState(null);
@@ -14,7 +15,7 @@ const ProgressTracker = () => {
   const fetchUserProgress = useCallback(async (initiativeId, signal) => {
     try {
       console.log("Fetching user progress for initiative:", initiativeId);
-      const response = await fetch(`http://localhost:8000/progress/?initiative_id=${initiativeId}`, {
+      const response = await fetch(`${API_URL}/progress/?initiative_id=${initiativeId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -48,7 +49,7 @@ const ProgressTracker = () => {
   const fetchActiveInitiative = useCallback(async (signal) => {
     try {
       console.log("Fetching active initiative...");
-      const response = await fetch("http://localhost:8000/initiatives/", {
+      const response = await fetch(`${API_URL}/initiatives/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -114,7 +115,7 @@ const ProgressTracker = () => {
       console.log("Joining initiative:", activeInitiative.id);
       setLoading(true); // Set loading true while joining
 
-      const response = await fetch("http://localhost:8000/progress/", {
+      const response = await fetch(`${API_URL}/progress/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

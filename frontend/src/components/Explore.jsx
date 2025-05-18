@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import { Link } from "react-router-dom";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
 const Explore = () => {
   const [posts, setPosts] = useState([]);  // Store all posts
   const [postImages, setPostImages] = useState({});  // Store images by postId
@@ -27,7 +28,7 @@ const Explore = () => {
       };
 
       // Fetch posts from all users
-      const response = await fetch(`http://localhost:8000/posts`, requestOptions);
+      const response = await fetch(`${API_URL}/posts`, requestOptions);
 
       if (!response.ok) {
         throw new Error('Error fetching posts');
@@ -150,7 +151,7 @@ const Explore = () => {
                         }}
                     >
                       <img
-                          src={`http://localhost:8000${postImages[post.id][0].url}`}
+                          src={`${API_URL}${postImages[post.id][0].url}`}
                           alt={post.title}
                           style={{
                             width: '100%',

@@ -116,7 +116,7 @@
       <matchCondition>equals</matchCondition>
       <name>xpath:customAttributes</name>
       <type>Main</type>
-      <value>//img[@src = 'http://localhost:8000/images/3_1744623656.037666.png' and @alt = 'Take the Sustainability Challenge in Kaunas']</value>
+      <value>//img[@src = '${API_URL}/images/3_1744623656.037666.png' and @alt = 'Take the Sustainability Challenge in Kaunas']</value>
       <webElementGuid>1e76b1c4-dfc7-46ba-8c58-6cfcf480fa90</webElementGuid>
    </webElementXpaths>
 </WebElementEntity>
