@@ -1,8 +1,8 @@
 import os
 import base64
-import crud
-import models
-import schemas
+from . import crud
+from . import models
+from . import schemas
 from fastapi import FastAPI, HTTPException, Depends, status, File, Form, UploadFile
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
