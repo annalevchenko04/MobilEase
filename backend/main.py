@@ -38,7 +38,7 @@ logging.basicConfig(level=logging.DEBUG)
 
 origins = [
     "http://localhost:3000",
-    "https://delightful-beach-0027ec603.6.azurestaticapps.net",
+    "https://gray-coast-0457ace03.6.azurestaticapps.net",
     "https://quickchart.io"
 ]
 app.add_middleware(
