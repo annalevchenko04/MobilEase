@@ -1,5 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
 
+const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+
 export const UserContext = createContext(undefined);
 
 export const UserProvider = (props) => {
