@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, Float,  String, CheckConstraint, ForeignKey, ARRAY, func, Boolean, Date, Time, DateTime, UniqueConstraint, Text, func
 from sqlalchemy.orm import validates
-from database import Base
+from .database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import date, datetime
