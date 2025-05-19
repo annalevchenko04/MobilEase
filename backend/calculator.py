@@ -1,5 +1,5 @@
 import logging
-from questions import questions
+from .questions import questions
 
 # Update emission factors to include seasonal adjustments
 emission_factors = {
