@@ -160,13 +160,13 @@ jobs:
       - name: Login to Azure
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_12D6966CF4C5454E9FE78BB4C6996709 }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_937C88E501F7462AA806F8E129035DAF }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_F8A2F86EDA3644A9B8C33A1CD25C0D7C }}
+          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_89A2DC83545D4D49B653EA33A47A2AD3 }}
+          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_789EC56660854140A1C77F56887FEF03 }}
+          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_116B5B0CD8494886BBE0026462DC7AD2 }}
 
       - name: 'Deploy to Azure Web App'
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: 'fastapidb'
+          app-name: 'esp548backend'
           slot-name: 'Production'  
