@@ -40,7 +40,9 @@ jobs:
       #     zip -r ../release.zip .
 
       - name: Zip artifact for deployment
-        run: zip -r release.zip backend
+        run: |
+            cp ./requirements.txt ./backend/
+            zip -r release.zip backend
 
 
       - name: Upload artifact for deployment jobs
