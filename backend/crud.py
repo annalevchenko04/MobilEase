@@ -3,8 +3,8 @@ from typing import Any
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session, joinedload
-import models
-import schemas
+from . import models
+from . import schemas
 from pydantic import json
 from passlib.context import CryptContext
 from send_email import send_welcome_email
