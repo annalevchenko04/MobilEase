@@ -7,8 +7,8 @@ from . import models
 from . import schemas
 from pydantic import json
 from passlib.context import CryptContext
-from send_email import send_welcome_email
-from send_company_email import send_company_registration_email
+from .send_email import send_welcome_email
+from .send_company_email import send_company_registration_email
 from sqlalchemy.exc import IntegrityError
 import json
 import logging
