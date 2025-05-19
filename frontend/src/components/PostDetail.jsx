@@ -4,7 +4,7 @@ import PostImageGallery from "./PostImageGallery";
 import CommentsSection from "./CommentsSection";
 import {UserContext} from "../context/UserContext";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const PostDetail = () => {
   const { id } = useParams();  // Get the post ID from the URL
   const navigate = useNavigate();  // For navigating back to the explore page

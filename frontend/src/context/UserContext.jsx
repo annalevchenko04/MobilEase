@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 
 export const UserContext = createContext(undefined);
 

@@ -7,7 +7,7 @@ import VotingResults from "./VotingResults";
 import CompanyProgressDashboard from "./CompanyProgressDashboard";
 import { FaPlus, FaChartBar, FaVoteYea, FaClock } from "react-icons/fa";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const Initiatives = () => {
   const [token, userRole, username, userId] = useContext(UserContext);
   const [initiatives, setInitiatives] = useState([]);

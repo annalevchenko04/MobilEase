@@ -2,7 +2,7 @@ import React, { useEffect, useState, useCallback, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import { Link } from "react-router-dom";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const Explore = () => {
   const [posts, setPosts] = useState([]);  // Store all posts
   const [postImages, setPostImages] = useState({});  // Store images by postId

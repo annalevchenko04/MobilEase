@@ -3,7 +3,7 @@ import axios from "axios";
 import {UserContext} from "../context/UserContext";
 import {questions} from "../context/questions";  // Corrected Import Path
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 
 const Calculator = () => {
     const [answers, setAnswers] = useState({});

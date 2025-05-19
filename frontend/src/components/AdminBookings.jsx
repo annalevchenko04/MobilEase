@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import UserAvatar from "./UserAvatar";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const AdminBookings = () => {
   const [token, userRole, username, userId,] = useContext(UserContext);
   const [events, setEvents] = useState([]);

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import ErrorMessage from "./ErrorMessage";
 import { FaClipboardCheck, FaArrowLeft } from "react-icons/fa";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const CompanyRegister = () => {
   const navigate = useNavigate(); // Navigation Hook
 

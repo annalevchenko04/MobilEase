@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import UserAvatar from "./UserAvatar";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const CommentsSection = () => {
   const { id } = useParams(); // Post ID
   const [comments, setComments] = useState([]);

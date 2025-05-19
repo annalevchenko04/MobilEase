@@ -4,7 +4,7 @@ import ErrorMessage from './ErrorMessage';
 import { useNavigate } from 'react-router-dom';
 import UserAvatar from "./UserAvatar";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 export default function RewardsPage() {
   const [reward, setReward] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");

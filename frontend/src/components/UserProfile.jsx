@@ -3,7 +3,7 @@ import { UserContext } from "../context/UserContext";
 import { Link } from "react-router-dom";
 import EditorComponent from "./EditorComponent";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const UserProfile = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [error, setError] = useState(null);

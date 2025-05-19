@@ -1,7 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { UserContext } from "../context/UserContext";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => {
   const [token, userRole] = useContext(UserContext);
   const [name, setName] = useState(event ? event.name : '');

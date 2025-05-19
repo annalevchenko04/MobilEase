@@ -3,7 +3,7 @@ import { UserContext } from "../context/UserContext";
 import ErrorMessage from "./ErrorMessage";
 import { FaClipboardCheck } from "react-icons/fa";
 
-const API_URL = 'https://esp548backend-ejbafshcc5a8eea3.northeurope-01.azurewebsites.net';
+const API_URL = 'https://k548-esp-2.onrender.com';
 const Register = ({ toggleForm }) => {
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
