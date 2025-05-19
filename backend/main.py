@@ -12,12 +12,12 @@ from datetime import datetime, timedelta, timezone
 from passlib.context import CryptContext
 import json
 
-from database import engine, SessionLocal
+from .database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated, List, Dict, Union
 from dotenv import load_dotenv
 from pydantic import BaseModel
-from calculator import calculate_footprint, emission_factors
+from .calculator import calculate_footprint, emission_factors
 import logging
 from typing import Optional, List
 from fastapi.responses import JSONResponse
