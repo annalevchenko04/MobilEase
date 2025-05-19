@@ -39,6 +39,7 @@ logging.basicConfig(level=logging.DEBUG)
 origins = [
     "http://localhost:3000",
     "https://gray-coast-0457ace03.6.azurestaticapps.net",
+    "https://k548-esp-2025.onrender.com",
     "https://*.azurestaticapps.net", 
     "https://quickchart.io"
 ]
