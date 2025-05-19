@@ -1,0 +1,12 @@
+{
+  "routes": [
+    {
+      "route": "/rewards",
+      "methods": [
+        "get",
+        "post",
+        "delete"
+      ]
+    }
+  ]
+}
