@@ -73,7 +73,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 
 
 from fastapi import Query
-from calculator import calculate_footprint, generate_seasonal_recommendations
+from .calculator import calculate_footprint, generate_seasonal_recommendations
 
 
 
