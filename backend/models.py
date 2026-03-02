@@ -13,8 +13,8 @@ class User(Base):
     username = Column(String(50), unique=True, index=True, nullable=False)
     name = Column(String(50), nullable=False)
     surname = Column(String(50), nullable=False)
-    age = Column(Integer, nullable=False)
-    gender = Column(String(10), nullable=False)
+    age = Column(Integer, nullable=True)
+    gender = Column(String, nullable=True)
     email = Column(String(100), unique=True, index=True, nullable=False)
     phone = Column(String(100), unique=True, index=True, nullable=True)
 
@@ -41,11 +41,10 @@ class User(Base):
 
     @validates('age')
     def validate_age(self, key, value):
-        """
-        Validates that the age is between 0 and 120.
-        """
+        if value is None:
+            return None  # allow null age for Google users
         if not (0 <= value <= 120):
-            raise ValueError("Age must be a positive integer between 0 and 120.")
+            raise ValueError("Age must be between 0 and 120")
         return value
 
     __mapper_args__ = {
@@ -138,10 +137,20 @@ class Post(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(255), nullable=False)
-    content = Column(Text, nullable=False)
-    category = Column(String(50), nullable=False)
     tags = Column(ARRAY(String), nullable=True)
-    status = Column(String(20), nullable=False, default="draft")  # 'published' or 'draft'
+    from_country = Column(String(100), nullable=True)
+    from_city = Column(String(100), nullable=True)
+
+    to_country = Column(String(100), nullable=True)
+    to_city = Column(String(100), nullable=True)
+
+    distance_km = Column(Float, nullable=True)
+    estimated_duration = Column(Integer, nullable=True)  # minutes
+    price = Column(Float, nullable=True)
+
+    events = relationship("Event", back_populates="post")
+
+
     created_at = Column(DateTime, server_default=func.now())
 
     # Foreign key to associate with the author
@@ -246,8 +255,6 @@ class UserBadge(Base):
     badge = relationship("Badge", back_populates="users")
 
 
-
-
 class Event(Base):
     __tablename__ = "events"
 
@@ -263,9 +270,20 @@ class Event(Base):
     max_participants = Column(Integer, nullable=True)  # For group events only
     room_number = Column(String, nullable=True)  # For group events only
 
+    post_id = Column(Integer, ForeignKey("posts.id"), nullable=False)
+
+    post = relationship("Post", back_populates="events")
+
     # User who created the event (trainer or admin)
     creator_id = Column(Integer, ForeignKey("users.id"))
     creator = relationship("User", back_populates="created_events")
+
+    driver_id = Column(Integer, ForeignKey("drivers.id"), nullable=True)
+    driver = relationship(
+        "Driver",
+        back_populates="events",
+        foreign_keys=[driver_id]  # <-- REQUIRED
+    )
 
     # Participants (for public group events)
     bookings = relationship("Booking", back_populates="event", cascade="all, delete-orphan")
@@ -277,6 +295,9 @@ class Booking(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))  # User who booked the event
     event_id = Column(Integer, ForeignKey("events.id", ondelete="CASCADE"))
+    seat_number = Column(Integer, nullable=True)  # NEW
+    qr_code = Column(Text, nullable=True)  # NEW (base64 string)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
 
     # Relationships
     user = relationship("User", back_populates="booked_events")
@@ -369,3 +390,111 @@ class Reward(Base):
     issued_at = Column(DateTime, default=datetime.utcnow)
     redeemed_at = Column(DateTime, nullable=True)
 
+class Car(Base):
+    __tablename__ = "cars"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    brand = Column(String(100), nullable=False)
+    model = Column(String(100), nullable=False)
+    year = Column(Integer, nullable=False)
+
+    license_plate = Column(String(50), unique=True, nullable=False)
+
+    seats = Column(Integer, nullable=False)
+    transmission = Column(String(20), nullable=False)  # automatic / manual
+    fuel_type = Column(String(20), nullable=False)     # petrol / diesel / electric
+
+    # Pricing
+    price_per_hour = Column(Float, nullable=False)
+    price_per_day = Column(Float, nullable=False)
+    price_per_km = Column(Float, nullable=False)
+
+    # Availability
+    available = Column(Boolean, default=True)
+
+    # Relationship with rentals
+    rentals = relationship("CarRental", back_populates="car", cascade="all, delete-orphan")
+
+    images = relationship("CarImage", back_populates="car", cascade="all, delete-orphan")
+
+
+
+class CarImage(Base):
+    __tablename__ = "car_images"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String, nullable=False)
+    upload_date = Column(DateTime, server_default=func.now())
+
+    car_id = Column(Integer, ForeignKey("cars.id"), nullable=False)
+    car = relationship("Car", back_populates="images")
+
+class CarRental(Base):
+    __tablename__ = "car_rentals"
+
+    id = Column(Integer, primary_key=True, index=True)
+
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    car_id = Column(Integer, ForeignKey("cars.id"), nullable=False)
+
+    # FR‑6.2 — Pickup & Drop‑off
+    pickup_location = Column(String(255), nullable=False)
+    dropoff_location = Column(String(255), nullable=False)
+
+    pickup_lat = Column(Float, nullable=True)
+    pickup_lng = Column(Float, nullable=True)
+
+    dropoff_lat = Column(Float, nullable=True)
+    dropoff_lng = Column(Float, nullable=True)
+
+    start_datetime = Column(DateTime, nullable=False)
+    end_datetime = Column(DateTime, nullable=False)
+
+    kilometers_used = Column(Float, default=0.0)
+    total_price = Column(Float, nullable=False)
+
+    status = Column(String(20), default="reserved")
+    created_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User")
+    car = relationship("Car", back_populates="rentals")
+
+class Driver(User):
+    __tablename__ = "drivers"
+    id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+
+    license_number = Column(String, nullable=True)
+    salary_rate = Column(Float, default=0.0)
+    hired_at = Column(Date, default=date.today())
+
+    events = relationship(
+        "Event",
+        back_populates="driver",
+        foreign_keys="Event.driver_id"  # <-- REQUIRED
+    )
+
+    __mapper_args__ = {"polymorphic_identity": "driver"}
+
+class DriverLicenseVerification(Base):
+    __tablename__ = "driver_license_verifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+
+    image_url = Column(String, nullable=False)
+
+    extracted_name = Column(String, nullable=True)
+    extracted_surname = Column(String, nullable=True)
+    extracted_birthdate = Column(Date, nullable=True)
+    extracted_license_number = Column(String, nullable=True)
+    extracted_expiry = Column(Date, nullable=True)
+
+    risk_score = Column(Float, nullable=True)
+    status = Column(String, default="pending")
+    admin_comment = Column(Text, nullable=True)
+
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
+
+    user = relationship("User", backref="license_verifications")

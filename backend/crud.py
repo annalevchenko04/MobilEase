@@ -2,7 +2,7 @@ from typing import Any
 
 from fastapi import HTTPException
 from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy.orm import Session, joinedload, selectinload
 from . import models
 from . import schemas
 from pydantic import json
@@ -39,29 +39,47 @@ def create_user(db: Session, user: schemas.UserCreate):
     }
 
     if user.role == "member":
-        # Extract domain from email
+        is_google_user = user.password is None
         email_domain = user.email.split('@')[-1].lower()
-        company = db.query(models.Company).filter(models.Company.domain == email_domain).first()
 
-        if not company:
-            raise HTTPException(status_code=400,
-                                detail=f"No company registered with domain '{email_domain}'. Please contact your company admin.")
-
-        user_data["company_id"] = company.id  # Link user to company
+        if not is_google_user:
+            company = db.query(models.Company).filter(models.Company.domain == email_domain).first()
+            if not company:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"No company registered with domain '{email_domain}'. Please contact your company admin."
+                )
+            user_data["company_id"] = company.id
 
         member_data = {
-            "membership_status": user.membership_status,
+            "membership_status": user.membership_status or "active",
         }
+
         db_user = models.Member(**user_data, **member_data)
+
     elif user.role == "admin":
         db_user = models.Admin(**user_data)
+    elif user.role == "driver":
+        # Optional: auto-detect driver by email domain
+        if not user.email.endswith("@mobilease.com"):
+            raise HTTPException(
+                status_code=400,
+                detail="Driver accounts must use @mobilease.com email."
+            )
+
+        driver_data = {
+            "license_number": user.license_number,
+            "salary_rate": user.salary_rate
+        }
+
+        db_user = models.Driver(**user_data, **driver_data)
     else:
         raise ValueError("Invalid role specified")
 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    send_welcome_email(db_user.email, db_user.name)
+    # send_welcome_email(db_user.email, db_user.name)
 
     return schemas.UserResponse.model_validate({
         "id": db_user.id,
@@ -128,7 +146,7 @@ def create_company(db: Session, company_data: schemas.CompanyCreate, user_data: 
         db.refresh(new_admin)
 
         # Send email after successful registration
-        send_company_registration_email(new_company.name, new_admin.email)
+        #send_company_registration_email(new_company.name, new_admin.email)
 
         return new_admin
 
@@ -219,34 +237,26 @@ def get_user_id(db: Session, username: str) -> Any | None:
     return None
 
 
-def update_user(db: Session, user_id: int, user_update: schemas.UserCreate):
+def update_user(db: Session, user_id: int, user_update: schemas.UserUpdate):
     db_user = db.query(models.User).filter(models.User.id == user_id).first()
     if not db_user:
         return None
 
-    db_user.username = user_update.username
-    db_user.email = user_update.email
-    db_user.hashed_password = pwd_context.hash(user_update.password)
-    db_user.name = user_update.name
-    db_user.surname = user_update.surname
-    db_user.age = user_update.age
-    db_user.gender = user_update.gender
-    db_user.phone = user_update.phone
-    db_user.role = user_update.role
+    # Update only provided fields
+    update_data = user_update.dict(exclude_unset=True)
 
-    if user_update.role == "member":
-        if isinstance(db_user, models.Member):
-            db_user.membership_status = user_update.membership_status
-        else:
-            raise ValueError("The user is not a member")
-    elif user_update.role == "admin":
-        if not isinstance(db_user, models.Admin):
-            raise ValueError("The user is not an admin")
+    # Handle password separately
+    if "password" in update_data:
+        db_user.hashed_password = pwd_context.hash(update_data["password"])
+        del update_data["password"]
+
+    # Update other fields
+    for field, value in update_data.items():
+        setattr(db_user, field, value)
 
     db.commit()
     db.refresh(db_user)
-
-    return schemas.UserResponse.model_validate(db_user)
+    return db_user
 
 
 def delete_user(db: Session, user_id: int):
@@ -370,17 +380,25 @@ def get_footprint_history(db: Session, user_id: int):
 def create_post(db: Session, post: schemas.PostCreate, user_id: int):
     db_post = models.Post(
         title=post.title,
-        content=post.content,
-        category=post.category,
         tags=post.tags,
-        status="draft",  # Default status
-        user_id=user_id  # Associate the post with the member (author)
+
+        # Route fields
+        from_country=post.from_country,
+        from_city=post.from_city,
+        to_country=post.to_country,
+        to_city=post.to_city,
+        distance_km=post.distance_km,
+        estimated_duration=post.estimated_duration,
+        price=post.price,
+
+        # Associate with author
+        user_id=user_id
     )
+
     db.add(db_post)
     db.commit()
     db.refresh(db_post)
     return db_post
-
 
 def get_post(db: Session, post_id: int):
     return db.query(models.Post).filter(models.Post.id == post_id).first()
@@ -394,16 +412,25 @@ def get_all_posts(db: Session, skip: int = 0, limit: int = 10):
     return db.query(models.Post).offset(skip).limit(limit).all()
 
 
+
 def update_post(db: Session, post_id: int, post_update: schemas.PostCreate):
     db_post = db.query(models.Post).filter(models.Post.id == post_id).first()
 
     if not db_post:
         return None
 
+    # Basic fields
     db_post.title = post_update.title
-    db_post.content = post_update.content
-    db_post.category = post_update.category
     db_post.tags = post_update.tags
+
+    # Route fields
+    db_post.from_country = post_update.from_country
+    db_post.from_city = post_update.from_city
+    db_post.to_country = post_update.to_country
+    db_post.to_city = post_update.to_city
+    db_post.distance_km = post_update.distance_km
+    db_post.estimated_duration = post_update.estimated_duration
+    db_post.price = post_update.price
 
     db.commit()
     db.refresh(db_post)
@@ -618,11 +645,22 @@ def create_event(db: Session, event: schemas.EventCreate, user_id: int):
         is_personal_training=event.is_personal_training,
         max_participants=event.max_participants,
         room_number=event.room_number,
-        creator_id=user_id,  # 'creator_id' field to link to the user who created the event
+        creator_id=user_id,
+        post_id=event.post_id,
+        driver_id=event.driver_id,
     )
+
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
+
+    # ⭐ LINK THE POST TO THIS EVENT
+    if event.post_id:
+        db_post = db.query(models.Post).filter(models.Post.id == event.post_id).first()
+        if db_post:
+            db_post.event_id = db_event.id
+            db.commit()
+
     return db_event
 
 
@@ -671,10 +709,13 @@ def update_event(db: Session, event_id: int, event_update: schemas.EventCreate, 
     db_event = db.query(models.Event).filter(models.Event.id == event_id).first()
 
     if not db_event or (
-            db_event.creator_id != user_id and db_event.trainer_id != user_id and not db.query(models.User).filter(
-            models.User.id == user_id, models.User.role == "admin").first()):
+        db_event.creator_id != user_id
+        and db_event.trainer_id != user_id
+        and not db.query(models.User).filter(models.User.id == user_id, models.User.role == "admin").first()
+    ):
         return None
 
+    # Update event fields
     db_event.name = event_update.name
     db_event.description = event_update.description
     db_event.date = event_update.date
@@ -683,6 +724,16 @@ def update_event(db: Session, event_id: int, event_update: schemas.EventCreate, 
     db_event.event_type = event_update.event_type
     db_event.max_participants = event_update.max_participants
     db_event.room_number = event_update.room_number
+    db_event.driver_id = event_update.driver_id
+
+    # ⭐ Update post link if changed
+    if event_update.post_id != db_event.post_id:
+        db_event.post_id = event_update.post_id
+
+        # Update the Post → Event link
+        db_post = db.query(models.Post).filter(models.Post.id == event_update.post_id).first()
+        if db_post:
+            db_post.event_id = db_event.id
 
     db.commit()
     db.refresh(db_event)
@@ -702,27 +753,101 @@ def delete_event(db: Session, event_id: int, user_id: int):
     db.commit()
     return True
 
+def get_posts_by_event(db: Session, event_id: int):
+    return db.query(models.Post).filter(models.Post.event_id == event_id).all()
 
-# Booking Management
-def book_event(db: Session, event_id: int, user_id: int):
+def get_event_with_posts(db: Session, event_id: int):
+    return db.query(models.Event).filter(models.Event.id == event_id).first()
+
+def book_event(db: Session, event_id: int, user_id: int, seat_number: int):
+    # Check event exists
     event = db.query(models.Event).filter(models.Event.id == event_id).first()
-
     if not event:
         raise HTTPException(status_code=404, detail="Event not found")
 
-    if event.max_participants and len(event.bookings) >= event.max_participants:
-        raise HTTPException(status_code=400, detail="Event is fully booked")
+    # Check seat availability
+    taken = db.query(models.Booking).filter(
+        models.Booking.event_id == event_id,
+        models.Booking.seat_number == seat_number
+    ).first()
+
+    if taken:
+        raise HTTPException(status_code=400, detail="Seat already taken")
 
     # Create booking
-    db_booking = models.Booking(user_id=user_id, event_id=event_id)
-    db.add(db_booking)
+    booking = models.Booking(
+        user_id=user_id,
+        event_id=event_id,
+        seat_number=seat_number
+    )
+
+    # ⭐ Generate QR code for this booking
+    qr_data = generate_booking_qr(event_id, user_id, seat_number)
+    booking.qr_code = qr_data
+
+    db.add(booking)
     db.commit()
-    db.refresh(db_booking)
+    db.refresh(booking)
+    return booking
 
-    check_and_assign_sustainability_badge(db, user_id)
+def generate_qr_code_data(user_id: int, db: Session) -> str:
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise ValueError("User not found")
 
-    return db_booking
+    company = user.company
+    if not company:
+        raise ValueError("User does not belong to any company")
 
+    qr_content = {
+        "user_id": user.id,
+        "name": user.name,
+        "surname": user.surname,
+        "email": user.email,
+        "company_name": company.name,
+        "company_industry": company.industry,
+        "company_domain": company.domain,
+        "reward": "day_off",
+        "issued_at": datetime.utcnow().isoformat(),
+        "status": "issued",
+    }
+
+    import json
+    qr_content_str = json.dumps(qr_content)
+
+    qr = QRCode(version=1, box_size=10, border=5)
+    qr.add_data(qr_content_str)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+
+    img_bytes = buffer.getvalue()
+    return base64.b64encode(img_bytes).decode("utf-8")
+
+def generate_booking_qr(event_id: int, user_id: int, seat_number: int) -> str:
+    qr_content = {
+        "event_id": event_id,
+        "user_id": user_id,
+        "seat_number": seat_number,
+        "issued_at": datetime.utcnow().isoformat(),
+        "status": "valid"
+    }
+
+    qr_content_str = json.dumps(qr_content)
+
+    qr = QRCode(version=1, box_size=10, border=5)
+    qr.add_data(qr_content_str)
+    qr.make(fit=True)
+
+    img = qr.make_image(fill_color="black", back_color="white")
+
+    buffer = BytesIO()
+    img.save(buffer, format="PNG")
+
+    return base64.b64encode(buffer.getvalue()).decode("utf-8")
 
 def cancel_booking(db: Session, booking_id: int):
     booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
@@ -1365,57 +1490,6 @@ def has_earned_day_off(db: Session, user_id: int) -> bool:
     badge_count = db.query(models.UserBadge).filter(models.UserBadge.user_id == user_id).count()
     return badge_count >= 5
 
-def generate_qr_code_data(user_id: int, db: Session) -> str:
-    # Fetch user details from the database
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-
-    if not user:
-        raise ValueError("User not found")
-
-    # Fetch the company details associated with the user
-    company = user.company  # This uses the relationship defined in the User model
-
-    if not company:
-        raise ValueError("User does not belong to any company")
-
-    # Prepare the additional data for the QR code
-    qr_content = {
-        "user_id": user.id,
-        "name": user.name,
-        "surname": user.surname,
-        "email": user.email,
-        "company_name": company.name,  # Company name
-        "company_industry": company.industry,  # Company industry
-        "company_domain": company.domain,  # Company domain
-        "reward": "day_off",  # You can replace this if different reward types are added
-        "issued_at": datetime.utcnow().isoformat(),  # Add current timestamp
-        "status": "issued",  # Example of reward status
-    }
-
-    # Convert the dictionary to a string (e.g., JSON or query string format)
-    import json
-    qr_content_str = json.dumps(qr_content)
-
-    # Initialize the QR code
-    qr = QRCode(
-        version=1,
-        box_size=10,
-        border=5
-    )
-
-    qr.add_data(qr_content_str)
-    qr.make(fit=True)
-
-    # Generate the QR code image
-    img = qr.make_image(fill_color="black", back_color="white")
-
-    # Save the image to a buffer
-    buffer = BytesIO()
-    img.save(buffer, format="PNG")
-
-    # Get the image bytes and encode them as base64
-    img_bytes = buffer.getvalue()
-    return base64.b64encode(img_bytes).decode('utf-8')
 
 
 
@@ -1479,3 +1553,250 @@ def deactivate_initiative(db: Session, initiative_id: int):
 
 
     return voting_end_date
+
+def create_car(db: Session, car: schemas.CarCreate):
+    db_car = models.Car(
+        brand=car.brand,
+        model=car.model,
+        year=car.year,
+        license_plate=car.license_plate,
+        seats=car.seats,
+        transmission=car.transmission,
+        fuel_type=car.fuel_type,
+        price_per_hour=car.price_per_hour,
+        price_per_day=car.price_per_day,
+        price_per_km=car.price_per_km,
+        available=car.available
+    )
+
+    db.add(db_car)
+    db.commit()
+    db.refresh(db_car)
+    return db_car
+
+def get_car(db: Session, car_id: int):
+    return db.query(models.Car).filter(models.Car.id == car_id).first()
+
+def get_cars(db: Session):
+    return db.query(models.Car).all()
+
+def update_car(db: Session, car_id: int, car_update: schemas.CarUpdate):
+    db_car = db.query(models.Car).filter(models.Car.id == car_id).first()
+    if not db_car:
+        return None
+
+    update_data = car_update.dict(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(db_car, key, value)
+
+    db.commit()
+    db.refresh(db_car)
+    return db_car
+
+
+def delete_car(db: Session, car_id: int):
+    db_car = db.query(models.Car).filter(models.Car.id == car_id).first()
+    if not db_car:
+        return None
+
+    db.delete(db_car)
+    db.commit()
+    return True
+
+# ⭐ PRICE CALCULATION (included directly here)
+def calculate_rental_price(car, start_datetime: datetime, end_datetime: datetime, kilometers_used: float):
+    """
+    Calculates rental price using:
+    - price per hour
+    - price per day
+    - price per km
+    - platform fee €0.30
+    """
+
+    MIN_FEE = 0.30
+
+    # Duration in hours
+    duration_seconds = (end_datetime - start_datetime).total_seconds()
+    hours = duration_seconds / 3600
+
+    # Convert hours to days
+    days = hours // 24
+    remaining_hours = hours % 24
+
+    # Time cost
+    time_cost = (days * car.price_per_day) + (remaining_hours * car.price_per_hour)
+
+    # Distance cost
+    distance_cost = kilometers_used * car.price_per_km
+
+    total = time_cost + distance_cost + MIN_FEE
+
+    return round(total, 2)
+
+
+
+# ⭐ CREATE RENTAL (uses ORS distance from frontend)
+def create_car_rental(db: Session, rental: schemas.CarRentalCreate, user_id: int):
+    car = db.query(models.Car).filter(models.Car.id == rental.car_id).first()
+    if not car or not car.available:
+        return None
+
+    # ⭐ Use ORS distance sent from frontend
+    km_used = rental.kilometers_used
+
+    # ⭐ Calculate price
+    total_price = calculate_rental_price(
+        car,
+        rental.start_datetime,
+        rental.end_datetime,
+        km_used
+    )
+
+    db_rental = models.CarRental(
+        user_id=user_id,
+        car_id=rental.car_id,
+
+        pickup_location=rental.pickup_location,
+        dropoff_location=rental.dropoff_location,
+
+        pickup_lat=rental.pickup_lat,
+        pickup_lng=rental.pickup_lng,
+        dropoff_lat=rental.dropoff_lat,
+        dropoff_lng=rental.dropoff_lng,
+
+        start_datetime=rental.start_datetime,
+        end_datetime=rental.end_datetime,
+
+        kilometers_used=km_used,
+        total_price=total_price,
+        status="reserved",
+    )
+
+    car.available = False
+
+    db.add(db_rental)
+    db.commit()
+    db.refresh(db_rental)
+    return db_rental
+
+
+
+# ⭐ UPDATE RENTAL (also uses ORS distance)
+def update_car_rental(db: Session, rental_id: int, rental_update: schemas.CarRentalUpdate):
+    db_rental = db.query(models.CarRental).filter(models.CarRental.id == rental_id).first()
+    if not db_rental:
+        return None
+
+    update_data = rental_update.dict(exclude_unset=True)
+
+    # Apply updates
+    for key, value in update_data.items():
+        setattr(db_rental, key, value)
+
+    # ⭐ If kilometers updated → use ORS distance
+    km_used = update_data.get("kilometers_used", db_rental.kilometers_used)
+
+    # ⭐ Recalculate price
+    car = db_rental.car
+    db_rental.total_price = calculate_rental_price(
+        car,
+        db_rental.start_datetime,
+        db_rental.end_datetime,
+        km_used
+    )
+
+    # Free car if completed
+    if db_rental.status == "completed":
+        db_rental.car.available = True
+
+    db.commit()
+    db.refresh(db_rental)
+    return db_rental
+
+
+
+def delete_car_rental(db: Session, rental_id: int):
+    db_rental = db.query(models.CarRental).filter(models.CarRental.id == rental_id).first()
+    if not db_rental:
+        return None
+
+    db_rental.car.available = True
+    db.delete(db_rental)
+    db.commit()
+    return True
+
+
+def get_user_rentals(db: Session, user_id: int):
+    return (
+        db.query(models.CarRental)
+        .filter(models.CarRental.user_id == user_id)
+        .order_by(models.CarRental.start_datetime.asc())
+        .all()
+    )
+
+
+def get_car_rentals(db: Session):
+    return (
+        db.query(models.CarRental)
+        .order_by(models.CarRental.start_datetime.asc())
+        .all()
+    )
+
+def create_car_image(db: Session, car_id: int, url: str):
+    db_image = models.CarImage(
+        car_id=car_id,
+        url=url
+    )
+    db.add(db_image)
+    db.commit()
+    db.refresh(db_image)
+    return db_image
+
+
+def get_car_image(db: Session, car_id: int, image_id: int):
+    return db.query(models.CarImage).filter(
+        models.CarImage.id == image_id,
+        models.CarImage.car_id == car_id
+    ).first()
+
+def get_car_images(db: Session, car_id: int):
+    return db.query(models.CarImage).filter(
+        models.CarImage.car_id == car_id
+    ).all()
+
+def delete_car_image(db: Session, image_id: int):
+    db_image = db.query(models.CarImage).filter(
+        models.CarImage.id == image_id
+    ).first()
+
+    if not db_image:
+        return None
+
+    db.delete(db_image)
+    db.commit()
+    return True
+
+from datetime import datetime, timedelta
+
+def auto_free_car(db: Session, car: models.Car):
+    now = datetime.utcnow()
+
+    # Find active or reserved rentals for this car
+    rental = (
+        db.query(models.CarRental)
+        .filter(
+            models.CarRental.car_id == car.id,
+            models.CarRental.status.in_(["reserved", "active"])
+        )
+        .order_by(models.CarRental.end_datetime.desc())
+        .first()
+    )
+
+    if rental:
+        # If rental ended + 1 minute → free the car
+        if rental.end_datetime + timedelta(minutes=1) < now:
+            car.available = True
+            rental.status = "completed"
+            db.commit()
+            db.refresh(car)
+            db.refresh(rental)

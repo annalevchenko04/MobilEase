@@ -2,13 +2,16 @@ import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import UserAvatar from "./UserAvatar";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const AdminBookings = () => {
   const [token, userRole, username, userId,] = useContext(UserContext);
   const [events, setEvents] = useState([]);
   const [bookings, setBookings] = useState({});
   const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [filterDate, setFilterDate] = useState("");
+  const [filterRoute, setFilterRoute] = useState("");
+
 
   useEffect(() => {
     fetchEvents();
@@ -83,6 +86,28 @@ const AdminBookings = () => {
     <br/>
     <h2 className="title is-2">Manage Bookings</h2>
     {errorMessage && <p className="error">{errorMessage}</p>}
+<div className="filters" style={{ marginBottom: "20px" }}>
+  <div className="field">
+    <label className="label">Filter by Date</label>
+    <input
+      type="date"
+      className="input"
+      value={filterDate}
+      onChange={(e) => setFilterDate(e.target.value)}
+    />
+  </div>
+
+  <div className="field" style={{ marginTop: "10px" }}>
+    <label className="label">Filter by Route</label>
+    <input
+      type="text"
+      className="input"
+      placeholder="Search by route name..."
+      value={filterRoute}
+      onChange={(e) => setFilterRoute(e.target.value)}
+    />
+  </div>
+</div>
 
     {/* Add a wrapper for the table with horizontal and vertical scrolling */}
     <div style={{ overflowX: 'auto', maxHeight: '400px', overflowY: 'auto' }}>
@@ -99,8 +124,23 @@ const AdminBookings = () => {
         </thead>
         <tbody>
           {events
-            .filter((event) => event.event_type === 'public' && event.creator_id === userId)
+            .filter((event) => event.event_type === "public" && event.creator_id === userId)
+
+            // Filter by date
+            .filter((event) => {
+              if (!filterDate) return true;
+              return event.date === filterDate;
+            })
+
+            // Filter by route (name or description)
+            .filter((event) => {
+              if (!filterRoute) return true;
+              const route = `${event.name} ${event.description}`.toLowerCase();
+              return route.includes(filterRoute.toLowerCase());
+            })
+
             .map((event) => (
+
               <tr key={event.id}>
                 <td>{event.name}</td>
                 <td>{event.date}</td>

@@ -4,7 +4,7 @@ import { UserContext } from "../context/UserContext";
 import { FaSignInAlt } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const Login = ({ toggleForm }) => {
   const [Username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -29,6 +29,8 @@ const Login = ({ toggleForm }) => {
     } else {
       setToken(data.access_token);
       localStorage.setItem("token", data.access_token);
+      navigate("/main");   // <-- ADD THIS
+
     }
   };
 
@@ -102,15 +104,28 @@ const Login = ({ toggleForm }) => {
               </a>
             </p>
             <br/>
-            <p>
-              Want to register your company?{" "}
-              <a href="#" onClick={(e) => {
-                e.preventDefault();
-                navigate("/register-company");
-              }}>
-                Register Company
-              </a>
-            </p>
+            {/*<p>*/}
+            {/*  Want to register your company?{" "}*/}
+            {/*  <a href="#" onClick={(e) => {*/}
+            {/*    e.preventDefault();*/}
+            {/*    navigate("/register-company");*/}
+            {/*  }}>*/}
+            {/*    Register Company*/}
+            {/*  </a>*/}
+            {/*</p>*/}
+            <div className="has-text-centered mt-4">
+              <br/>
+  <button
+    type="button"
+    className="button is-danger is-light"
+    onClick={() => window.location.href = `${API_URL}/auth/google`}
+    style={{ width: "100%", fontWeight: "bold" }}
+  >
+    <i className="fab fa-google" style={{ marginRight: "8px" }}></i>
+    Login with Google
+  </button>
+</div>
+
           </div>
         </form>
       </div>

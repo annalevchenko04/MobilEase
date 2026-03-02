@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { UserContext } from "../context/UserContext";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => {
-  const [token, userRole] = useContext(UserContext);
+  const [token, , username, userId, userRole] = useContext(UserContext);
   const [name, setName] = useState(event ? event.name : '');
   const [description, setDescription] = useState(event ? event.description : '');
   const [time, setTime] = useState(event ? event.time : '');
@@ -14,6 +14,46 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
   const [roomNumber, setRoomNumber] = useState(event ? event.room_number : '');
   const [trainerId, setTrainerId] = useState(event ? event.trainer_id : null);
   const [errorMessage, setErrorMessage] = useState('');
+  const [posts, setPosts] = useState([]);
+  const [price, setPrice] = useState(event ? event.price : 0);
+  const [distance, setDistance] = useState(event ? event.distance_km : 0);
+const [postId, setPostId] = useState(event ? event.post_id : null);
+
+const [drivers, setDrivers] = useState([]);
+const [driverId, setDriverId] = useState(null);
+
+useEffect(() => {
+  const fetchDrivers = async () => {
+    const res = await fetch(`${API_URL}/drivers`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setDrivers(Array.isArray(data) ? data : []);
+  };
+
+  fetchDrivers();
+}, [token]);
+
+useEffect(() => {
+  if (event) {
+    setName(event.name ?? null);
+    setDescription(event.description ?? "");
+    setTime(event.time ?? "");
+    setDuration(event.duration ?? 30);
+    setEventType(event.event_type ?? (userRole === "member" ? "private" : "public"));
+    setIsPersonalTraining(event.is_personal_training ?? false);
+    setMaxParticipants(event.max_participants ?? 1);
+    setRoomNumber(event.room_number ?? "");
+    setTrainerId(event.trainer_id ?? null);
+    setPostId(event.post_id ?? null);
+    setDriverId(event.driver_id ?? null);
+
+    if (event.post) {
+      setPrice(event.post.price ?? 0);
+      setDistance(event.post.distance_km ?? 0);
+    }
+  }
+}, [event]);
 
   const handleSave = async () => {
     // Validation
@@ -21,8 +61,8 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
       setErrorMessage('Please fill in all required fields');
       return;
     }
-    if(duration <= 15){
-      setErrorMessage('Please set duration more than 15 minutes');
+    if(duration <= 1){
+      setErrorMessage('Please set duration more than 1 hour');
       return;
     }
 
@@ -36,17 +76,19 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({
-        name,
-        description,
-        date: selectedDate,  // Use the passed selectedDate
-        time,
-        duration,
-        event_type: finalEventType,
-        is_personal_training: isPersonalTraining,
-        max_participants: maxParticipants > 0 ? maxParticipants : null,
-        room_number: roomNumber || null,
-        trainer_id: isPersonalTraining ? trainerId : null,
-      }),
+      name,
+      description,
+      date: selectedDate,
+      time,
+      duration,
+      event_type: finalEventType,
+      is_personal_training: isPersonalTraining,
+      max_participants: maxParticipants > 0 ? maxParticipants : null,
+      room_number: roomNumber || null,
+      trainer_id: isPersonalTraining ? trainerId : null,
+      post_id: postId,
+      driver_id: driverId || null,
+    }),
     };
 
     const url = event?.id
@@ -68,6 +110,17 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
       handleClose(); // Close the modal after deletion
     }
   };
+useEffect(() => {
+  fetch(`${API_URL}/posts`)
+    .then(res => res.json())
+    .then(data => {
+      console.log("POSTS RESPONSE:", data);
+      setPosts(data);
+    })
+    .catch(err => console.error("Failed to load posts", err));
+}, []);
+
+
 
   return (
     <div className="modal is-active">
@@ -79,15 +132,32 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
         <section className="modal-card-body">
           <div className="field">
             <label className="label">Event Name</label>
-            <div className="control">
-              <input
-                  type="text"
-                  className="input"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Enter event name"
-                  required
-              />
+            <div className="select is-fullwidth">
+            <select
+              value={postId ?? ""}
+              onChange={(e) => {
+                const selectedId = Number(e.target.value);
+                setPostId(selectedId);
+
+                if (!event) {   // ⭐ Only overwrite name when creating a NEW event
+                  const selectedPost = posts.find(p => p.id === selectedId);
+                  if (selectedPost) {
+                    setName(selectedPost.title);
+                    setDuration(selectedPost.estimated_duration ?? 30);
+                    setDescription(`${selectedPost.from_city ?? ''} → ${selectedPost.to_city ?? ''}`);
+                    setPrice(selectedPost.price ?? 0);
+                    setDistance(selectedPost.distance_km ?? 0);
+                  }
+                }
+              }}
+            >
+                <option value="">Select a route</option>
+                {posts.map(post => (
+                   <option key={post.id} value={post.id}>
+                    {post.title}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -97,13 +167,37 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
               <input
                   type="text"
                   className="input"
-                  value={description}
+                  value={description ?? ""}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Enter description"
               />
             </div>
           </div>
 
+                  <div className="field">
+          <label className="label">Price</label>
+          <div className="control">
+            <input
+              type="number"
+              className="input"
+              value={price ?? 0}
+              onChange={(e) => setPrice(e.target.value)}
+              readOnly
+            />
+          </div>
+        </div>
+            <div className="field">
+              <label className="label">Distance (km)</label>
+              <div className="control">
+                <input
+                  type="number"
+                  className="input"
+                  value={distance ?? 0}
+                  onChange={(e) => setDistance(e.target.value)}
+                  readOnly
+                />
+              </div>
+            </div>
           <div className="field">
             <label className="label">Event Date</label>
             <div className="control">
@@ -122,7 +216,7 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
               <input
                   type="time"
                   className="input"
-                  value={time}
+                  value={time ?? ""}
                   onChange={(e) => setTime(e.target.value)}
                   required
               />
@@ -130,12 +224,12 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
           </div>
 
           <div className="field">
-            <label className="label">Duration (minutes)</label>
+            <label className="label">Duration (hours)</label>
             <div className="control">
               <input
                   type="number"
                   className="input"
-                  value={duration}
+                  value={duration ?? 0}
                   onChange={(e) => setDuration(e.target.value)}
                   placeholder="Enter duration (min. 15)"
                   required
@@ -170,7 +264,7 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
                     <input
                         type="number"
                         className="input"
-                        value={maxParticipants}
+                        value={maxParticipants ?? 0}
                         onChange={(e) => setMaxParticipants(e.target.value)}
                         placeholder="Enter max participants"
                     />
@@ -178,12 +272,30 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
                 </div>
 
                 <div className="field">
+  <label className="label">Assign Driver</label>
+  <div className="select is-fullwidth">
+    <select
+      value={driverId ?? ""}
+      onChange={(e) => setDriverId(Number(e.target.value))}
+    >
+      <option value="">Select a driver</option>
+
+      {Array.isArray(drivers) && drivers.map(driver => (
+        <option key={driver.id} value={driver.id}>
+          {driver.name} {driver.surname}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
+
+                <div className="field">
                   <label className="label">Address</label>
                   <div className="control">
                     <input
                         type="text"
                         className="input"
-                        value={roomNumber}
+                        value={roomNumber ?? ""}
                         onChange={(e) => setRoomNumber(e.target.value)}
                         placeholder="Enter place"
                     />

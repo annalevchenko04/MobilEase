@@ -6,7 +6,8 @@ import 'bulma/css/bulma.min.css';
 import reportWebVitals from './reportWebVitals';
 import {UserProvider} from './context/UserContext';
 import { NotificationProvider } from './context/NotificationContext'; // Import NotificationProvider
-
+import "./chartSetup";
+import "leaflet/dist/leaflet.css";
 
 
 const root = ReactDOM.createRoot(document.getElementById('root'));

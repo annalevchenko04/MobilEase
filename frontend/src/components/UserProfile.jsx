@@ -2,8 +2,11 @@ import React, { useEffect, useState, useContext, useCallback,  useRef } from "re
 import { UserContext } from "../context/UserContext";
 import { Link } from "react-router-dom";
 import EditorComponent from "./EditorComponent";
-
-const API_URL = 'https://k548-esp-2.onrender.com';
+import TicketPage from "./TicketPage";
+import { useNavigate } from "react-router-dom";
+import API_URL from "../config";
+import CarsManagement from "./CarsManagement";
+import UserAvatar from "../components/UserAvatar";
 const UserProfile = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [error, setError] = useState(null);
@@ -11,16 +14,58 @@ const UserProfile = () => {
     const [avatarFile, setAvatarFile] = useState(null); // Holds the selected file (before upload)
     const [avatarUrl, setAvatarUrl] = useState(null);    // Holds the uploaded avatar URL
     const [avatarId, setAvatarId] = useState(null); // Use this to store avatarId
-
+    const [trips, setTrips] = useState([]);
+    const [showTicket, setShowTicket] = useState(false);
+    const navigate = useNavigate();
     const [posts, setPosts] = useState([]);
     const [currentPostId, setCurrentPostId] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
     const [errorMessage, setErrorMessage] = useState('');
+    const [selectedMonth, setSelectedMonth] = useState("");
+    const [selectedYear, setSelectedYear] = useState("");
+    const [isEditingUser, setIsEditingUser] = useState(false);
+    const [editForm, setEditForm] = useState({
+      name: "",
+      surname: "",
+      age: "",
+      gender: "",
+      phone: "",
+      email: "",
+      password: ""
+    });
+
     const [newPost, setNewPost] = useState({
         title: '',
-        content: '',
-        category: '',
-        tags: [],});
+        tags: [],
+        from_country: '',
+        from_city: '',
+        to_country: '',
+        to_city: '',
+        distance_km: '',
+        estimated_duration: '',
+        price: ''
+    });
+    const toLocal = (utcString) => {
+  // Ensure the string ends with Z (UTC)
+  const normalized = utcString.endsWith("Z")
+    ? utcString
+    : utcString.replace(" ", "T") + "Z";
+
+  return new Date(normalized).toLocaleString();
+};
+    const openEditDriver = (driver) => {
+      setEditingDriver(driver);
+      setShowEditModal(true);
+    };
+
+    const openDeleteDriver = (id) => {
+      setDeleteDriverId(id);
+      setShowDeleteModal(true);
+    };
+    const [editingDriver, setEditingDriver] = useState(null);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [deleteDriverId, setDeleteDriverId] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [isCreating, setIsCreating] = useState(false); // State to toggle creating new plan
     const [images, setImages] = useState([]); // State for image
@@ -32,20 +77,105 @@ const UserProfile = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [postToDelete, setPostToDelete] = useState(null);
     const [badges, setBadges] = useState([]);
+    const [selectedBookingId, setSelectedBookingId] = useState(null);
+    const [rentals, setRentals] = useState([]);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const [driverEvents, setDriverEvents] = useState([]);
+const [driverSalary, setDriverSalary] = useState(null);
+const [allDrivers, setAllDrivers] = useState([]);
+ const fetchDrivers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/drivers`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      setAllDrivers(data);
+    } catch (err) {
+      console.error("Error fetching drivers:", err);
+    }
+  };
 
 
-    const formatDate = (dateString) => {
-        const options = {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric',
-            hour: 'numeric',
-            minute: 'numeric',
-            hour12: true,
-        };
-        return new Intl.DateTimeFormat('en-US', options).format(new Date(dateString));
-    };
+useEffect(() => {
+  const fetchDrivers = async () => {
+    try {
+      const res = await fetch(`${API_URL}/drivers`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
 
+      if (!res.ok) {
+        console.error("Failed to fetch drivers");
+        return;
+      }
+
+      const data = await res.json();
+      setAllDrivers(data);
+    } catch (err) {
+      console.error("Error fetching drivers:", err);
+    }
+  };
+
+  if (userRole === "admin") {
+    fetchDrivers();
+  }
+}, [userRole, token]);
+
+useEffect(() => {
+  if (trips.length > 0) {
+    trips.forEach(async (booking) => {
+      const postId = booking.event?.post?.id;
+      if (!postId) return;
+
+      const res = await fetch(`${API_URL}/posts/${postId}/images`);
+      const data = await res.json();
+
+      setPostImages(prev => ({
+        ...prev,
+        [postId]: data
+      }));
+    });
+  }
+}, [trips]);
+useEffect(() => {
+  if (token && userRole === "driver") {
+    fetchDriverEvents();
+    fetchDriverSalary();
+  }
+}, [token, userRole]);
+useEffect(() => {
+  const fetchRentals = async () => {
+    const res = await fetch(`${API_URL}/rentals`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json();
+    setRentals(data);
+  };
+
+  if (token) fetchRentals();
+}, [token]);
+useEffect(() => {
+  const fetchSalary = async () => {
+    let url = `${API_URL}/driver/salary`;
+
+    const params = [];
+    if (selectedMonth) params.push(`month=${selectedMonth}`);
+    if (selectedYear) params.push(`year=${selectedYear}`);
+
+    if (params.length > 0) {
+      url += "?" + params.join("&");
+    }
+
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+
+    const data = await res.json();
+    setDriverSalary(data);
+  };
+
+  fetchSalary();
+}, [selectedMonth, selectedYear, token]);
     // Fetch user profile
     useEffect(() => {
         const fetchUserProfile = async () => {
@@ -92,8 +222,81 @@ const UserProfile = () => {
         fetchUserBadges(); // Fetch badges when profile loads
     }
     }, [token, username]); // Include token and username as dependencies
+useEffect(() => {
+  if (userProfile) {
+    setEditForm({
+      name: userProfile.name || "",
+      surname: userProfile.surname || "",
+      age: userProfile.age || "",
+      gender: userProfile.gender || "",
+      phone: userProfile.phone || "",
+      email: userProfile.email || "",
+      password: ""
+    });
+  }
+}, [userProfile]);
 
+useEffect(() => {
+  fetch(`${API_URL}/bookings`, {
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => {
+      console.log("TRIPS RESPONSE:", data);
+      if (Array.isArray(data)) {
+        setTrips(data);
+      } else {
+        setTrips([]); // prevent crashes
+      }
+    })
+    .catch(err => console.error("Failed to load trips", err));
+}, []);
 
+const fetchDriverEvents = async () => {
+  const res = await fetch(`${API_URL}/driver/events`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  setDriverEvents(data);
+};
+const saveProfileChanges = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    // Build payload with only non-empty fields
+    const payload = {};
+    Object.entries(editForm).forEach(([key, value]) => {
+      if (value !== "" && value !== null) payload[key] = value;
+    });
+
+    const response = await fetch(`http://localhost:8000/user/${userProfile.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) throw new Error("Failed to update profile");
+
+    const updated = await response.json();
+    setUserProfile(updated);
+    setIsEditingUser(false);
+    setSuccessMessage("Profile updated successfully!");
+
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const fetchDriverSalary = async () => {
+  const res = await fetch(`${API_URL}/driver/salary`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  const data = await res.json();
+  setDriverSalary(data);
+};
  const fetchPosts = useCallback(async () => {
   try {
     const requestOptions = {
@@ -129,7 +332,33 @@ useEffect(() => {
   }
 }, [userId, fetchPosts]);
 
+const saveDriverChanges = async () => {
+  await fetch(`${API_URL}/admin/drivers/${editingDriver.id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({
+      phone: editingDriver.phone,
+      license_number: editingDriver.license_number,
+      salary_rate: editingDriver.salary_rate,
+    }),
+  });
 
+  setShowEditModal(false);
+  fetchDrivers();
+};
+
+const deleteDriver = async () => {
+  await fetch(`${API_URL}/admin/drivers/${deleteDriverId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` },
+  });
+
+  setShowDeleteModal(false);
+  fetchDrivers();
+};
   const fetchUserAvatar = async () => {
     try {
         const response = await fetch(`${API_URL}/users/${userId}/avatar`, {
@@ -197,16 +426,23 @@ useEffect(() => {
             const currentPost = posts.find(post => post.id === currentPostId);
             if (currentPost) {
                 setExistingImages(currentPost.images || []);
+
                 setNewPost({
-                    title: currentPost.title,
-                    content: currentPost.content,
-                    category: currentPost.category,
+                    title: currentPost.title || "",
                     tags: currentPost.tags || [],
+                    from_country: currentPost.from_country || "",
+                    from_city: currentPost.from_city || "",
+                    to_country: currentPost.to_country || "",
+                    to_city: currentPost.to_city || "",
+                    distance_km: currentPost.distance_km || "",
+                    estimated_duration: currentPost.estimated_duration || "",
+                    price: currentPost.price || ""
                 });
+                setTags(currentPost.tags || []);
             }
-        }, 500); // Wait 500ms before updating state
+        }, 500);
     }
-}, [isEditing, currentPostId, posts]);  // <--- FIXED SYNTAX HERE
+}, [isEditing, currentPostId, posts]);
 
 
 
@@ -384,20 +620,6 @@ const handleEditorChange = useCallback((content) => {
         return;
       }
 
-      if (!newPost.content.trim()) {
-        setErrorMessage("Content is required.");
-        return;
-      }
-
-      if (!newPost.category) {
-        setErrorMessage("Category is required.");
-        return;
-      }
-
-      if (tags.length === 0) {
-        setErrorMessage("At least one tag is required.");
-        return;
-      }
     try {
       const requestOptions = {
         method: isEditing ? 'PUT' : 'POST', // Use PUT if editing, otherwise POST
@@ -447,10 +669,15 @@ const handleEditorChange = useCallback((content) => {
       setTimeout(() => setSuccessMessage(''), 3000);
 
      setNewPost({
-      title: '',
-      content: '',
-      category: '',
-      tags: [],
+        title: '',
+        from_country: '',
+        from_city:'',
+        to_country: '',
+        to_city: '',
+        distance_km: '',
+        estimated_duration: '',
+        price: '',
+        tags: [],
     });
       setTags([]);
 
@@ -535,6 +762,8 @@ const handleRemoveTag = (tag) => {
 
     return (
         <div className="app-container">
+                        {successMessage &&
+                <p className="notification is-primary is-light has-text-centered"><strong>{successMessage}</strong></p>}
             <div className="profile-card">
                 <h2 className="title is-2">My Profile</h2>
                 <div className="profile-details">
@@ -546,7 +775,7 @@ const handleRemoveTag = (tag) => {
                             borderRadius: '50%',
                             overflow: 'hidden',
                             margin: 'auto',
-                            border: '2px solid #00d1b2',
+                            border: '2px solid #605fc9',
                         }}>
                             <img
                                 src={avatarFile ? URL.createObjectURL(avatarFile) : avatarUrl}
@@ -627,123 +856,508 @@ const handleRemoveTag = (tag) => {
                     )}
 
                     <br/>
-                    <p className="text-gray-400" style={{fontSize: "20px"}}>
-                        <i className="fas fa-user mr-2"></i> {/* User Icon */}
-                        <strong>Name:</strong> {userProfile.name} {userProfile.surname}
-                    </p>
-                    <p className="text-gray-400" style={{fontSize: "20px"}}>
-                        <i className="fas fa-user-circle mr-2"></i> {/* Username Icon */}
-                        <strong>Username:</strong> {userProfile.username} 
-                    </p>
-                    <p className="text-gray-400" style={{fontSize: "20px"}}>
-                        <i className="fas fa-birthday-cake mr-2"></i> {/* Age Icon */}
-                        <strong>Age:</strong> {userProfile.age}
-                    </p>
-                    <p className="text-gray-400" style={{fontSize: "20px"}}>
-                        <i className="fas fa-venus-mars mr-1"></i> {/* Gender Icon */}
-                        <strong>Gender:</strong> {userProfile.gender}
-                    </p>
-                    <p className="text-gray-400" style={{fontSize: "20px"}}>
-                        <i className="fas fa-phone-alt mr-2"></i> {/* Phone Icon */}
-                        <strong>Phone:</strong> {userProfile.phone}
-                    </p>
-                    <p className="text-gray-400" style={{fontSize: "20px"}}>
-                        <i className="fas fa-envelope mr-2"></i> {/* Email Icon */}
-                        <strong>Email:</strong> {userProfile.email}
-                    </p>
+                    {!isEditingUser ? (
+  <>
+    <p className="text-gray-400" style={{fontSize: "20px"}}>
+      <i className="fas fa-user mr-2"></i>
+      <strong>Name:</strong> {userProfile.name} {userProfile.surname}
+    </p>
 
-                    {userProfile.company && (
-                        <p className="text-gray-400" style={{fontSize: "20px"}}>
-                            <i className="fas fa-briefcase mr-2"></i>
-                            <strong>Company:</strong> {userProfile.company.name} ({userProfile.role})
-                        </p>
-                    )}
+    <p className="text-gray-400" style={{fontSize: "20px"}}>
+      <i className="fas fa-user-circle mr-2"></i>
+      <strong>Username:</strong> {userProfile.username}
+    </p>
+
+    <p className="text-gray-400" style={{fontSize: "20px"}}>
+      <i className="fas fa-birthday-cake mr-2"></i>
+      <strong>Age:</strong> {userProfile.age}
+    </p>
+
+    <p className="text-gray-400" style={{fontSize: "20px"}}>
+      <i className="fas fa-venus-mars mr-1"></i>
+      <strong>Gender:</strong> {userProfile.gender}
+    </p>
+
+    <p className="text-gray-400" style={{fontSize: "20px"}}>
+      <i className="fas fa-phone-alt mr-2"></i>
+      <strong>Phone:</strong> {userProfile.phone}
+    </p>
+
+    <p className="text-gray-400" style={{fontSize: "20px"}}>
+      <i className="fas fa-envelope mr-2"></i>
+      <strong>Email:</strong> {userProfile.email}
+    </p>
+
+    {userProfile.company && (
+      <p className="text-gray-400" style={{fontSize: "20px"}}>
+        <i className="fas fa-briefcase mr-2"></i>
+        <strong>Company:</strong> {userProfile.company.name} ({userProfile.role})
+      </p>
+    )}
+
+    <button
+      className="button is-light mt-4"
+      onClick={() => setIsEditingUser(true)}
+    >
+      Edit Profile
+    </button>
+  </>
+) : (
+  <>
+    {/* EDIT MODE FORM */}
+    <div className="field">
+      <label className="label">Name</label>
+      <input
+        className="input"
+        value={editForm.name}
+        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+      />
+    </div>
+
+    <div className="field">
+      <label className="label">Surname</label>
+      <input
+        className="input"
+        value={editForm.surname}
+        onChange={(e) => setEditForm({ ...editForm, surname: e.target.value })}
+      />
+    </div>
+
+    <div className="field">
+      <label className="label">Age</label>
+      <input
+        className="input"
+        type="number"
+        value={editForm.age}
+        onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
+      />
+    </div>
+
+    <div className="field">
+      <label className="label">Gender</label>
+      <div className="select">
+        <select
+          value={editForm.gender}
+          onChange={(e) => setEditForm({ ...editForm, gender: e.target.value })}
+        >
+          <option value="">Select gender</option>
+          <option value="female">Female</option>
+          <option value="male">Male</option>
+          <option value="other">Other</option>
+        </select>
+      </div>
+    </div>
+
+    <div className="field">
+      <label className="label">Phone</label>
+      <input
+        className="input"
+        value={editForm.phone}
+        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+      />
+    </div>
+
+    <div className="field">
+      <label className="label">Email</label>
+      <input
+        className="input"
+        type="email"
+        value={editForm.email}
+        onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
+      />
+    </div>
+
+    <div className="field">
+      <label className="label">New Password (optional)</label>
+      <input
+        className="input"
+        type="password"
+        placeholder="Leave empty to keep current password"
+        value={editForm.password}
+        onChange={(e) => setEditForm({ ...editForm, password: e.target.value })}
+      />
+    </div>
+
+    <button className="button is-primary" onClick={saveProfileChanges}>
+      Save Changes
+    </button>
+
+    <button
+      className="button is-light ml-2"
+      onClick={() => setIsEditingUser(false)}
+    >
+      Cancel
+    </button>
+  </>
+)}
+
+
                 </div>
             </div>
             <br/>
             <br/>
+{userRole === "driver" && (
+    <>
+        {/* Upcoming Trips */}
+        <h3 className="title is-large">My Upcoming Trips</h3>
 
-            <div className="profile-badges">
-                <h3 className="title is-large">My Badges</h3>
-                {badges.length > 0 ? (
-                    <div className="badges-container">
-                    {badges.map((badge) => (
-                        <div key={badge.id} className="badge">
-                            {badge.id === 1 ? (
-                                <img
-                                  src={`${API_URL}/images/ESP_badge_1.png`}  // Image for badge id 1
-                                  alt={badge.name}
-                                  className="badge-image"
-                                />
-                              ) : badge.id === 2 ? (
-                                <img
-                                  src={`${API_URL}/images/ESP_badge_2.png`} // Image for badge id 2
-                                  alt={badge.name}
-                                  className="badge-image"
-                                />
-                              ) : badge.id === 3 ? (
-                                <img
-                                  src={`${API_URL}/images/ESP_badge_3.png`}  // Image for badge id 3
-                                  alt={badge.name}
-                                  className="badge-image"
-                                />
-                              )
-                                : badge.id === 4 ? (
-                                <img
-                                  src={`${API_URL}/images/ESP_badge_4.png`}  // Image for badge id 4
-                                  alt={badge.name}
-                                  className="badge-image"
-                                />
-                              )
-                                    : badge.id === 5 ? (
-                                <img
-                                  src={`${API_URL}/images/ESP_badge_5.png`} // Image for badge id 5
-                                  alt={badge.name}
-                                  className="badge-image"
-                                />
-                              )
-                                : null}
-                            <div className="badge-info">  {/* Wrapper to group name and description */}
-                                <strong>{badge.name}</strong>
-                                <br/>
-                                {badge.description}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                ) : (
-                    <p>No badges earned yet.</p>
-                )}
+{(() => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
+  const upcomingTrips = driverEvents.filter(ev => {
+    if (!ev.date) return false;
+
+    const eventDateTime = new Date(`${ev.date}T${ev.time || "00:00"}`);
+    return eventDateTime >= today;
+  });
+
+  return upcomingTrips.length === 0 ? (
+    <p>No upcoming trips.</p>
+  ) : (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+        gap: "20px",
+      }}
+    >
+      {upcomingTrips.map(ev => (
+        <div
+          key={ev.id}
+          className="box"
+          style={{
+            position: "relative",
+            maxHeight: "470px",
+            border: "3px solid #605fc9",
+          }}
+        >
+          {/* Date & time */}
+          <p
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              fontSize: "0.9em",
+              color: "black",
+            }}
+          >
+            {ev.date} {ev.time}
+          </p>
+
+          {/* Event title */}
+          <h5 className="title is-5">{ev.name}</h5>
+
+          {/* Trip details */}
+          <p style={{ marginTop: "10px" }}>
+            <strong>Duration:</strong> {ev.duration} hours
+              <br />
+              <strong>Address:</strong> {ev.room_number}
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+})()}
+        <br/>
+
+        {/* Salary */}
+        <h3 className="title is-large">Salary</h3>
+<div className="field is-grouped" style={{ marginBottom: "20px" }}>
+
+  {/* Year */}
+  <div className="control">
+    <label className="label" style={{ marginBottom: "6px" }}>Year</label>
+    <div className="select is-rounded is-link is-medium">
+      <select
+        value={selectedYear}
+        onChange={(e) => setSelectedYear(Number(e.target.value))}
+      >
+        <option value="">All years</option>
+        {[2025, 2026, 2027].map((y) => (
+          <option key={y} value={y}>{y}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+  {/* Month */}
+  <div className="control" style={{ marginLeft: "12px" }}>
+    <label className="label" style={{ marginBottom: "6px" }}>Month</label>
+    <div className="select is-rounded is-link is-medium">
+      <select
+        value={selectedMonth}
+        onChange={(e) => setSelectedMonth(Number(e.target.value))}
+      >
+        <option value="">All months</option>
+        {[
+          "January", "February", "March", "April", "May", "June",
+          "July", "August", "September", "October", "November", "December"
+        ].map((m, i) => (
+          <option key={i} value={i + 1}>{m}</option>
+        ))}
+      </select>
+    </div>
+  </div>
+
+</div>
+
+
+
+        {driverSalary ? (
+            <>
+                 <p className="text-gray-400" style={{fontSize: "20px"}}> Total Hours: {(driverSalary.total_hours || 0).toFixed(2)}</p>
+                 <p className="text-gray-400" style={{fontSize: "20px"}}>Rate: €{(driverSalary.salary_rate || 0).toFixed(2)}</p>
+                 <p className="text-gray-400" style={{fontSize: "20px"}}> <strong>Total Salary Before Taxes: €{(driverSalary.total_salary || 0).toFixed(2)}</strong></p>
+            </>
+        ) : (
+            <p>No salary data available</p>
+        )}
+
+    </>
+)}
+              {userRole !== "admin" && userRole !== "driver" && (
+         <div className="profile-badges">
+
+  <h3 className="title is-large">My Upcoming Trips</h3>
+
+{(() => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const upcomingTrips = trips.filter((booking) => {
+    if (!booking.event?.date) return false;
+
+    // assuming date: "YYYY-MM-DD", time: "HH:MM"
+    const eventDateTime = new Date(
+      `${booking.event.date}T${booking.event.time || "00:00"}`
+    );
+
+    return eventDateTime >= today;
+  });
+
+  return upcomingTrips.length === 0 ? (
+    <p>No trips booked yet.</p>
+  ) : (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+        gap: "20px",
+      }}
+    >
+      {upcomingTrips.map((booking) => (
+        <div
+          key={booking.id}
+          className="box"
+          style={{
+            position: "relative",
+            maxHeight: "470px",
+            border: "3px solid #605fc9",
+          }}
+        >
+          {/* Created at */}
+          <p
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              fontSize: "0.9em",
+              color: "black",
+            }}
+          >
+            {booking.event?.date} {booking.event?.time}
+          </p>
+
+          {/* Event title */}
+          <h5 className="title is-5">{booking.event?.name}</h5>
+
+          {/* Trip details */}
+          <p style={{ marginTop: "10px" }}>
+            <strong>From:</strong> {booking.event?.post?.from_city},{" "}
+            {booking.event?.post?.from_country}
+            <br />
+            <strong>To:</strong> {booking.event?.post?.to_city},{" "}
+            {booking.event?.post?.to_country}
+            <br />
+            <strong>Address:</strong> {booking.event?.room_number}
+            <br />
+            <strong>Seat:</strong> #{booking.seat_number}
+          </p>
+
+          {/* Ticket button */}
+          <p
+            style={{
+              position: "absolute",
+              bottom: "10px",
+              right: "10px",
+            }}
+          >
+            <button
+              className="button is-link is-outlined"
+              onClick={() => {
+                setSelectedBookingId(booking.id);
+                setShowTicket(true);
+              }}
+            >
+              Show QR-code
+            </button>
+          </p>
+        </div>
+      ))}
+    </div>
+  );
+})()}
+             <br/>
+             <br/>
+             <h3 className="title is-large">My Upcoming Car Rentals</h3>
+
+{(() => {
+const now = new Date();
+
+const upcomingRentals = rentals.filter((rental) => {
+  if (!rental.end_datetime) return false;
+
+    const endUTC = new Date(rental.end_datetime);
+    const endLocal = new Date(endUTC.getTime() - endUTC.getTimezoneOffset() * 60000);
+
+    return endLocal >= now;
+});
+
+  return upcomingRentals.length === 0 ? (
+    <p>No upcoming car rentals.</p>
+  ) : (
+    <div
+      style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+        gap: "20px",
+      }}
+    >
+      {upcomingRentals.map((rental) => (
+        <div
+          key={rental.id}
+          className="box"
+          style={{
+            position: "relative",
+            maxHeight: "470px",
+            border: "3px solid #605fc9",
+          }}
+        >
+          {/* Rental date */}
+          <p
+            style={{
+              position: "absolute",
+              top: "10px",
+              right: "10px",
+              fontSize: "0.9em",
+              color: "black",
+            }}
+          >
+            {new Date(rental.start_datetime).toLocaleDateString()}{" "}
+            {new Date(rental.start_datetime).toLocaleTimeString([], {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+<br/>
+
+          {/* Car title */}
+          <h5 className="title is-5">
+            {rental.car?.brand} {rental.car?.model} ({rental.car?.year})
+          </h5>
+
+          {/* Car image */}
+          {rental.car?.images?.length > 0 ? (
+            <figure
+              style={{
+                width: "100%",
+                height: "200px",
+                overflow: "hidden",
+                margin: 0,
+              }}
+            >
+              <img
+                src={`${API_URL}${rental.car.images[0].url}`}
+                alt="Car"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </figure>
+          ) : (
+            <div
+              style={{
+                width: "100%",
+                height: "200px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "#f0f0f0",
+                color: "#888",
+              }}
+            >
+              No Image Available
             </div>
+          )}
+
+          {/* Rental details */}
+          <p style={{ marginTop: "10px" }}>
+            <strong>Start:</strong> {toLocal(rental.start_datetime)}
+            <br />
+            <strong>End:</strong> {toLocal(rental.end_datetime)}
+            <br />
+            <strong>Kilometers:</strong> {rental.kilometers_used} km
+            <br />
+            <strong>Total Price:</strong> €{rental.total_price}
+            <br />
+            <strong>Status:</strong> {rental.status}
+          </p>
+
+        </div>
+      ))}
+    </div>
+  );
+})()}
+
+         </div>)}
             <br/>
-            {userRole !== "admin" && (
-            <div className="has-text-centered">
-                <button
-                    className="button is-primary is-outlined is-medium"
-                    style={{
-                        borderWidth: '3px', // Increase border thickness
-                    }}
-                    onClick={() => {
-                        setIsCreating(!isCreating);
-                        setIsEditing(false); // Ensure editing mode is off
-                        setNewPost({title: '', content: '', category: '', tags: ''});
-                        setExistingImages([]);
-                        setTags([]);
-                    }}
-                >
-                    {isCreating ? <i className="fas fa-times"></i> : "Create Post"}
-                </button>
-            </div>
-            )}
+{userRole === "admin" && (
+  <div className="has-text-centered">
+    <button
+      className="button is-primary is-outlined is-medium"
+      style={{ borderWidth: '3px' }}
+      onClick={() => {
+        setIsCreating(!isCreating);
+        setIsEditing(false);
+
+        // FIXED: reset all fields properly
+        setNewPost({
+          title: '',
+          tags: [],
+          from_country: '',
+          from_city: '',
+          to_country: '',
+          to_city: '',
+          distance_km: '',
+          estimated_duration: '',
+          price: ''
+        });
+
+        setExistingImages([]);
+        setTags([]);
+      }}
+    >
+      {isCreating ? <i className="fas fa-times"></i> : "Create New Route"}
+    </button>
+  </div>
+)}
 
 
             <br/>
             <br/>
 
             {isCreating && (
-                <div className="box" style={{border: '3px solid #00d1b2'}}>
-                    <h3 className="title is-primary">Create a New Post</h3>
+                <div className="box" style={{border: '3px solid #605fc9'}}>
+                    <h3 className="title is-primary">Create a Route</h3>
                     {errorMessage && (
                         <div className="notification is-danger">
                             <button className="delete" onClick={() => setErrorMessage('')}></button>
@@ -751,106 +1365,158 @@ const handleRemoveTag = (tag) => {
                         </div>
                     )}
 
+                    {/* Route Fields */}
                     <div className="field">
-                        <label className="label">
-                            Title <span style={{color: 'red'}}>*</span>
-                        </label>
+                                <label className="label">Title <span style={{color: 'red'}}>*</span> </label>
+                                <div className="control">
+                                    <input className="input" type="text" name="title" placeholder="Title"
+                                           value={newPost.title} onChange={handleInputChange} style={{ border: '1px solid #605fc9', borderRadius: '12px' }}/>
+                                </div>
+                    </div>
+                    <div className="field">
+                        <label className="label">From Country</label>
                         <div className="control">
                             <input
                                 className="input"
                                 type="text"
-                                name="title"
-                                placeholder="Title"
-                                value={newPost.title}
+                                name="from_country"
+                                placeholder="e.g., Lithuania"
+                                value={newPost.from_country}
                                 onChange={handleInputChange}
-                                style={{
-                                    border: '1px solid #00d1b2',
-                                    borderRadius: '12px'
-                                }}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
                             />
                         </div>
                     </div>
 
-                    {/*<div className="field">*/}
-                    {/*    <label className="label">Content <span style={{color: 'red'}}>*</span></label>*/}
-                    {/*    <div className="control">*/}
-                    {/*        <textarea className="textarea" name="content" placeholder="Content" value={newPost.content}*/}
-                    {/*                  onChange={handleInputChange} style={{*/}
-                    {/*            border: '1px solid #00d1b2',*/}
-                    {/*            borderRadius: '12px'*/}
-                    {/*        }}></textarea>*/}
-                    {/*    </div>*/}
-                    {/*</div>*/}
-
-
                     <div className="field">
-                        <label className="label">
-                            Content <span style={{color: "red"}}>*</span>
-                        </label>
-                        <div className="control">
-                            <EditorComponent onChange={handleEditorChange}/>
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">
-                            Category <span style={{color: 'red'}}>*</span>
-                        </label>
-                        <div className="control">
-                            <div className="select">
-                                <select
-                                    name="category"
-                                    value={newPost.category}
-                                    onChange={handleInputChange}
-                                    style={{border: '1px solid #00d1b2', borderRadius: '12px'}}
-                                >
-                                    <option value="">Select</option>
-                                    <option value="Environmental">Environmental</option>
-                                    <option value="Social">Social</option>
-                                    <option value="Economic">Economic</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">
-                            Tags <span style={{color: 'red'}}>*</span>
-                        </label>
+                        <label className="label">From City</label>
                         <div className="control">
                             <input
                                 className="input"
                                 type="text"
-                                name="tags"
-                                placeholder="Enter tags with #"
-                                value={newTag}
-                                onChange={(e) => setNewTag(e.target.value)} // Update input state
-                                onKeyDown={handleTagInput} // Add tag when 'Enter' is pressed
-                                style={{
-                                    border: '1px solid #00d1b2',
-                                    borderRadius: '12px',
-                                }}
+                                name="from_city"
+                                placeholder="e.g., Kaunas"
+                                value={newPost.from_city}
+                                onChange={handleInputChange}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
                             />
                         </div>
                     </div>
 
                     <div className="field">
-                        <div className="tags">
-                            {tags.map((tag, index) => (
-                                <span
-                                    key={index}
-                                    className="tag is-link is-rounded"
-                                    style={{
-                                        marginRight: "5px",
-                                        cursor: "pointer",  // Allow user to click to remove
-                                    }}
-                                    onClick={() => handleRemoveTag(tag)}  // Remove tag when clicked
-                                >
+                        <label className="label">To Country</label>
+                        <div className="control">
+                            <input
+                                className="input"
+                                type="text"
+                                name="to_country"
+                                placeholder="e.g., Lithuania"
+                                value={newPost.to_country}
+                                onChange={handleInputChange}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="field">
+                        <label className="label">To City</label>
+                        <div className="control">
+                            <input
+                                className="input"
+                                type="text"
+                                name="to_city"
+                                placeholder="e.g., Vilnius"
+                                value={newPost.to_city}
+                                onChange={handleInputChange}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="field">
+                        <label className="label">Distance (km)</label>
+                        <div className="control">
+                            <input
+                                className="input"
+                                type="number"
+                                name="distance_km"
+                                placeholder="e.g., 102"
+                                value={newPost.distance_km}
+                                onChange={handleInputChange}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="field">
+                        <label className="label">Estimated Duration (hours)</label>
+                        <div className="control">
+                            <input
+                                className="input"
+                                type="number"
+                                name="estimated_duration"
+                                placeholder="e.g., 90"
+                                value={newPost.estimated_duration}
+                                onChange={handleInputChange}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="field">
+                        <label className="label">Price (€)</label>
+                        <div className="control">
+                            <input
+                                className="input"
+                                type="number"
+                                name="price"
+                                placeholder="e.g., 12.50"
+                                value={newPost.price}
+                                onChange={handleInputChange}
+                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="field">
+                    <label className="label">
+                        Tags <span style={{color: 'red'}}>*</span>
+                    </label>
+                    <div className="control">
+                        <input
+                            className="input"
+                            type="text"
+                            name="tags"
+                            placeholder="Enter tags with #"
+                            value={newTag}
+                            onChange={(e) => setNewTag(e.target.value)} // Update input state
+                            onKeyDown={handleTagInput} // Add tag when 'Enter' is pressed
+                            style={{
+                                border: '1px solid #605fc9',
+                                borderRadius: '12px',
+
+                            }}
+                        />
+                    </div>
+                </div>
+
+                    <div className="field">
+                                <div className="tags">
+                                    {tags.map((tag, index) => (
+                                        <span
+                                            key={index}
+                                            className="tag is-link is-rounded"
+                                            style={{
+                                                marginRight: "5px",
+                                                cursor: "pointer",  // Allow user to click to remove
+                                            }}
+                                            onClick={() => handleRemoveTag(tag)}  // Remove tag when clicked
+                                        >
                                      {tag}
                                 </span>
-                            ))}
-                        </div>
-                    </div>
+                                    ))}
+                                </div>
+                            </div>
 
                     <div className="field">
                         <label className="label">Image</label>
@@ -861,7 +1527,7 @@ const handleRemoveTag = (tag) => {
                                 onChange={(e) => setImages(Array.from(e.target.files))}
                                 multiple
                                 style={{
-                                    border: '1px solid #00d1b2',
+                                    border: '1px solid #605fc9',
                                     borderRadius: '12px'
                                 }}
                             />
@@ -927,47 +1593,109 @@ const handleRemoveTag = (tag) => {
                                 </div>
                             </div>
 
-                            {/*<div className="field">*/}
-                            {/*    <label className="label">Content <span style={{color: 'red'}}>*</span> </label>*/}
-                            {/*    <div className="control">*/}
-                            {/*        <textarea className="textarea" name="content" placeholder="Content"*/}
-                            {/*                  value={newPost.content} onChange={handleInputChange}></textarea>*/}
-                            {/*    </div>*/}
-                            {/*</div>*/}
-
                             <div className="field">
-                                <label className="label">
-                                    Content <span style={{color: "red"}}>*</span>
-                                </label>
-                                <div className="control">
-                                    <EditorComponent
-                                        onChange={handleEditorChange}
-                                        initialContent={newPost.content} // Pass content to editor
-                                    />
-                                </div>
+                              <label className="label">From Country</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="text"
+                                  name="from_country"
+                                  placeholder="e.g., Lithuania"
+                                  value={newPost.from_country}
+                                  onChange={handleInputChange}
+                                />
+                              </div>
                             </div>
 
+                            {/* From City */}
                             <div className="field">
-                                <label className="label">
-                                    Category <span style={{color: 'red'}}>*</span>
-                                </label>
-                                <div className="control">
-                                    <div className="select">
-                                        <select
-                                            name="category"
-                                            value={newPost.category}
-                                            onChange={handleInputChange}
-                                            style={{border: '1px solid #00d1b2', borderRadius: '12px'}}
-                                        >
-                                            <option value="">Select</option>
-                                            <option value="Environmental">Environmental</option>
-                                            <option value="Social">Social</option>
-                                            <option value="Economic">Economic</option>
-                                        </select>
-                                    </div>
-                                </div>
+                              <label className="label">From City</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="text"
+                                  name="from_city"
+                                  placeholder="e.g., Kaunas"
+                                  value={newPost.from_city}
+                                  onChange={handleInputChange}
+                                />
+                              </div>
                             </div>
 
+                            {/* To Country */}
+                            <div className="field">
+                              <label className="label">To Country</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="text"
+                                  name="to_country"
+                                  placeholder="e.g., Lithuania"
+                                  value={newPost.to_country}
+                                  onChange={handleInputChange}
+                                />
+                              </div>
+                            </div>
+
+                            {/* To City */}
+                            <div className="field">
+                              <label className="label">To City</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="text"
+                                  name="to_city"
+                                  placeholder="e.g., Vilnius"
+                                  value={newPost.to_city}
+                                  onChange={handleInputChange}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Distance */}
+                            <div className="field">
+                              <label className="label">Distance (km)</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="number"
+                                  name="distance_km"
+                                  placeholder="e.g., 102"
+                                  value={newPost.distance_km}
+                                  onChange={handleInputChange}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Estimated Duration */}
+                            <div className="field">
+                              <label className="label">Estimated Duration (hours)</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="number"
+                                  name="estimated_duration"
+                                  placeholder="e.g., 2"
+                                  value={newPost.estimated_duration}
+                                  onChange={handleInputChange}
+                                />
+                              </div>
+                            </div>
+
+                            {/* Price */}
+                            <div className="field">
+                              <label className="label">Price (€)</label>
+                              <div className="control">
+                                <input
+                                  className="input"
+                                  type="number"
+                                  name="price"
+                                  placeholder="e.g., 12.50"
+                                  value={newPost.price}
+                                 onChange={handleInputChange}
+                                />
+                              </div>
+                            </div>
                             <div className="field">
                                 <label className="label">
                                     Tags <span style={{color: 'red'}}>*</span>
@@ -1100,19 +1828,18 @@ const handleRemoveTag = (tag) => {
                 </div>
             )}
 
-            {successMessage &&
-                <p className="notification is-primary is-light has-text-centered"><strong>{successMessage}</strong></p>}
 
-            {userRole !== "admin" && (
+
+            {userRole == "admin" && (
   <>
-            <h3 className="title is-large">My Posts</h3>
+            <h3 className="title is-large">Routes</h3>
             <div className="box" style={{
-                border: '3px solid #00d1b2',
+                border: '3px solid #605fc9',
                 maxHeight: '650px',
                 overflowY: 'auto',
             }}>
                 {posts.length === 0 ? (
-                    <p className="has-text-centered" style={{color: '#888', fontSize: '1.2em'}}>No posts available</p>
+                    <p className="has-text-centered" style={{color: '#888', fontSize: '1.2em'}}>No routes available</p>
                 ) : (
                     <div style={{
                         display: 'grid',
@@ -1128,7 +1855,7 @@ const handleRemoveTag = (tag) => {
                                     fontSize: '0.9em',
                                     color: 'black'
                                 }}>
-                                    {formatDate(post.created_at)}
+                                    {new Date(post.created_at).toLocaleString()}
                                 </p>
                                 <br/>
                                 <Link to={`/post/${post.id}`}>
@@ -1205,6 +1932,7 @@ const handleRemoveTag = (tag) => {
              </>
 )}
 
+
             {isModalOpen && (
                 <div className="modal is-active">
                     <div className="modal-background" onClick={closeDeleteModal}></div>
@@ -1225,10 +1953,177 @@ const handleRemoveTag = (tag) => {
                 </div>
             )}
 
+            {showTicket && (
+              <TicketPage
+                token={token}
+                bookingId={selectedBookingId}
+                onClose={() => setShowTicket(false)}
+              />
+            )}
+            {userRole === "admin" && (
+              <div className="mt-6">
+                <CarsManagement />
+              </div>
+            )}
+             {userRole === "admin" && (
+  <div className="mt-6">
+    <h3 className="title is-3">Driver Overview</h3>
 
+
+          <Link to="/register-driver" className="button is-link">
+      Register New Driver
+    </Link>
+      <br/>
+      <br/>
+    <table className="table is-striped is-fullwidth">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Surname</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>License Number</th>
+          <th>Salary Rate (€ / hour)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {allDrivers.length === 0 ? (
+          <tr>
+            <td colSpan="8" className="has-text-centered">
+              No drivers found
+            </td>
+          </tr>
+        ) : (
+          allDrivers.map((driver) => (
+            <tr key={driver.user_id}>
+              <td>
+                <UserAvatar user_id={driver.id} />
+              </td>
+              <td>{driver.name}</td>
+              <td>{driver.surname}</td>
+              <td>{driver.email}</td>
+              <td>{driver.phone}</td>
+              <td>{driver.license_number}</td>
+              <td>€{driver.salary_rate}</td>
+
+              <td>
+                  <div className="buttons is-centered">
+                                    <button
+                                        className="button is-link is-light is-small"
+                                        style={{
+                                            width: '30px',
+                                            height: '30px',
+                                            padding: '5px',
+                                        }}
+                                         onClick={() => openEditDriver(driver)}
+                                    >
+                                        <i className="fas fa-pencil-alt"></i>
+                                    </button>
+                                    <button className="button is-danger is-light is-small"
+                                            style={{
+                                                width: '30px',
+                                                height: '30px',
+                                                padding: '5px',
+                                            }}
+                                            onClick={() => openDeleteDriver(driver.id)}>
+                                        <i className="fas fa-trash-alt"></i>
+                                    </button>
+                                </div>
+            </td>
+            </tr>
+          ))
+        )}
+      </tbody>
+    </table>
+  </div>
+)}
+{showEditModal && editingDriver && (
+  <div className="modal is-active">
+    <div className="modal-background" onClick={() => setShowEditModal(false)}></div>
+    <div className="modal-card">
+      <header className="modal-card-head">
+        <p className="modal-card-title">Edit Driver</p>
+        <button className="delete" onClick={() => setShowEditModal(false)}></button>
+      </header>
+
+      <section className="modal-card-body">
+        <div className="field">
+          <label className="label">Phone</label>
+          <input
+            className="input"
+            value={editingDriver.phone || ""}
+            onChange={(e) =>
+              setEditingDriver({ ...editingDriver, phone: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="field">
+          <label className="label">License Number</label>
+          <input
+            className="input"
+            value={editingDriver.license_number || ""}
+            onChange={(e) =>
+              setEditingDriver({ ...editingDriver, license_number: e.target.value })
+            }
+          />
+        </div>
+
+        <div className="field">
+          <label className="label">Salary Rate (€)</label>
+          <input
+            className="input"
+            type="number"
+            value={editingDriver.salary_rate || ""}
+            onChange={(e) =>
+              setEditingDriver({ ...editingDriver, salary_rate: e.target.value })
+            }
+          />
+        </div>
+      </section>
+
+      <footer className="modal-card-foot">
+        <button className="button is-primary" onClick={saveDriverChanges}>
+          Save
+        </button>
+      </footer>
+    </div>
+  </div>
+)}
+
+            {showDeleteModal && (
+  <div className="modal is-active">
+    <div className="modal-background" onClick={() => setShowDeleteModal(false)}></div>
+    <div className="modal-card">
+      <header className="modal-card-head">
+        <p className="modal-card-title">Delete Driver</p>
+        <button className="delete" onClick={() => setShowDeleteModal(false)}></button>
+      </header>
+
+      <section className="modal-card-body">
+        Are you sure you want to delete this driver?
+      </section>
+
+      <footer className="modal-card-foot">
+        <button className="button is-danger" onClick={deleteDriver}>
+          Delete
+        </button>
+        <button className="button" onClick={() => setShowDeleteModal(false)}>
+          Cancel
+        </button>
+      </footer>
+    </div>
+  </div>
+)}
         </div>
 
     );
+
 };
+
+
 
 export default UserProfile;

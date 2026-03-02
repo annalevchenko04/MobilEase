@@ -8,16 +8,19 @@ class UserCreate(BaseModel):
     username: str
     name: str
     surname: str
-    age: int
-    gender: str
     email: EmailStr
     phone: Optional[str] = None
-    password: str
+    password: str | None = None
+    age: int | None = None
+    gender: str | None = None
     role: str
     avatar: Optional[str] = None
 
     # Member-specific fields
     membership_status: Optional[str] = None
+    # Driver-specific fields
+    license_number: Optional[str] = None
+    salary_rate: Optional[float] = None
 
 
 class Member(BaseModel):
@@ -28,25 +31,59 @@ class Company(BaseModel):
     domain: str
     industry: str
 
+class DriverDetails(BaseModel):
+    license_number: Optional[str]
+    salary_rate: Optional[float]
+    hired_at: Optional[date]
+
+class DriverResponse(BaseModel):
+    id: int
+    name: str
+    surname: str
+    email: str
+    phone: str
+    license_number: Optional[str]
+    salary_rate: Optional[float]
+    hired_at: Optional[date]
+
+    class Config:
+        from_attributes = True
 
 class UserResponse(BaseModel):
     id: int
     username: str
     name: str
     surname: str
-    age: int
-    gender: str
     email: EmailStr
     phone: Optional[str]
     role: str
+    age: Optional[int] = None
+    gender: Optional[str] = None
     member_details: Optional[Member] = None
     company: Optional[Company] = None
+    driver_details: Optional[DriverDetails] = None
 
     class Config:
         from_attributes = True
 
+class UserUpdate(BaseModel):
+    username: Optional[str] = None
+    email: Optional[str] = None
+    password: Optional[str] = None
+    name: Optional[str] = None
+    surname: Optional[str] = None
+    age: Optional[int] = None
+    gender: Optional[str] = None
+    phone: Optional[str] = None
 
 
+class DriverUpdate(BaseModel):
+    phone: Optional[str] = None
+    license_number: Optional[str] = None
+    salary_rate: Optional[float] = None
+
+    class Config:
+        from_attributes = True
 
 # Image creation model (used for uploading an image)
 class AvatarCreate(BaseModel):
@@ -67,6 +104,37 @@ class Avatar(BaseModel):
         from_attributes = True
 
 
+class DriverLicenseUploadResponse(BaseModel):
+    id: int
+    status: str
+    image_url: str
+
+    class Config:
+        from_attributes = True
+
+
+class DriverLicenseVerificationResponse(BaseModel):
+    id: int
+    user_id: int
+    image_url: str
+    extracted_name: Optional[str]
+    extracted_surname: Optional[str]
+    extracted_birthdate: Optional[date]
+    extracted_license_number: Optional[str]
+    extracted_expiry: Optional[date]
+    risk_score: Optional[float]
+    status: str
+    admin_comment: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+class AdminReviewRequest(BaseModel):
+    status: str
+    admin_comment: Optional[str] = None
+
+
 class Question(BaseModel):
     id: str
     text: str
@@ -78,32 +146,93 @@ class Question(BaseModel):
 class CarbonFootprintRequest(BaseModel):
     answers: Dict[str, str | float]
 
-
-
-
 # Post creation model (used for creating a post)
 class PostCreate(BaseModel):
     title: str
-    content: str
-    category: str  # e.g., 'news', 'blog', 'announcement'
     tags: List[str] # List of tags associated with the post
+    from_country: Optional[str] = None
+    from_city: Optional[str] = None
+    to_country: Optional[str] = None
+    to_city: Optional[str] = None
+    distance_km: Optional[float] = None
+    estimated_duration: Optional[int] = None
+    price: Optional[float] = None
+
 
 # Post response model (used for reading post data, includes author and comments)
 class Post(BaseModel):
     id: int
     title: str
-    content: str
-    category: str
     tags: List[str]
-    status: str  # e.g., 'published', 'draft'
     created_at: datetime
     user_id: int
+    from_country: Optional[str] = None
+    from_city: Optional[str] = None
+    to_country: Optional[str] = None
+    to_city: Optional[str] = None
+    distance_km: Optional[float] = None
+    estimated_duration: Optional[int] = None
+    price: Optional[float] = None
     comments: List["Comment"] = []  # List of related comments
     images: List["Image"] = []
     user: Optional[UserResponse]
 
+
     class Config:
         from_attributes = True
+
+# Event creation model
+class EventCreate(BaseModel):
+    name: str
+    post_id: int
+    description: Optional[str] = None
+    date: date
+    time: time  # Date and time of the event
+    duration: int  # Duration in minutes
+    event_type: str  # 'private' or 'public'
+    is_personal_training: Optional[bool] = False  # True if personal training
+    max_participants: Optional[int] = None  # For group classes
+    room_number: Optional[str] = None  # For group classes
+    trainer_id: Optional[int] = None  # Trainer assigned for personal training (public only)
+    driver_id: Optional[int] = None
+
+    @field_validator('duration')
+    def duration_must_be_greater_than_15(cls, value):
+        if value <= 1:
+            raise ValueError('Duration must be greater than 1 hour')
+        return value
+
+    @field_validator('max_participants')
+    def max_participants_must_be_greater_than_0(cls, value):
+        if value <= 0:
+            raise ValueError('Max participants value must be greater than 0')
+        return value
+
+    class Config:
+        from_attributes = True
+
+
+# Event response model
+class Event(BaseModel):
+    id: int
+    name: str
+    description: Optional[str]
+    date: date
+    time: time  # Date and time of the event
+    duration: int
+    event_type: str  # 'private' or 'public'
+    is_personal_training: bool  # True if personal training
+    max_participants: Optional[int] = None  # For group classes
+    room_number: Optional[str] = None  # For group classes
+    driver_id: Optional[int] = None
+    creator_id: int  # User ID who created the event
+    trainer_id: Optional[int] = None  # Trainer assigned for personal training
+    participants: List[UserResponse] = []  # List of participants (for public group events)
+    post: Post
+
+    class Config:
+        from_attributes = True
+
 
 
 class CommentBase(BaseModel):
@@ -140,8 +269,7 @@ class Image(BaseModel):
     class Config:
         from_attributes = True
 
-# To avoid circular imports, declare images field after Image schema
-Post.update_forward_refs()
+
 
 class Favorite(BaseModel):
     id: int  # Unique identifier for the favorite entry
@@ -172,59 +300,9 @@ class UserBadgeResponse(BaseModel):
 
 
 
-
-# Event creation model
-class EventCreate(BaseModel):
-    name: str
-    description: Optional[str] = None
-    date: date
-    time: time  # Date and time of the event
-    duration: int  # Duration in minutes
-    event_type: str  # 'private' or 'public'
-    is_personal_training: Optional[bool] = False  # True if personal training
-    max_participants: Optional[int] = None  # For group classes
-    room_number: Optional[str] = None  # For group classes
-    trainer_id: Optional[int] = None  # Trainer assigned for personal training (public only)
-
-    @field_validator('duration')
-    def duration_must_be_greater_than_15(cls, value):
-        if value <= 15:
-            raise ValueError('Duration must be greater than 15 minutes')
-        return value
-
-    @field_validator('max_participants')
-    def max_participants_must_be_greater_than_0(cls, value):
-        if value <= 0:
-            raise ValueError('Max participants value must be greater than 0')
-        return value
-
-    class Config:
-        from_attributes = True
-
-
-# Event response model
-class Event(BaseModel):
-    id: int
-    name: str
-    description: Optional[str]
-    date: date
-    time: time  # Date and time of the event
-    duration: int
-    event_type: str  # 'private' or 'public'
-    is_personal_training: bool  # True if personal training
-    max_participants: Optional[int] = None  # For group classes
-    room_number: Optional[str] = None  # For group classes
-    creator_id: int  # User ID who created the event
-    trainer_id: Optional[int] = None  # Trainer assigned for personal training
-    participants: List[UserResponse] = []  # List of participants (for public group events)
-
-    class Config:
-        from_attributes = True
-
-
 # Booking creation model
 class BookingCreate(BaseModel):
-    event_id: int
+    seat_number: int
 
 
 # Booking response model
@@ -232,8 +310,10 @@ class Booking(BaseModel):
     id: int
     user_id: int
     event_id: int
-    user: UserResponse  # Include details about the user booking the event
-    event: Event  # Include details about the event being booked
+    seat_number: int | None
+    qr_code: str | None
+    user: UserResponse | None = None
+    event: Event | None = None
 
     class Config:
         from_attributes = True
@@ -333,3 +413,132 @@ class DayOffRewardResponse(BaseModel):
     qr_code: Optional[str]
 
 
+
+class CarCreate(BaseModel):
+    brand: str
+    model: str
+    year: int
+    license_plate: str
+    seats: int
+    transmission: str   # "automatic" / "manual"
+    fuel_type: str      # "petrol" / "diesel" / "electric"
+
+    price_per_hour: float
+    price_per_day: float
+    price_per_km: float
+
+    available: bool = True
+
+
+
+class CarUpdate(BaseModel):
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    license_plate: Optional[str] = None
+    seats: Optional[int] = None
+    transmission: Optional[str] = None
+    fuel_type: Optional[str] = None
+
+    price_per_hour: Optional[float] = None
+    price_per_day: Optional[float] = None
+    price_per_km: Optional[float] = None
+
+    available: Optional[bool] = None
+
+
+
+
+class CarRentalCreate(BaseModel):
+    car_id: int
+    start_datetime: datetime
+    end_datetime: datetime
+
+    pickup_location: str
+    dropoff_location: str
+
+    kilometers_used: Optional[float] = None
+
+    pickup_lat: Optional[float] = None
+    pickup_lng: Optional[float] = None
+
+    dropoff_lat: Optional[float] = None
+    dropoff_lng: Optional[float] = None
+
+
+class CarRentalUpdate(BaseModel):
+    end_datetime: Optional[datetime] = None
+    kilometers_used: Optional[float] = None
+    status: Optional[str] = None
+
+    dropoff_location: Optional[str] = None
+    dropoff_lat: Optional[float] = None
+    dropoff_lng: Optional[float] = None
+
+
+class CarImageCreate(BaseModel):
+    filename: str
+    url: str
+
+class CarImage(BaseModel):
+    id: int
+    url: str
+    upload_date: datetime
+    car_id: int
+
+    class Config:
+        from_attributes = True
+
+class CarResponse(BaseModel):
+    id: int
+    brand: str
+    model: str
+    year: int
+    license_plate: str
+    seats: int
+    transmission: str
+    fuel_type: str
+
+    price_per_hour: float
+    price_per_day: float
+    price_per_km: float
+
+    available: bool
+
+    images: List[CarImage] = []
+
+    class Config:
+        from_attributes = True
+
+class CarRentalResponse(BaseModel):
+    id: int
+    user_id: int
+    car_id: int
+
+    pickup_location: str
+    dropoff_location: str
+
+    pickup_lat: Optional[float]
+    pickup_lng: Optional[float]
+
+    dropoff_lat: Optional[float]
+    dropoff_lng: Optional[float]
+
+    start_datetime: datetime
+    end_datetime: datetime
+
+    kilometers_used: float
+    total_price: float
+    status: str
+    created_at: datetime
+
+    car: Optional[CarResponse] = None
+    user: Optional[UserResponse] = None
+
+    class Config:
+        from_attributes = True
+
+
+class CheckoutRequest(BaseModel):
+    amount: float
+    type: str

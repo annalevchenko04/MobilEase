@@ -10,18 +10,25 @@ import Main from "./components/Main";
 import Calculator from './components/Calculator';
 import Analytics from './components/Analytics';
 import Explore from './components/Explore';
+import ExploreRent from './components/ExploreRent';
 import PostDetail from './components/PostDetail';
 import Schedule from './components/Schedule';
 import { Link } from "react-router-dom";
 import './styles.css';
 import CompanyRegister from "./components/CompanyRegister";
-
+import CarDetail from "./components/CarDetail";
 import Initiatives from './components/Initiatives';
-import RewardsPage from "./components/RewardsPage";
+import DriverLicensePage from "./components/DriverLicensePage";
+import RentCar from "./components/RentCar";
+import RentSuccess from "./components/RentSuccess";
+import GoogleCallback from "./components/GoogleCallback";
+import TicketPage from "./components/TicketPage";
+import DriverRegister from "./components/DriverRegister";
+import BusSuccess from "./components/BusSuccess";
 
 
 const App = () => {
-    const [token, , , , setToken] = useContext(UserContext); // Use userRole from context
+    const [token, userRole, , , setToken, isVerifying] = useContext(UserContext);
     const [isLogin, setIsLogin] = useState(true);  // State to toggle between login and register
     const [, setRemainingTime] = useState(null);
     const [isBurgerActive, setIsBurgerActive] = useState(false);
@@ -73,7 +80,7 @@ const App = () => {
 
     return (
         <div className="app-container">
-            <Header title={"Employee Sustainability Portal"}/>
+            <Header title={""}/>
             {token && (
                 <nav className="navbar is-light is-spaced has-shadow p-3">
                     <div className="container">
@@ -112,42 +119,53 @@ const App = () => {
                                     </span>
                                         </a>
 
-                                        <a className="navbar-item is-size-5" href="/footprint">
-                                    <span className="icon-text">
-                                        <span className="icon">
-                                            <i className="fas fa-calculator"></i>
-                                        </span>
-                                        <span><strong>Footprint Calculator</strong></span>
-                                    </span>
-                                        </a>
+                                    {/*    <a className="navbar-item is-size-5" href="/footprint">*/}
+                                    {/*<span className="icon-text">*/}
+                                    {/*    <span className="icon">*/}
+                                    {/*        <i className="fas fa-calculator"></i>*/}
+                                    {/*    </span>*/}
+                                    {/*    <span><strong>Footprint Calculator</strong></span>*/}
+                                    {/*</span>*/}
+                                    {/*    </a>*/}
 
-                                        <a className="navbar-item is-size-5" href="/analytics">
-                                    <span className="icon-text">
-                                        <span className="icon">
-                                            <i className="fas fa-chart-line"></i>
+                                {userRole === "admin" && (
+                                    <a className="navbar-item is-size-5" href="/analytics">
+                                        <span className="icon-text">
+                                            <span className="icon">
+                                                <i className="fas fa-chart-line"></i>
+                                            </span>
+                                            <span><strong>Analytics</strong></span>
                                         </span>
-                                        <span><strong>Analytics</strong></span>
-                                    </span>
-                                        </a>
+                                    </a>
+                                )}
 
                                         <a className="navbar-item is-size-5" href="/explore">
                                     <span className="icon-text">
                                         <span className="icon">
-                                            <i className="fas fa-list-alt"></i>
+                                            <i className="fas fa-bus"></i>
                                         </span>
-                                        <span><strong>Explore</strong></span>
+                                        <span><strong>Ticket Booking</strong></span>
+                                    </span>
+
+                                        </a>
+                                        <a className="navbar-item is-size-5" href="/explorerent">
+                                    <span className="icon-text">
+                                        <span className="icon">
+                                            <i className="fas fa-car"></i>
+                                        </span>
+                                        <span><strong>Car Renting</strong></span>
                                     </span>
                                         </a>
 
-                                        <a className="navbar-item is-size-5" href="/initiatives">
-                                            <span className="icon-text">
-                                                <span className="icon">
-                                                    <i className="fas fa-leaf"></i>
-                                                </span>
-                                                <span><strong>Initiatives</strong></span>
-                                            </span>
-                                        </a>
-
+                                        {/*<a className="navbar-item is-size-5" href="/initiatives">*/}
+                                        {/*    <span className="icon-text">*/}
+                                        {/*        <span className="icon">*/}
+                                        {/*            <i className="fas fa-leaf"></i>*/}
+                                        {/*        </span>*/}
+                                        {/*        <span><strong>Initiatives</strong></span>*/}
+                                        {/*    </span>*/}
+                                        {/*</a>*/}
+                                        {userRole !== "member" && (
                                         <a className="navbar-item is-size-5" href="/schedule">
                                                 <span className="icon-text">
                                                     <span className="icon">
@@ -156,16 +174,17 @@ const App = () => {
                                                     <span><strong>Schedule</strong></span>
                                                 </span>
                                         </a>
-
-                                        <a className="navbar-item is-size-5" href="/rewards">
+                                          )}
+                                        {userRole === "admin" && (
+                                        <a className="navbar-item is-size-5" href="/driverlicense">
                                                 <span className="icon-text">
                                                     <span className="icon">
                                                         <i className="fas fa-trophy"></i>
                                                     </span>
-                                                    <span><strong>Rewards</strong></span>
+                                                    <span><strong>Driver License Verification</strong></span>
                                                 </span>
                                         </a>
-
+                                        )}
                                         <div className="navbar-end">
                                             <br/>
                                             <div className="navbar-item is-size-5">
@@ -209,12 +228,18 @@ const App = () => {
                                 <Route path="/footprint" element={<Calculator/>}/>
                                 <Route path="/analytics" element={<Analytics/>}/>
                                 <Route path="/explore" element={<Explore/>}/>
+                                <Route path="/explorerent" element={<ExploreRent/>}/>
+                                <Route path="/car/:id" element={<CarDetail />} />
                                 <Route path="/post/:id" element={<PostDetail />} />
                                 <Route path="/initiatives" element={<Initiatives />} />
                                 <Route path="/schedule" element={<Schedule events={events} addEvent={addEvent}/>}/>
-                                <Route path="/rewards" element={<RewardsPage/>}/>
-
+                                <Route path="/driverlisence" element={<DriverLicensePage/>}/>
                                 <Route path="*" element={<Navigate to="/main"/>}/>
+                                <Route path="/rent/:id" element={<RentCar />} />
+                                <Route path="/rent-success" element={<RentSuccess />} />
+                                <Route path="/auth/google/callback" element={<GoogleCallback />} />
+                                <Route path="/register-driver" element={<DriverRegister />} />
+                                <Route path="/bus-success" element={<BusSuccess />} />
                             </>
                         )}
                     </Routes>

@@ -1,6 +1,6 @@
 import React, { createContext, useEffect, useState } from "react";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 
 export const UserContext = createContext(undefined);
 

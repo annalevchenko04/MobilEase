@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const PostImageGallery = ({ postId }) => {
     const [post, setPost] = useState(null);
     const [errorMessage, setErrorMessage] = useState("");

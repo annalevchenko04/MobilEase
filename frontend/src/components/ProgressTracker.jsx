@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { UserContext } from "../context/UserContext";
 import DailyCheckInTracker from "./DailyCheckInTracker";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const ProgressTracker = () => {
   const [token, userRole, username, userId] = useContext(UserContext);
   const [activeInitiative, setActiveInitiative] = useState(null);
