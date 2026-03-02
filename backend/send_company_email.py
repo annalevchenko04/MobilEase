@@ -37,7 +37,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
-SENDER_EMAIL = "andrid1@ktu.lt"  # Your verified sender email
+SENDER_EMAIL = "anna.levchenko.2004@gmail.com"  # Your verified sender email
 
 # Dynamically resolve path to the template file
 BASE_DIR = Path(__file__).resolve().parent

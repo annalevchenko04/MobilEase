@@ -1,240 +1,136 @@
 import React, { useEffect, useState, useContext } from "react";
 import { UserContext } from "../context/UserContext";
-import * as XLSX from "xlsx";
-import UserAvatar from "./UserAvatar";
-import CategoryBreakdownChart from "./Charts/CategoryBreakdownChart";
-import ActivityComparisonChart from "./Charts/ActivityComparisonChart";
-import EmployeeComparisonChart from "./Charts/EmployeeComparisonChart";
-import BenchmarkingGaugeChart from "./Charts/BenchmarkingGaugeChart";
-import FootprintHistoryChart from "./Charts/FootprintHistoryChart";
+import API_URL from "../config";
+import TicketSalesChart from "./Charts/TicketSalesChart";
+import OccupancyCircle from "./Charts/OccupancyCircle";
+import {Link} from "react-router-dom";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
 const Analytics = () => {
-  const [employees, setEmployees] = useState([]);
-  const [fallbackValues, setFallbackValues] = useState({});
-  const [currentFootprint, setCurrentFootprint] = useState(0);
-  const [token, userRole, username, userId] = useContext(UserContext);
+  const [token, userRole] = useContext(UserContext);
 
-  const exportToExcel = () => {
-  if (!employees || employees.length === 0) return;
-
-  const data = employees.map(emp => ({
-    Name: emp.name,
-    Surname: emp.surname,
-    Email: emp.email,
-    Phone: emp.phone,
-    Role: emp.role,
-    Footprint: emp.total_footprint || fallbackValues[emp.id] || 0
-  }));
-
-  const worksheet = XLSX.utils.json_to_sheet(data);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Employees");
-
-  XLSX.writeFile(workbook, "employee_footprints.xlsx");
-};
-
+  const [ticketStats, setTicketStats] = useState({ daily: [] });
+  const [occupancy, setOccupancy] = useState([]);
+  const groupedByRoute = occupancy.reduce((acc, ev) => {
+    if (!acc[ev.name]) acc[ev.name] = [];
+    acc[ev.name].push(ev);
+    return acc;
+  }, {});
+  const [selectedRoute, setSelectedRoute] = useState(null);
+  const [selectedDate, setSelectedDate] = useState(null);
+  // Fetch ticket stats
   useEffect(() => {
-    const fetchEmployees = async () => {
-      const token = localStorage.getItem("token");
-      if (!token || userRole !== "admin") return;
-      try {
-        const res = await fetch(`${API_URL}/admin/company-employees`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) {
-          console.error("Access denied or failed:", res.status);
-          return;
-        }
-        const data = await res.json();
-        const uniqueEmployees = Array.from(new Map(data.map(emp => [emp.id, emp])).values());
-        setEmployees(uniqueEmployees);
-      } catch (err) {
-        console.error("Error fetching employees:", err);
-      }
-    };
+    if (userRole !== "admin") return;
 
-    fetchEmployees();
-  }, [userRole]);
-
-  useEffect(() => {
-    if (employees.length > 0) {
-      const newFallbacks = {};
-      employees.forEach(emp => {
-        if (!emp.total_carbon_footprint_kg) {
-          newFallbacks[emp.id] = Math.floor(Math.random() * 500 + 100);
-        }
-      });
-      setFallbackValues(newFallbacks);
-    }
-  }, [employees]);
-
-  useEffect(() => {
-    const fetchMemberStats = async () => {
-      if (userRole !== "member") return;
-      const token = localStorage.getItem("token");
-      try {
-        const res = await fetch(`${API_URL}/company/footprint-stats`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-
-        setEmployees([
-          { id: 1, name: "You", surname: "", totalFootprint: data.your_footprint || 0 },
-          { id: 2, name: "Company Avg", surname: "", totalFootprint: data.average },
-          { id: 3, name: "Max in Company", surname: "", totalFootprint: data.maximum },
-        ]);
-
-        setCurrentFootprint(data.your_footprint || 0);
-      } catch (err) {
-        console.error("Failed to load company stats:", err);
-      }
-    };
-
-    fetchMemberStats();
-  }, [userRole]);
-
-  useEffect(() => {
-    const fetchAdminFootprint = async () => {
-      if (userRole !== "admin") return;
-      const token = localStorage.getItem("token");
-      try {
-        const res = await fetch(`${API_URL}/get_footprint`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        const data = await res.json();
-        setCurrentFootprint(data.total_carbon_footprint_kg || 0);
-      } catch (err) {
-        console.error("Error fetching admin footprint:", err);
-      }
-    };
-
-    fetchAdminFootprint();
-  }, [userRole]);
-
-  let employeeComparisonData = [];
-
-  if (userRole === "admin") {
-    employeeComparisonData = employees.map(emp => ({
-      id: emp.id,
-      name: emp.name,
-      surname: emp.surname,
-      totalFootprint: emp.total_footprint || fallbackValues[emp.id] || 0,
-    }));
-  } else {
-    employeeComparisonData = employees.map(emp => ({
-      name: emp.name,
-      surname: emp.surname,
-      totalFootprint: emp.totalFootprint,
-    }));
-  }
-
-  const [categoryData, setCategoryData] = useState({});
-  useEffect(() => {
-  const fetchCategoryBreakdown = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_URL}/category-breakdown`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) {
-        console.error("Failed to fetch category breakdown");
-        return;
-      }
-      const data = await res.json();
-      setCategoryData(data.category_breakdown || {});
-      console.log("Category breakdown data from API:", data);
-
-    } catch (err) {
-      console.error("Error fetching category breakdown:", err);
-    }
-
-  };
-
-  fetchCategoryBreakdown();
-}, []);
-
-  const [historyData, setHistoryData] = useState([]);
-
-useEffect(() => {
-  const fetchHistory = async () => {
-    const token = localStorage.getItem("token");
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_URL}/footprint/history`, {
+    const fetchTicketStats = async () => {
+      const res = await fetch(`${API_URL}/admin/analytics/tickets`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       const data = await res.json();
-      setHistoryData(data);
-    } catch (err) {
-      console.error("Failed to fetch footprint history:", err);
-    }
-  };
-  fetchHistory();
-}, []);
+      setTicketStats(data);
+    };
 
+    fetchTicketStats();
+  }, [userRole, token]);
 
+  // Fetch occupancy stats
+  useEffect(() => {
+    if (userRole !== "admin") return;
 
-  const activityData = {
-    "Electricity Usage": 587,
-    "Car Km": 1044,
-    "Flights per Year": 3,
-    "Clothing Spend": 63,
-    "Food Waste": 8,
-  };
+    const fetchOccupancy = async () => {
+      const res = await fetch(`${API_URL}/admin/analytics/occupancy`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setOccupancy(data);
+    };
 
-  const targetFootprint = 600;
-  const showScrollable = userRole === "admin" && employeeComparisonData.length > 20;
+    fetchOccupancy();
+  }, [userRole, token]);
+
+  if (userRole !== "admin") {
+    return <p>You do not have access to admin analytics.</p>;
+  }
 
   return (
-    <div>
-      <h2 className="title is-2">Analytics</h2>
-
-      {userRole === "admin" && (
-  <button className="button is-primary" onClick={exportToExcel}>
-    Export Employee Data to Excel
-  </button>
-)}
-
-
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(2, 1fr)",
-          gap: "20px",
-          maxWidth: "850px",
-          margin: "40px auto",
-        }}
-      >
-        <div style={{ maxWidth: "400px", margin: "0 auto" }}>
-          <CategoryBreakdownChart data={categoryData} />
-        </div>
-        <div style={{ maxWidth: "400px", margin: "0 auto" }}>
-          <FootprintHistoryChart data={historyData} />
-        </div>
-
-        {showScrollable ? (
-          <div style={{ overflowX: "auto", maxWidth: "850px" }}>
-            <div style={{ width: "1200px", margin: "0 auto" }}>
-              <EmployeeComparisonChart employees={employeeComparisonData} />
-            </div>
-          </div>
-        ) : (
-          <div style={{ maxWidth: "850px", margin: "0 auto" }}>
-            <EmployeeComparisonChart employees={employeeComparisonData} />
-          </div>
-        )}
-
-        <div style={{ maxWidth: "400px", margin: "0 auto" }}>
-          <BenchmarkingGaugeChart
-            currentValue={currentFootprint}
-            targetValue={targetFootprint}
-          />
-        </div>
+    <div style={{ maxWidth: "900px", margin: "0 auto" }}>
+      <h1 className="title is-2">Admin Analytics Dashboard</h1>
+      <br/>
+      <div style={{ marginBottom: "40px" }}>
+        <TicketSalesChart data={ticketStats} />
       </div>
+
+ <h1 className="title is-2">Occupancy heatmap</h1>
+
+      {!selectedRoute && (
+  <div>
+    <h2 className="title is-5">Select Route</h2>
+    {Object.keys(groupedByRoute).map(route => (
+      <button
+        key={route}
+        className="button is-link is-light"
+        style={{ margin: "5px" }}
+        onClick={() => setSelectedRoute(route)}
+      >
+        {route}
+      </button>
+    ))}
+  </div>
+)}
+{selectedRoute && !selectedDate && (
+  <div>
+    <h2 className="title is-4">{selectedRoute}</h2>
+
+    {[...new Set(groupedByRoute[selectedRoute].map(ev => ev.date))].map(date => (
+      <button
+        key={date}
+        className="button is-primary is-light"
+        style={{ margin: "5px" }}
+        onClick={() => setSelectedDate(date)}
+      >
+        {date}
+      </button>
+    ))}
+<br/>
+    <button
+      className="button is-danger is-light"
+      style={{ marginTop: "20px" }}
+      onClick={() => setSelectedRoute(null)}
+    >
+      Back
+    </button>
+  </div>
+)}
+      {selectedRoute && selectedDate && (
+  <div>
+    <h2 className="title is-4">
+      {selectedRoute} — {selectedDate}
+    </h2>
+
+    <div
+      style={{
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "20px",
+        justifyContent: "center",
+        marginTop: "20px"
+      }}
+    >
+      {groupedByRoute[selectedRoute]
+        .filter(ev => ev.date === selectedDate)
+        .map(ev => (
+          <OccupancyCircle key={ev.event_id} event={ev} />
+        ))}
+    </div>
+<br/>
+    <button
+      className="button is-danger is-light"
+      style={{ marginTop: "20px" }}
+      onClick={() => setSelectedDate(null)}
+    >
+      Back to Dates
+    </button>
+  </div>
+)}
     </div>
   );
 };

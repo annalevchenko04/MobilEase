@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { UserContext } from "../context/UserContext";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const UserAvatar = ({ user_id }) => {
   const [avatarUrl, setAvatarUrl] = useState(null);
   const [avatarId, setAvatarId] = useState(null);

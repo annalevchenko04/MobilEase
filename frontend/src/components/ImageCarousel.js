@@ -2,9 +2,9 @@ import React, { useEffect, useState, useRef } from 'react';
 
 const ImageCarousel = () => {
   const images = [
-    '/images/p1.png',
-    '/images/p7.png',
-    '/images/p5.png',
+    '/images/img_9.png',
+    '/images/img_10.png',
+    '/images/img_11.png',
   ];
 
   const [currentIndex, setCurrentIndex] = useState(0);

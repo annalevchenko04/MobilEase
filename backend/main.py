@@ -7,42 +7,60 @@ from fastapi import FastAPI, HTTPException, Depends, status, File, Form, UploadF
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
+from sqlalchemy import extract
 from fastapi.staticfiles import StaticFiles
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone, date
 from passlib.context import CryptContext
 import json
-
+from fastapi.responses import FileResponse
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+import stripe
+from sqlalchemy import text
 from .database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
-from typing import Annotated, List, Dict, Union
+from typing import Annotated, List, Dict, Union, Optional
 from dotenv import load_dotenv
 from pydantic import BaseModel
 from .calculator import calculate_footprint, emission_factors
 import logging
-from typing import Optional, List
 from fastapi.responses import JSONResponse
+from fastapi import APIRouter
+from google.oauth2 import id_token
+import httpx
+from google.auth.transport import requests
+from fastapi import Request
+from fastapi.responses import RedirectResponse, JSONResponse
+
+from .schemas import CheckoutRequest
+
+GOOGLE_CLIENT_ID = "684289647628-p3l1tr17khb1d8ugpsgnnes3qi43gsgi.apps.googleusercontent.com"
+GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+GOOGLE_CLIENT_SECRET = "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"
+
 
 load_dotenv()
 
+# Create a directory to store uploaded images if it doesn't exist
+os.makedirs("images", exist_ok=True)
 app = FastAPI()
 
 app.mount("/images", StaticFiles(directory="images"), name="images")
-
-# Create a directory to store uploaded images if it doesn't exist
-os.makedirs("images", exist_ok=True)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 logging.basicConfig(level=logging.DEBUG)
 
 logging.basicConfig(level=logging.DEBUG)
+DEV_MODE = True
 
 origins = [
     "http://localhost:3000",
+    "http://127.0.0.1:3000",
     "https://gray-coast-0457ace03.6.azurestaticapps.net",
     "https://k548-esp-2025.onrender.com",
-    "https://*.azurestaticapps.net", 
     "https://quickchart.io"
 ]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -50,7 +68,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
+print("CORS loaded with origins:", origins)
 models.Base.metadata.create_all(bind=engine)
 
 
@@ -68,6 +86,8 @@ ALGORITHM = os.environ.get("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 SENDGRIDAPIKEY = os.environ.get("SENDGRID_API_KEY")
 REFRESH_TOKEN_EXPIRE_DAYS = 10
+stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
@@ -244,6 +264,90 @@ def authenticate_user(username: str, password: str, db: db_dependency):
         return False
     return user
 
+@app.get("/auth/google")
+async def google_login():
+    google_auth_url = (
+        "https://accounts.google.com/o/oauth2/v2/auth"
+        "?response_type=code"
+        f"&client_id={GOOGLE_CLIENT_ID}"
+        f"&redirect_uri={GOOGLE_REDIRECT_URI}"
+        "&scope=openid%20email%20profile"
+        "&access_type=offline"
+        "&prompt=consent"
+    )
+    return RedirectResponse(google_auth_url)
+
+
+@app.get("/auth/google/callback", response_class=RedirectResponse)
+async def google_callback(
+    request: Request,
+    code: Optional[str] = None,
+    db: Session = Depends(get_db)
+) -> RedirectResponse:
+
+    if code is None:
+        return RedirectResponse("http://localhost:3000")
+
+    token_url = "https://oauth2.googleapis.com/token"
+    token_data = {
+        "code": code,
+        "client_id": GOOGLE_CLIENT_ID,
+        "client_secret": GOOGLE_CLIENT_SECRET,
+        "redirect_uri": GOOGLE_REDIRECT_URI,  # must match Google Console EXACTLY
+        "grant_type": "authorization_code",
+    }
+
+    # ✅ Use async client
+    async with httpx.AsyncClient() as client:
+        resp = await client.post(token_url, data=token_data)
+        token_response = resp.json()
+
+    print("TOKEN RESPONSE:", token_response)  # check this first!
+
+    id_token_str = token_response.get("id_token")
+    if not id_token_str:
+        # token_response will tell you the real error reason
+        error = token_response.get("error_description", token_response.get("error", "unknown"))
+        raise HTTPException(status_code=400, detail=f"Google auth failed: {error}")
+
+    google_user = id_token.verify_oauth2_token(
+        id_token_str, requests.Request(), GOOGLE_CLIENT_ID
+    )
+
+    email = google_user["email"]
+    name = google_user.get("given_name", "")
+    surname = google_user.get("family_name", "")
+
+    db_user = crud.get_user(db, username=email)
+
+    if not db_user:
+        # ✅ Create Member object directly to satisfy polymorphic identity
+        db_user = Member(
+            username=email,
+            email=email,
+            name=name,
+            surname=surname,
+            hashed_password="google_oauth",  # not used for OAuth users
+            role="member",
+            age=None,
+            gender=None,
+            phone=None,
+            membership_status=None,
+        )
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+
+    token_payload = {
+        "id": db_user.id,
+        "username": db_user.username,
+        "role": db_user.role
+    }
+    access_token = create_token(token_payload)
+
+    redirect_url = f"http://localhost:3000/auth/google/callback?access_token={access_token}"
+    return RedirectResponse(redirect_url)
+
 
 def create_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
@@ -278,7 +382,11 @@ def verify_token(token: str = Depends(oauth2_scheme)):
 
 @app.get("/verify-token/{token}", tags=["Users"])
 async def verify_user_token(token: str, db: Session = Depends(get_db)):
-    payload = verify_token(token=token)
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+    except JWTError:
+        raise HTTPException(status_code=403, detail="Token is invalid")
+
     username = payload.get("username")
     user = crud.get_user(db, username=username)
 
@@ -314,10 +422,6 @@ async def refresh_access_token(token: str = Depends(oauth2_scheme), db: Session 
 async def list_users(db: db_dependency):
     users = crud.get_users(db=db)
     return users
-
-
-
-
 
 
 
@@ -386,11 +490,12 @@ def get_company_employees(
 
 # Update a user
 @app.put("/user/{user_id}", response_model=schemas.UserResponse, tags=["Users"])
-async def update_user(user_id: int, user: schemas.UserCreate, db: db_dependency):
+async def update_user(user_id: int, user: schemas.UserUpdate, db: db_dependency):
     db_user = crud.update_user(db, user_id, user)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
+
 
 
 # Delete a user
@@ -458,19 +563,16 @@ async def create_post(
         token: str = Depends(oauth2_scheme)
 ):
     db_user = get_current_user(token, db)
-    # Ensure the user exists, is a member, and matches the user_id in the path
-    if db_user is None or db_user.role != "member" or db_user.id != user_id:
+
+    if db_user is None or db_user.role != "admin" or db_user.id != user_id:
         raise HTTPException(status_code=403, detail="Unauthorized or incorrect user ID")
 
-        # Create the post with the ID
-    new_post = crud.create_post(db=db, post=post, user_id=db_user.id)
-
-        # 🔹 Call the badge function after the post is created
-    crud.check_and_assign_badge(db, user_id)
-
+    new_post = crud.create_post(
+        db=db,
+        post=post,
+        user_id=db_user.id
+    )
     return new_post
-
-
 # Update a post (only who own the post)
 @app.put("/users/{user_id}/post/{post_id}", response_model=schemas.Post)
 async def update_post(
@@ -525,8 +627,6 @@ async def delete_post(
     # Delete the post
     crud.delete_post(db=db, post_id=post_id)
     return {"message": "Post deleted successfully"}
-
-
 # --- Image Endpoints for Posts ---
 
 # Upload an image for a post
@@ -810,10 +910,39 @@ async def delete_event(event_id: int, db: db_dependency, current_user: models.Us
 
 
 # Booking Endpoints
-@app.post("/events/{event_id}/book", response_model=schemas.Booking, status_code=status.HTTP_201_CREATED)
-async def book_event(event_id: int, db: db_dependency, current_user: models.User = Depends(get_current_user)):
-    return crud.book_event(db=db, event_id=event_id, user_id=current_user.id)
+@app.post("/events/{event_id}/book", response_model=schemas.Booking)
+def book_event(event_id: int,
+               booking: schemas.BookingCreate,
+               db: Session = Depends(get_db),
+               current_user: models.User = Depends(get_current_user)):
 
+    result = crud.book_event(
+        db=db,
+        event_id=event_id,
+        user_id=current_user.id,
+        seat_number=booking.seat_number
+    )
+
+    return result
+
+from sqlalchemy.orm import selectinload
+
+@app.get("/booking/{booking_id}", response_model=schemas.Booking)
+def get_booking(booking_id: int, db: Session = Depends(get_db)):
+    booking = (
+        db.query(models.Booking)
+        .filter(models.Booking.id == booking_id)
+        .options(
+            selectinload(models.Booking.event),
+            selectinload(models.Booking.user)
+        )
+        .first()
+    )
+
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    return booking
 
 @app.delete("/bookings/{booking_id}", response_model=dict)
 async def cancel_booking(booking_id: int, db: db_dependency):
@@ -821,8 +950,6 @@ async def cancel_booking(booking_id: int, db: db_dependency):
     if not result:
         raise HTTPException(status_code=404, detail="Booking not found")
     return {"message": "Booking cancelled successfully"}
-
-
 
 
 # Fetch bookings for the current user
@@ -838,7 +965,6 @@ async def fetch_event_bookings(event_id: int, db: db_dependency, current_user: m
     bookings = crud.get_bookings_by_event(db=db, event_id=event_id)
     return bookings
 
-
 class RegisterCompanyRequest(BaseModel):
     company_data: schemas.CompanyCreate
     user_data: schemas.UserCreate
@@ -848,8 +974,6 @@ def register_company(
     request: RegisterCompanyRequest, db: Session = Depends(get_db)
 ):
     return crud.create_company(db, request.company_data, request.user_data)
-
-
 
 
 @app.post("/comments/", response_model=schemas.Comment)
@@ -1619,3 +1743,584 @@ def deactivate_initiative_endpoint(
         "message": "Initiative deactivated. A 3-day voting period has started.",
         "voting_end_date": voting_end_date
     }
+
+@app.post("/cars", response_model=schemas.CarResponse, status_code=status.HTTP_201_CREATED)
+async def create_car(
+    car: schemas.CarCreate,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can create cars")
+
+    return crud.create_car(db=db, car=car)
+
+@app.get("/cars", response_model=List[schemas.CarResponse])
+async def list_cars(
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    cars = crud.get_cars(db)
+
+    # Auto-update availability
+    for car in cars:
+        crud.auto_free_car(db, car)
+
+    # Admin sees ALL cars
+    if current_user.role == "admin":
+        return cars
+
+    # Regular users see only available cars
+    return [car for car in cars if car.available]
+
+@app.get("/cars/{car_id}", response_model=schemas.CarResponse)
+async def get_car(
+    car_id: int,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    car = crud.get_car(db, car_id)
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    crud.auto_free_car(db, car)
+
+    return car
+@app.put("/cars/{car_id}", response_model=schemas.CarResponse)
+async def update_car(
+    car_id: int,
+    car_update: schemas.CarUpdate,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can update cars")
+
+    updated_car = crud.update_car(db, car_id, car_update)
+    if not updated_car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    return updated_car
+
+@app.delete("/cars/{car_id}", response_model=dict)
+async def delete_car(
+    car_id: int,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can delete cars")
+
+    result = crud.delete_car(db, car_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    return {"message": "Car deleted successfully"}
+
+@app.post("/rentals", response_model=schemas.CarRentalResponse, status_code=status.HTTP_201_CREATED)
+async def create_rental(
+    rental: schemas.CarRentalCreate,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    new_rental = crud.create_car_rental(db, rental, current_user.id)
+    if not new_rental:
+        raise HTTPException(status_code=400, detail="Car unavailable or invalid")
+    return new_rental
+
+@app.get("/rentals", response_model=List[schemas.CarRentalResponse])
+async def list_rentals(
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    # Admin sees all, users see their own
+    if current_user.role == "admin":
+        return crud.get_car_rentals(db)
+    return crud.get_user_rentals(db, current_user.id)
+
+@app.put("/rentals/{rental_id}", response_model=schemas.CarRentalResponse)
+async def update_rental(
+    rental_id: int,
+    rental_update: schemas.CarRentalUpdate,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    updated = crud.update_car_rental(db, rental_id, rental_update)
+    if not updated:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    return updated
+
+@app.delete("/rentals/{rental_id}", response_model=dict)
+async def delete_rental(
+    rental_id: int,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    result = crud.delete_car_rental(db, rental_id)
+    if not result:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    return {"message": "Rental deleted successfully"}
+
+from fastapi import UploadFile, File
+@app.post("/cars/{car_id}/image", response_model=schemas.CarImage)
+async def upload_car_image(
+    car_id: int,
+    image_file: UploadFile = File(None),
+    image_data: str = Form(None),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    car = db.query(models.Car).filter(models.Car.id == car_id).first()
+    if not car:
+        raise HTTPException(status_code=404, detail="Car not found")
+
+    os.makedirs("images", exist_ok=True)
+
+    if image_file:
+        ext = image_file.filename.split(".")[-1]
+        filename = f"{car_id}_{datetime.now().timestamp()}.{ext}"
+        path = f"images/{filename}"
+        with open(path, "wb") as f:
+            f.write(await image_file.read())
+
+    elif image_data:
+        ext = "png"
+        filename = f"{car_id}_{datetime.now().timestamp()}.{ext}"
+        path = f"images/{filename}"
+        with open(path, "wb") as f:
+            img_bytes = base64.b64decode(image_data.split(",")[1])
+            f.write(img_bytes)
+
+    else:
+        raise HTTPException(status_code=400, detail="No image provided")
+
+    url = f"/images/{filename}".replace("\\", "/")
+
+    return crud.create_car_image(db, car_id, url)
+
+@app.get("/cars/{car_id}/images", response_model=List[schemas.CarImage])
+async def get_car_images(car_id: int, db: Session = Depends(get_db)):
+    return crud.get_car_images(db, car_id)
+@app.delete("/cars/{car_id}/images/{image_id}", response_model=dict)
+async def delete_car_image(
+    car_id: int,
+    image_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Only admins can delete images")
+
+    image = crud.get_car_image(db, car_id, image_id)
+    if not image:
+        raise HTTPException(status_code=404, detail="Image not found")
+
+    # delete file
+    try:
+        os.remove(image.url.lstrip("/"))
+    except:
+        pass
+
+    crud.delete_car_image(db, image_id)
+
+    return {"message": "Image deleted"}
+
+@app.post("/create-checkout-session")
+async def create_checkout_session(data: CheckoutRequest):
+    try:
+        amount = data.amount
+        type = data.type
+
+        if type == "bus":
+            success_url = "http://localhost:3000/bus-success"
+            cancel_url = "http://localhost:3000/bus-cancel"
+        else:
+            success_url = "http://localhost:3000/rent-success"
+            cancel_url = "http://localhost:3000/rent-cancel"
+
+        session = stripe.checkout.Session.create(
+            payment_method_types=["card"],
+            mode="payment",
+            line_items=[{
+                "price_data": {
+                    "currency": "eur",
+                    "product_data": {"name": "Payment"},
+                    "unit_amount": int(amount * 100),
+                },
+                "quantity": 1,
+            }],
+            success_url=success_url,
+            cancel_url=cancel_url,
+        )
+        return {"id": session.id}
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.get("/admin/analytics/tickets")
+def ticket_stats(db: Session = Depends(get_db)):
+    daily = db.execute(text("""
+                            SELECT DATE (created_at) AS day, COUNT (*)
+                            FROM bookings
+                            GROUP BY day
+                            ORDER BY day
+                            """)).fetchall()
+
+    weekly = db.execute(text("""
+                             SELECT DATE_TRUNC('week', created_at) AS week, COUNT(*)
+                             FROM bookings
+                             GROUP BY week
+                             ORDER BY week
+                             """)).fetchall()
+
+    monthly = db.execute(text("""
+                              SELECT DATE_TRUNC('month', created_at) AS month, COUNT(*)
+                              FROM bookings
+                              GROUP BY month
+                              ORDER BY month
+                              """)).fetchall()
+
+    return {
+        "daily": [{"date": str(d[0]), "count": d[1]} for d in daily],
+        "weekly": [{"week": str(w[0]), "count": w[1]} for w in weekly],
+        "monthly": [{"month": str(m[0]), "count": m[1]} for m in monthly],
+    }
+
+
+@app.get("/admin/analytics/occupancy")
+def occupancy_stats(db: Session = Depends(get_db)):
+    rows = db.execute(text("""
+                           SELECT events.id,
+                                  events.name,
+                                  events.date,
+                                  events.time,
+                                  events.max_participants,
+                                  COUNT(bookings.id) AS booked
+                           FROM events
+                                    LEFT JOIN bookings ON events.id = bookings.event_id
+                           GROUP BY events.id
+                           ORDER BY events.date, events.time
+                           """)).fetchall()
+
+    return [
+        {
+            "event_id": r[0],
+            "name": r[1],
+            "date": str(r[2]),
+            "time": str(r[3]),
+            "capacity": r[4],
+            "booked": r[5],
+            "occupancy": round((r[5] / r[4]) * 100, 1) if r[4] else 0
+        }
+        for r in rows
+    ]
+@app.get("/driver/events")
+def get_driver_events(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "driver":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    events = (
+        db.query(models.Event)
+        .filter(models.Event.driver_id == current_user.id)
+        .order_by(models.Event.date, models.Event.time)
+        .all()
+    )
+    return events
+
+
+@app.put("/driver/profile")
+def update_driver_profile(
+    update: schemas.DriverUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "driver":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    driver = db.query(models.Driver).filter(models.Driver.id == current_user.id).first()
+    if not driver:
+        raise HTTPException(status_code=404, detail="Driver not found")
+
+    if update.phone is not None:
+        driver.phone = update.phone
+    if update.license_number is not None:
+        driver.license_number = update.license_number
+    if update.salary_rate is not None:
+        driver.salary_rate = update.salary_rate
+
+    db.commit()
+    db.refresh(driver)
+    return driver
+
+@app.put("/admin/drivers/{driver_id}")
+def admin_update_driver(
+    driver_id: int,
+    update: schemas.DriverUpdate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "admin":
+        raise HTTPException(403, "Not authorized")
+
+    driver = db.query(models.Driver).filter(models.Driver.id == driver_id).first()
+    if not driver:
+        raise HTTPException(404, "Driver not found")
+
+    if update.phone is not None:
+        driver.phone = update.phone
+    if update.license_number is not None:
+        driver.license_number = update.license_number
+    if update.salary_rate is not None:
+        driver.salary_rate = update.salary_rate
+
+    db.commit()
+    db.refresh(driver)
+    return driver
+
+@app.get("/driver/salary")
+def get_driver_salary(
+    month: int | None = None,
+    year: int | None = None,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "driver":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    query = db.query(models.Event).filter(models.Event.driver_id == current_user.id)
+
+    # Filter by month/year if provided
+    if month:
+        query = query.filter(extract('month', models.Event.date) == month)
+    if year:
+        query = query.filter(extract('year', models.Event.date) == year)
+
+    events = query.all()
+
+    total_hours = sum(event.duration or 0 for event in events)
+    total_hours = round(total_hours, 2)
+
+    salary_rate = current_user.salary_rate or 0
+    total_salary = round(total_hours * salary_rate, 2)
+
+    return {
+        "total_hours": total_hours,
+        "salary_rate": salary_rate,
+        "total_salary": total_salary,
+        "month": month,
+        "year": year,
+        "events_count": len(events)
+    }
+
+@app.get("/drivers", response_model=List[schemas.DriverResponse])
+def get_all_drivers(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    return db.query(models.Driver).all()
+
+
+@app.delete("/admin/drivers/{driver_id}")
+def admin_delete_driver(
+    driver_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if current_user.role != "admin":
+        raise HTTPException(403, "Not authorized")
+
+    driver = db.query(models.Driver).filter(models.Driver.id == driver_id).first()
+    if not driver:
+        raise HTTPException(404, "Driver not found")
+
+    db.delete(driver)
+    db.commit()
+    return {"message": "Driver deleted"}
+
+
+
+# from google.cloud import documentai
+#
+# def extract_license_data(file_path):
+#     client = documentai.DocumentProcessorServiceClient()
+#
+#     name = f"projects/{PROJECT_ID}/locations/{LOCATION}/processors/{PROCESSOR_ID}"
+#
+#     with open(file_path, "rb") as f:
+#         content = f.read()
+#
+#     raw_document = documentai.RawDocument(content=content, mime_type="image/jpeg")
+#     request = documentai.ProcessRequest(name=name, raw_document=raw_document)
+#     result = client.process_document(request=request)
+#
+#     doc = result.document
+#
+#     fields = {entity.type_: entity.mention_text for entity in doc.entities}
+#
+#     return {
+#         "name": fields.get("first_name"),
+#         "surname": fields.get("last_name"),
+#         "birthdate": fields.get("date_of_birth"),
+#         "license_number": fields.get("license_number"),
+#         "expiry": fields.get("expiry_date"),
+#     }
+
+
+def validate_license(user, extracted):
+    errors = []
+
+    if extracted["expiry"] and extracted["expiry"] < date.today():
+        errors.append("License expired")
+
+    if extracted["name"] and extracted["name"].lower() != user.name.lower():
+        errors.append("Name mismatch")
+
+    if extracted["surname"] and extracted["surname"].lower() != user.surname.lower():
+        errors.append("Surname mismatch")
+
+    return errors
+
+
+def compute_risk_score(errors):
+    score = 0
+
+    if "License expired" in errors:
+        score += 50
+
+    if "Name mismatch" in errors:
+        score += 30
+
+    if "Surname mismatch" in errors:
+        score += 30
+
+    return score
+
+@app.post("/driver-license/upload", response_model=schemas.DriverLicenseUploadResponse)
+async def upload_driver_license(
+    file: UploadFile,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    file_location = f"uploads/licenses/{current_user.id}_{file.filename}"
+    with open(file_location, "wb") as f:
+        f.write(await file.read())
+
+    record = models.DriverLicenseVerification(
+        user_id=current_user.id,
+        image_url=file_location,
+        status="pending"
+    )
+    db.add(record)
+    db.commit()
+    db.refresh(record)
+
+    extracted = extract_license_data(file_location)
+    errors = validate_license(current_user, extracted)
+    score = compute_risk_score(errors)
+
+    if score == 0:
+        record.status = "approved"
+    elif score < 40:
+        record.status = "manual_review"
+    else:
+        record.status = "rejected"
+
+    record.extracted_name = extracted["name"]
+    record.extracted_surname = extracted["surname"]
+    record.extracted_birthdate = extracted["birthdate"]
+    record.extracted_license_number = extracted["license_number"]
+    record.extracted_expiry = extracted["expiry"]
+    record.risk_score = score
+
+    db.commit()
+    db.refresh(record)
+
+    return record
+
+@app.put("/driver-license/{id}/review", response_model=schemas.DriverLicenseVerificationResponse)
+async def review_license(
+    id: int,
+    review: schemas.AdminReviewRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+
+    if current_user.role != "admin":
+        raise HTTPException(403, "Admins only")
+
+    record = db.query(models.DriverLicenseVerification).filter_by(id=id).first()
+
+    if not record:
+        raise HTTPException(404, "Record not found")
+
+    record.status = review.status
+    record.admin_comment = review.admin_comment
+
+    db.commit()
+    db.refresh(record)
+
+    return record
+@app.get("/rentals/{rental_id}/agreement")
+def generate_rental_agreement(
+    rental_id: int,
+    db: Session = Depends(get_db)
+):
+    rental = db.query(models.CarRental).filter(models.CarRental.id == rental_id).first()
+
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+
+    file_path = f"agreement_{rental_id}.pdf"
+
+    # Generate PDF
+    c = canvas.Canvas(file_path, pagesize=A4)
+    width, height = A4
+
+    y = height - 50
+    c.setFont("Helvetica-Bold", 16)
+    c.drawString(50, y, "Car Rental Agreement")
+
+    c.setFont("Helvetica", 11)
+    y -= 30
+    c.drawString(50, y, f"Rental ID: {rental.id}")
+    y -= 20
+    c.drawString(50, y, f"User ID: {rental.user_id}")
+    y -= 20
+    c.drawString(50, y, f"Car ID: {rental.car_id}")
+    y -= 20
+    c.drawString(50, y, f"Pickup location: {rental.pickup_location}")
+    y -= 20
+    c.drawString(50, y, f"Dropoff location: {rental.dropoff_location}")
+    y -= 20
+    c.drawString(50, y, f"Start: {rental.start_datetime}")
+    y -= 20
+    c.drawString(50, y, f"End: {rental.end_datetime}")
+    y -= 20
+    c.drawString(50, y, f"Distance: {rental.kilometers_used:.2f} km")
+    y -= 20
+    c.drawString(50, y, f"Total price: €{rental.total_price:.2f}")
+
+    y -= 40
+    c.drawString(50, y, "By renting this vehicle, the user agrees to the terms and conditions.")
+    y -= 20
+    c.drawString(50, y, "This agreement is automatically generated and valid without signature.")
+
+    c.showPage()
+    c.save()
+
+    return FileResponse(
+        file_path,
+        filename=f"rental_agreement_{rental_id}.pdf",
+        media_type="application/pdf"
+    )
+
+

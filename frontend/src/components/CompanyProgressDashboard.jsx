@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 
 const CompanyProgressDashboard = ({ initiativeId }) => {
   const [token, userRole] = useContext(UserContext);

@@ -3,7 +3,7 @@ import { UserContext } from "../context/UserContext";
 import ErrorMessage from "./ErrorMessage";
 import { FaClipboardCheck } from "react-icons/fa";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 const Register = ({ toggleForm }) => {
   const [username, setUsername] = useState("");
   const [name, setName] = useState("");
@@ -232,7 +232,31 @@ const Register = ({ toggleForm }) => {
             <FaClipboardCheck size={27}/>
           </button>
         </div>
-
+{/*<div className="has-text-centered" style={{ marginTop: "20px" }}>*/}
+{/*  <button*/}
+{/*    type="button"*/}
+{/*    className="button is-light"*/}
+{/*    onClick={() => {*/}
+{/*      window.location.href = `${API_URL}/auth/google`;*/}
+{/*    }}*/}
+{/*    style={{*/}
+{/*      border: "1px solid #ccc",*/}
+{/*      padding: "10px 20px",*/}
+{/*      borderRadius: "6px",*/}
+{/*      display: "flex",*/}
+{/*      alignItems: "center",*/}
+{/*      gap: "10px",*/}
+{/*      margin: "0 auto"*/}
+{/*    }}*/}
+{/*  >*/}
+{/*    <img*/}
+{/*      src="https://developers.google.com/identity/images/g-logo.png"*/}
+{/*      alt="Google Logo"*/}
+{/*      style={{ width: "20px", height: "20px" }}*/}
+{/*    />*/}
+{/*    Continue with Google*/}
+{/*  </button>*/}
+{/*</div>*/}
         {/* Toggle to Login */}
         <br/>
         <div className="has-text-centered">

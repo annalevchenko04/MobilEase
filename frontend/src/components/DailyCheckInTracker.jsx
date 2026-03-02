@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { UserContext } from "../context/UserContext";
 
-const API_URL = 'https://k548-esp-2.onrender.com';
+import API_URL from "../config";
 
 const DailyCheckInTracker = ({ initiativeId }) => {
   const [token, userRole, username, userId] = useContext(UserContext);

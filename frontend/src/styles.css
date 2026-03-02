@@ -1,5 +1,26 @@
+:root {
+  --bulma-primary: #605fc9;
+}
+
+.button.is-primary {
+  background-color: #605fc9 !important;
+  border-color: #605fc9 !important;
+  color: white !important;
+}
+
+.button.is-primary.is-outlined {
+  background-color: transparent !important;
+  border-color: #605fc9 !important;
+  color: #605fc9 !important;
+}
+
 .navbar-menu {
     justify-content: center;
+}
+
+.leaflet-container {
+  height: 400px;
+  width: 100%;
 }
 
 .navbar-start {
@@ -493,5 +514,155 @@ p {
 .goal-list li.interactive-goal .icon {
   margin-right: 12px;
   font-size: 1.2rem;
+}
+
+.hover-card {
+  transition: transform 0.35s ease, box-shadow 0.35s ease;
+  cursor: pointer;
+}
+
+.hover-card:hover {
+  transform: scale(1.06);
+  box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+}
+
+section.full-width {
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+
+/* Seat selection modal */
+.seat-modal-card {
+  width: 520px;
+  max-width: 90%;
+  border-radius: 12px;
+}
+/* Selected seat (user clicked) */
+.seat-icon.selected {
+  background-color: #4caf50; /* green */
+  border-color: #2e7d32;
+  color: white;
+  transform: scale(1.05);
+}
+/* Driver + entrance */
+.driver-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 20px;
+  margin-bottom: 20px;
+}
+
+.driver-seat {
+  background: #ffd27f;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid #c49a3a;
+  font-weight: bold;
+}
+
+.entrance-door {
+  background: #d0e8ff;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 2px solid #4a90e2;
+  font-weight: bold;
+}
+
+/* Bus rows */
+.bus-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding: 0 20px;
+}
+
+.bus-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.left-seats,
+.right-seats {
+  display: flex;
+  gap: 12px;
+}
+
+/* Aisle */
+.aisle {
+  width: 40px;
+}
+
+/* Slight stagger for right side */
+.right-seats {
+  margin-top: 10px;
+}
+
+/* Seat icon */
+.seat-icon {
+  width: 55px;
+  height: 55px;
+  border-radius: 10px;
+  border: 2px solid #4a4a4a;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  transition: 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.seat-icon.free:hover {
+  background-color: #d9ffd9;
+  border-color: #2ecc71;
+  transform: scale(1.05);
+}
+
+.seat-icon.taken {
+  background-color: #ffb3b3;
+  border-color: #cc0000;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+.ticket-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  backdrop-filter: blur(8px);
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.ticket-modal {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 420px;
+  text-align: center;
+  position: relative;
+  animation: fadeIn 0.25s ease-out;
+}
+
+.close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #444;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 

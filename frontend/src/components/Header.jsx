@@ -17,19 +17,18 @@ const Header = ({ title }) => {
       >
         {/* Blurred Image */}
         <img
-          src="/images/back2.png"
+          src="/images/img_8.png"
           alt="Background"
           style={{
             position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%) scale(0.8)", // 50% size
             width: "100%",
             height: "100%",
-            objectFit: "cover", // Ensures the image covers the entire container
-            filter: "blur(2px)", // Apply the blur effect
-            zIndex: 0, // Make sure image stays behind the content
+            objectFit: "contain",
+            filter: "blur(1px)",
+            zIndex: 0,
           }}
         />
 
