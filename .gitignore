@@ -3,6 +3,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Ignore agreement files
+agreement_*
+
 # Virtual environment (venv)
 venv/
 .venv/
