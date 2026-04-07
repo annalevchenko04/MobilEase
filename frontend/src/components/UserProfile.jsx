@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import API_URL from "../config";
 import CarsManagement from "./CarsManagement";
 import UserAvatar from "../components/UserAvatar";
+import LocationFields from "./LocationFields";
 const UserProfile = () => {
     const [userProfile, setUserProfile] = useState(null);
     const [error, setError] = useState(null);
@@ -891,7 +892,7 @@ const handleRemoveTag = (tag) => {
     {userProfile.company && (
       <p className="text-gray-400" style={{fontSize: "20px"}}>
         <i className="fas fa-briefcase mr-2"></i>
-        <strong>Company:</strong> {userProfile.company.name} ({userProfile.role})
+        <strong>Role:</strong> {userProfile.role}
       </p>
     )}
 
@@ -998,64 +999,129 @@ const handleRemoveTag = (tag) => {
             <br/>
 {userRole === "driver" && (
     <>
-        {/* Upcoming Trips */}
-        <h3 className="title is-large">My Upcoming Trips</h3>
+       {/* Upcoming Trips */}
+<h3 className="title is-large">My Upcoming Trips</h3>
 
 {(() => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const upcomingTrips = driverEvents.filter(ev => {
-    if (!ev.date) return false;
-
-    const eventDateTime = new Date(`${ev.date}T${ev.time || "00:00"}`);
-    return eventDateTime >= today;
-  });
+  const upcomingTrips = driverEvents
+    .filter(ev => {
+      if (!ev.date) return false;
+      const eventDateTime = new Date(`${ev.date}T${ev.time || "00:00"}`);
+      return eventDateTime >= today;
+    })
+    .sort((a, b) => {
+      const dateA = new Date(`${a.date}T${a.time || "00:00"}`);
+      const dateB = new Date(`${b.date}T${b.time || "00:00"}`);
+      return dateA - dateB;
+    });
 
   return upcomingTrips.length === 0 ? (
     <p>No upcoming trips.</p>
   ) : (
     <div
-      style={{
-        display: "grid",
-        gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
-        gap: "20px",
-      }}
-    >
-      {upcomingTrips.map(ev => (
-        <div
-          key={ev.id}
-          className="box"
-          style={{
-            position: "relative",
-            maxHeight: "470px",
-            border: "3px solid #605fc9",
+        style={{
+            display: "flex",
+            gap: 16,
+            overflowX: "auto",
+            paddingBottom: 12,
+            paddingTop: 16,
+            scrollSnapType: "x mandatory",
+            width: "100%",
           }}
-        >
-          {/* Date & time */}
-          <p
+    >
+      {upcomingTrips.map((ev, index) => {
+        const eventDate = new Date(`${ev.date}T${ev.time || "00:00"}`);
+        const isNext = index === 0;
+        const diffMs = eventDate - new Date();
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffHours / 24);
+        const timeLeft = diffDays > 0
+          ? `in ${diffDays} day${diffDays > 1 ? "s" : ""}`
+          : diffHours > 0
+          ? `in ${diffHours} hour${diffHours > 1 ? "s" : ""}`
+          : "Today";
+
+        return (
+          <div
+            key={ev.id}
             style={{
-              position: "absolute",
-              top: "10px",
-              right: "10px",
-              fontSize: "0.9em",
-              color: "black",
+              minWidth: 350,
+              maxWidth: 350,
+              scrollSnapAlign: "start",
+              flexShrink: 0,
+              border: `2px solid ${isNext ? "#605fc9" : "#e9ecef"}`,
+              borderRadius: 14,
+              padding: "18px 18px 16px",
+              background: isNext ? "#f3f0ff" : "#fff",
+              boxShadow: isNext ? "0 4px 16px #605fc920" : "0 2px 8px #0000000a",
+              position: "relative",
+              transition: "box-shadow 0.2s",
             }}
           >
-            {ev.date} {ev.time}
-          </p>
+            {/* Next trip badge */}
+            {isNext && (
+              <div style={{
+                position: "absolute", top: -10, left: 16,
+                background: "#605fc9", color: "#fff",
+                fontSize: 9, fontWeight: 700, letterSpacing: 1,
+                padding: "3px 10px", borderRadius: 10,
+              }}>
+                NEXT TRIP
+              </div>
+            )}
 
-          {/* Event title */}
-          <h5 className="title is-5">{ev.name}</h5>
+            {/* Time left badge */}
+            <div style={{
+              position: "absolute", top: 14, right: 14,
+              background: isNext ? "#605fc920" : "#f1f3f5",
+              color: isNext ? "#605fc9" : "#868e96",
+              fontSize: 10, fontWeight: 700,
+              padding: "3px 8px", borderRadius: 6,
+            }}>
+              {timeLeft}
+            </div>
 
-          {/* Trip details */}
-          <p style={{ marginTop: "10px" }}>
-            <strong>Duration:</strong> {ev.duration} hours
-              <br />
-              <strong>Address:</strong> {ev.room_number}
-          </p>
-        </div>
-      ))}
+            {/* Route name */}
+            <h5 style={{
+              fontWeight: 800, fontSize: 15,
+              color: "#2d3436", marginBottom: 4,
+              marginTop: isNext ? 8 : 0,
+              paddingRight: 0,  // ← remove right padding
+              wordBreak: "break-word", // ← allow wrapping
+            }}>
+              {ev.name}
+            </h5>
+
+            {/* Date & time */}
+            <div style={{
+              display: "inline-flex", alignItems: "center", gap: 6,
+              background: "#605fc915", borderRadius: 6,
+              padding: "4px 10px", marginBottom: 12,
+            }}>
+              <span style={{ fontSize: 11, color: "#605fc9", fontWeight: 600 }}>
+                🕐 {ev.date} · {ev.time}
+              </span>
+            </div>
+
+            {/* Details */}
+            <div style={{ fontSize: 13, color: "#495057", display: "flex", flexDirection: "column", gap: 6 }}>
+              <div style={{ display: "flex", gap: 8 }}>
+                <span style={{ color: "#868e96", minWidth: 70 }}>⏱ Duration</span>
+                <span style={{ fontWeight: 600 }}>{ev.duration} hours</span>
+              </div>
+              {ev.room_number && (
+                <div style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "#868e96", minWidth: 70 }}>📍 Address</span>
+                  <span style={{ fontWeight: 600, fontSize: 12 }}>{ev.room_number}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 })()}
@@ -1373,111 +1439,7 @@ const upcomingRentals = rentals.filter((rental) => {
                                            value={newPost.title} onChange={handleInputChange} style={{ border: '1px solid #605fc9', borderRadius: '12px' }}/>
                                 </div>
                     </div>
-                    <div className="field">
-                        <label className="label">From Country</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="text"
-                                name="from_country"
-                                placeholder="e.g., Lithuania"
-                                value={newPost.from_country}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">From City</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="text"
-                                name="from_city"
-                                placeholder="e.g., Kaunas"
-                                value={newPost.from_city}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">To Country</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="text"
-                                name="to_country"
-                                placeholder="e.g., Lithuania"
-                                value={newPost.to_country}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">To City</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="text"
-                                name="to_city"
-                                placeholder="e.g., Vilnius"
-                                value={newPost.to_city}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">Distance (km)</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="number"
-                                name="distance_km"
-                                placeholder="e.g., 102"
-                                value={newPost.distance_km}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">Estimated Duration (hours)</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="number"
-                                name="estimated_duration"
-                                placeholder="e.g., 90"
-                                value={newPost.estimated_duration}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
-                    <div className="field">
-                        <label className="label">Price (€)</label>
-                        <div className="control">
-                            <input
-                                className="input"
-                                type="number"
-                                name="price"
-                                placeholder="e.g., 12.50"
-                                value={newPost.price}
-                                onChange={handleInputChange}
-                                style={{ border: '1px solid #605fc9', borderRadius: '12px' }}
-                            />
-                        </div>
-                    </div>
-
+                    <LocationFields newPost={newPost} handleInputChange={handleInputChange} />
                     <div className="field">
                     <label className="label">
                         Tags <span style={{color: 'red'}}>*</span>

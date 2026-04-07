@@ -18,14 +18,14 @@ import './styles.css';
 import CompanyRegister from "./components/CompanyRegister";
 import CarDetail from "./components/CarDetail";
 import Initiatives from './components/Initiatives';
-import DriverLicensePage from "./components/DriverLicensePage";
 import RentCar from "./components/RentCar";
 import RentSuccess from "./components/RentSuccess";
 import GoogleCallback from "./components/GoogleCallback";
 import TicketPage from "./components/TicketPage";
 import DriverRegister from "./components/DriverRegister";
 import BusSuccess from "./components/BusSuccess";
-
+import DriverLicenseUpload from "./components/DriverLicenseUpload";
+import AdminLicenseReview from "./components/AdminLicenseReview";
 
 const App = () => {
     const [token, userRole, , , setToken, isVerifying] = useContext(UserContext);
@@ -157,14 +157,6 @@ const App = () => {
                                     </span>
                                         </a>
 
-                                        {/*<a className="navbar-item is-size-5" href="/initiatives">*/}
-                                        {/*    <span className="icon-text">*/}
-                                        {/*        <span className="icon">*/}
-                                        {/*            <i className="fas fa-leaf"></i>*/}
-                                        {/*        </span>*/}
-                                        {/*        <span><strong>Initiatives</strong></span>*/}
-                                        {/*    </span>*/}
-                                        {/*</a>*/}
                                         {userRole !== "member" && (
                                         <a className="navbar-item is-size-5" href="/schedule">
                                                 <span className="icon-text">
@@ -176,15 +168,23 @@ const App = () => {
                                         </a>
                                           )}
                                         {userRole === "admin" && (
-                                        <a className="navbar-item is-size-5" href="/driverlicense">
+                                        <a className="navbar-item is-size-5" href="/adminlicensereview">
                                                 <span className="icon-text">
                                                     <span className="icon">
-                                                        <i className="fas fa-trophy"></i>
+                                                        <i className="fas fa-id-card"></i>
                                                     </span>
                                                     <span><strong>Driver License Verification</strong></span>
                                                 </span>
                                         </a>
                                         )}
+                                         <a className="navbar-item is-size-5" href="/license/verify">
+                                                <span className="icon-text">
+                                                  <span className="icon">
+                                                    <i className="fas fa-id-card"></i>
+                                                  </span>
+                                                  <span><strong>My License</strong></span>
+                                                </span>
+                                         </a>
                                         <div className="navbar-end">
                                             <br/>
                                             <div className="navbar-item is-size-5">
@@ -211,7 +211,8 @@ const App = () => {
                 <div className="column"></div>
                 <div className="column m-5 is-two-thirds">
                     <Routes>
-                        <Route path="/register-company" element={<CompanyRegister/>}
+                        <Route path="/register-company" element={<CompanyRegister/>} />
+                        <Route path="/auth/google/callback" element={<GoogleCallback />} />
                         />
                         {!token ? (
                             <>
@@ -233,13 +234,13 @@ const App = () => {
                                 <Route path="/post/:id" element={<PostDetail />} />
                                 <Route path="/initiatives" element={<Initiatives />} />
                                 <Route path="/schedule" element={<Schedule events={events} addEvent={addEvent}/>}/>
-                                <Route path="/driverlisence" element={<DriverLicensePage/>}/>
+                                <Route path="/license/verify" element={<DriverLicenseUpload/>}/>
                                 <Route path="*" element={<Navigate to="/main"/>}/>
                                 <Route path="/rent/:id" element={<RentCar />} />
                                 <Route path="/rent-success" element={<RentSuccess />} />
-                                <Route path="/auth/google/callback" element={<GoogleCallback />} />
                                 <Route path="/register-driver" element={<DriverRegister />} />
                                 <Route path="/bus-success" element={<BusSuccess />} />
+                                <Route path="/adminlicensereview" element={<AdminLicenseReview />} />
                             </>
                         )}
                     </Routes>

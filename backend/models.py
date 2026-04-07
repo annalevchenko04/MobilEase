@@ -4,7 +4,7 @@ from .database import Base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from datetime import date, datetime
-
+from sqlalchemy.dialects.postgresql import JSONB
 
 class User(Base):
     __tablename__ = "users"
@@ -32,7 +32,7 @@ class User(Base):
 
     __table_args__ = (
         CheckConstraint(
-            "role IN ('admin', 'member')", name="check_valid_roles"
+            "role IN ('admin', 'member', 'driver')", name="check_valid_roles"
         ),
         CheckConstraint(
             "gender IN ('male', 'female')", name="check_valid_genders"
@@ -413,6 +413,11 @@ class Car(Base):
     # Availability
     available = Column(Boolean, default=True)
 
+    # Current location (updated after each rental dropoff)
+    current_location = Column(String(255), nullable=True)
+    current_lat = Column(Float, nullable=True)
+    current_lng = Column(Float, nullable=True)
+
     # Relationship with rentals
     rentals = relationship("CarRental", back_populates="car", cascade="all, delete-orphan")
 
@@ -498,3 +503,46 @@ class DriverLicenseVerification(Base):
     updated_at = Column(DateTime, onupdate=func.now())
 
     user = relationship("User", backref="license_verifications")
+
+
+class LicenseSubmission(Base):
+    __tablename__ = "license_submissions"
+
+    id               = Column(Integer, primary_key=True, index=True)
+    user_id          = Column(Integer, ForeignKey("users.id"), nullable=False, unique=True)
+    driver_name      = Column(String)
+
+    # Status: pending | approved | rejected | manual_review
+    status           = Column(String, default="pending")
+
+    # Image stored as data URL or an S3/CDN URL
+    image_url        = Column(Text)
+
+    # Google Document AI output
+    extracted_data = Column(Text)  # was JSONB
+    profile_matches = Column(Text)  # was JSONB
+    validation_flags = Column(JSONB)          # list of flag strings
+
+    # Risk scoring
+    risk_score       = Column(Float)          # 0.0 – 1.0
+    risk_reason      = Column(Text)
+
+    # Admin review
+    admin_note       = Column(Text)
+    reviewed_at      = Column(DateTime)
+    reviewed_by      = Column(Integer, ForeignKey("users.id"), nullable=True)
+
+    submitted_at     = Column(DateTime)
+
+
+class ReminderLog(Base):
+    __tablename__ = "reminder_logs"
+
+    id         = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("bookings.id", ondelete="CASCADE"), nullable=False)
+    reminder_type = Column(String, nullable=False)  # "1day", "1hour", "late"
+    sent_at    = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint('booking_id', 'reminder_type', name='unique_booking_reminder'),
+    )

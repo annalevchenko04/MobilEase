@@ -40,7 +40,7 @@ const Footer = () => {
           {/* Footer Content */}
           <div style={{zIndex: 1, position: 'relative', color: "black"}}>
               <p>
-                 <strong> &copy; {new Date().getFullYear()} MobilEase — Unified Domestic Ride System. All rights reserved. </strong>
+                 <strong> &copy; {new Date().getFullYear()} MobilEase — Intercity Transport Service System. All rights reserved. </strong>
               </p>
           </div>
       </footer>

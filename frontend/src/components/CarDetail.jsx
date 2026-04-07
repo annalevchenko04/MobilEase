@@ -10,7 +10,7 @@ const CarDetail = () => {
   const [car, setCar] = useState(null);
   const [carImages, setCarImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState("");
-
+    const [bookingMsg, setBookingMsg] = useState(null);
   const [token] = useContext(UserContext);
 
   // Trip calculator
@@ -18,8 +18,19 @@ const CarDetail = () => {
     const [minutes, setMinutes] = useState("");
     const [distance, setDistance] = useState("");
     const [days, setDays] = useState("");
-const [hours, setHours] = useState("");
+    const [hours, setHours] = useState("");
   const MIN_FEE = 0.30;
+    const [licenseStatus, setLicenseStatus] = useState(null);
+
+useEffect(() => {
+  if (!token) return;
+  fetch(`${API_URL}/license/status`, {
+    headers: { Authorization: `Bearer ${token}` },
+  })
+    .then(r => r.ok ? r.json() : null)
+    .then(data => setLicenseStatus(data?.status || "none"))
+    .catch(() => setLicenseStatus("none"));
+}, [token]);
 
   useEffect(() => {
     const fetchCarDetail = async () => {
@@ -72,9 +83,47 @@ useEffect(() => {
   if (!car) {
     return <p>Loading car...</p>;
   }
-
+const handleBookClick = () => {
+  if (!licenseStatus || licenseStatus === "none") {
+    setBookingMsg({
+      type: "info",
+      text: "Please upload your license before booking a car.",
+      action: { label: "Upload License →", path: "/license/verify" }
+    });
+    return;
+  }
+  if (licenseStatus === "rejected") {
+    setBookingMsg({
+      type: "error",
+      text: "Sorry, you are not allowed to book a car. Your license was rejected by our team."
+    });
+    return;
+  }
+  if (licenseStatus === "pending" || licenseStatus === "manual_review") {
+    setBookingMsg({
+      type: "warning",
+      text: "Your license is currently under review. Please wait for approval before booking."
+    });
+    return;
+  }
+  navigate(`/rent/${car.id}`, {
+    state: {
+      carPricing: {
+        price_per_hour: car.price_per_hour,
+        price_per_day: car.price_per_day,
+        price_per_km: car.price_per_km,
+      }
+    }
+  });
+};
   return (
     <div style={{ position: "relative" }}>
+        <style>{`
+      @keyframes fadeInUp { 
+        from { opacity: 0; transform: translateY(8px); } 
+        to { opacity: 1; transform: none; } 
+      }
+    `}</style>
       <button onClick={handleGoBack} className="button is-link">
         Back to Explore Cars
       </button>
@@ -243,21 +292,64 @@ useEffect(() => {
     borderRadius: "10px",
     marginTop: "20px"
   }}
-  onClick={() =>
-    navigate(`/rent/${car.id}`, {
-      state: {
-        carPricing: {
-          price_per_hour: car.price_per_hour,
-          price_per_day: car.price_per_day,
-          price_per_km: car.price_per_km,
-        }
-      }
-    })
-  }
+  onClick={handleBookClick}
 >
   Book This Car
 </button>
-
+{bookingMsg && (
+  <div style={{
+    marginTop: 14,
+    padding: "14px 16px",
+    borderRadius: 12,
+    display: "flex",
+    alignItems: "flex-start",
+    gap: 12,
+    background:
+      bookingMsg.type === "error"   ? "#d6303110" :
+      bookingMsg.type === "warning" ? "#e67e2210" :
+                                      "#5352ed10",
+    border: `1px solid ${
+      bookingMsg.type === "error"   ? "#d6303140" :
+      bookingMsg.type === "warning" ? "#e67e2240" :
+                                      "#5352ed40"
+    }`,
+    animation: "fadeInUp 0.3s ease",
+  }}>
+    <span style={{ fontSize: 20 }}>
+      {bookingMsg.type === "error" ? "✗" : bookingMsg.type === "warning" ? "⚠" : "🪪"}
+    </span>
+    <div style={{ flex: 1 }}>
+      <div style={{
+        fontSize: 13,
+        color:
+          bookingMsg.type === "error"   ? "#d63031" :
+          bookingMsg.type === "warning" ? "#e67e22" :
+                                          "#5352ed",
+        fontWeight: 600,
+        marginBottom: bookingMsg.action ? 8 : 0,
+      }}>
+        {bookingMsg.text}
+      </div>
+      {bookingMsg.action && (
+        <span
+          onClick={() => navigate(bookingMsg.action.path)}
+          style={{
+            fontSize: 12, fontWeight: 700, cursor: "pointer",
+            color: "#5352ed", textDecoration: "underline",
+          }}
+        >
+          {bookingMsg.action.label}
+        </span>
+      )}
+    </div>
+    <span
+      onClick={() => setBookingMsg(null)}
+      style={{ fontSize: 16, cursor: "pointer", color: "#adb5bd", lineHeight: 1 }}
+    >
+      ×
+    </span>
+  </div>
+)}
       {/* GALLERY */}
       <h2 className="title is-4" style={{ marginTop: "40px" }}>
         Gallery

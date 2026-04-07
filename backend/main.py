@@ -3,6 +3,7 @@ import base64
 from . import crud
 from . import models
 from . import schemas
+from fastapi import Body
 from fastapi import FastAPI, HTTPException, Depends, status, File, Form, UploadFile
 from sqlalchemy.orm import Session
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -17,6 +18,7 @@ from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 import stripe
 from sqlalchemy import text
+from backend.redis_client import redis_client
 from .database import engine, SessionLocal
 from fastapi.middleware.cors import CORSMiddleware
 from typing import Annotated, List, Dict, Union, Optional
@@ -31,8 +33,9 @@ import httpx
 from google.auth.transport import requests
 from fastapi import Request
 from fastapi.responses import RedirectResponse, JSONResponse
+from apscheduler.schedulers.background import BackgroundScheduler
 
-from .schemas import CheckoutRequest
+from .schemas import CheckoutRequest, BookingSeatRequest
 
 GOOGLE_CLIENT_ID = "684289647628-p3l1tr17khb1d8ugpsgnnes3qi43gsgi.apps.googleusercontent.com"
 GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
@@ -40,11 +43,10 @@ GOOGLE_CLIENT_SECRET = "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"
 
 
 load_dotenv()
-
+print(">>> PROCESSOR ID:", os.environ.get("GOOGLE_PROCESSOR_ID"))
 # Create a directory to store uploaded images if it doesn't exist
 os.makedirs("images", exist_ok=True)
 app = FastAPI()
-
 app.mount("/images", StaticFiles(directory="images"), name="images")
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -79,7 +81,6 @@ def get_db():
     finally:
         db.close()
 
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = os.environ.get("SECRET_KEY")
 ALGORITHM = os.environ.get("ALGORITHM")
@@ -91,7 +92,107 @@ stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
 
 db_dependency = Annotated[Session, Depends(get_db)]
 
+from cryptography.fernet import Fernet
+import json
 
+def get_fernet():
+    key = os.environ["ENCRYPTION_KEY"]
+    return Fernet(key.encode())
+
+def encrypt_data(data: dict) -> str:
+    f = get_fernet()
+    return f.encrypt(json.dumps(data).encode()).decode()
+
+def decrypt_data(token: str) -> dict:
+    f = get_fernet()
+    return json.loads(f.decrypt(token.encode()).decode())
+
+
+def lock_seat(event_id: int, seat_number: int, user_id: int):
+    key = f"seat_lock:{event_id}:{seat_number}"
+
+    # NX = only set if not exists
+    # EX = expiration in seconds (e.g. 5 min)
+    success = redis_client.set(key, user_id, nx=True, ex=300)
+
+    return success  # True or None
+
+def unlock_seat(event_id: int, seat_number: int, user_id: int):
+    key = f"seat_lock:{event_id}:{seat_number}"
+
+    # Only unlock if same user (important!)
+    if redis_client.get(key) == str(user_id):
+        redis_client.delete(key)
+
+def is_seat_locked(event_id: int, seat_number: int):
+    key = f"seat_lock:{event_id}:{seat_number}"
+    return redis_client.exists(key)
+
+from fastapi import WebSocket, WebSocketDisconnect
+from typing import Dict, Set
+
+# ── WebSocket Connection Manager ──────────────────────────
+class ConnectionManager:
+    def __init__(self):
+        # event_id -> set of connected websockets
+        self.active_connections: Dict[int, Set[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, event_id: int):
+        await websocket.accept()
+        if event_id not in self.active_connections:
+            self.active_connections[event_id] = set()
+        self.active_connections[event_id].add(websocket)
+
+    def disconnect(self, websocket: WebSocket, event_id: int):
+        if event_id in self.active_connections:
+            self.active_connections[event_id].discard(websocket)
+            if not self.active_connections[event_id]:
+                del self.active_connections[event_id]
+
+    async def broadcast_to_event(self, event_id: int, message: dict):
+        if event_id not in self.active_connections:
+            return
+        dead = set()
+        for ws in self.active_connections[event_id]:
+            try:
+                await ws.send_json(message)
+            except Exception:
+                dead.add(ws)
+        for ws in dead:
+            self.active_connections[event_id].discard(ws)
+
+manager = ConnectionManager()
+# ─────────────────────────────────────────────────────────
+from backend.database import SessionLocal
+
+@app.websocket("/ws/events/{event_id}/seats")
+async def websocket_seat_updates(websocket: WebSocket, event_id: int):
+    await manager.connect(websocket, event_id)
+
+    # Create DB session manually
+    db = SessionLocal()
+
+    try:
+        bookings = crud.get_bookings_by_event(db, event_id)
+        taken_seats = [b.seat_number for b in bookings]
+
+        locked_keys = redis_client.keys(f"seat_lock:{event_id}:*")
+        locked_seats = [int(k.split(":")[-1]) for k in locked_keys]
+
+        await websocket.send_json({
+            "type": "seat_update",
+            "taken_seats": taken_seats,
+            "locked_seats": locked_seats
+        })
+
+        while True:
+            await websocket.receive_text()
+
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, event_id)
+
+    finally:
+        db.close()
 
 from fastapi import Query
 from .calculator import calculate_footprint, generate_seasonal_recommendations
@@ -227,7 +328,6 @@ def get_footprint_api(db: Session = Depends(get_db), current_user: models.User =
         "details": details
     }
 
-
 @app.get("/user/{username}", response_model=schemas.UserResponse, tags=["Users"])
 async def get_user_by_username(username: str, db: db_dependency):
     db_user = crud.get_user(db=db, username=username)
@@ -321,22 +421,19 @@ async def google_callback(
     db_user = crud.get_user(db, username=email)
 
     if not db_user:
-        # ✅ Create Member object directly to satisfy polymorphic identity
-        db_user = Member(
+        google_user_data = schemas.UserCreate(
             username=email,
             email=email,
             name=name,
             surname=surname,
-            hashed_password="google_oauth",  # not used for OAuth users
-            role="member",
+            password="google_oauth",
             age=None,
             gender=None,
             phone=None,
-            membership_status=None,
+            role="member",
+            membership_status="active",
         )
-        db.add(db_user)
-        db.commit()
-        db.refresh(db_user)
+        db_user = crud.create_user(db, google_user_data)
 
     token_payload = {
         "id": db_user.id,
@@ -888,8 +985,13 @@ async def create_event(event: schemas.EventCreate, db: db_dependency,
 
 
 @app.get("/events", response_model=List[schemas.Event])
-async def list_events(db: db_dependency, current_user: models.User = Depends(get_current_user)):
-    return crud.get_events(db=db, user_id=current_user.id)
+async def list_events(
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user),
+    start: Optional[date] = None,
+    end: Optional[date] = None,
+):
+    return crud.get_events(db=db, user_id=current_user.id, start=start, end=end)
 
 
 @app.put("/event/{event_id}", response_model=schemas.Event)
@@ -911,11 +1013,12 @@ async def delete_event(event_id: int, db: db_dependency, current_user: models.Us
 
 # Booking Endpoints
 @app.post("/events/{event_id}/book", response_model=schemas.Booking)
-def book_event(event_id: int,
-               booking: schemas.BookingCreate,
-               db: Session = Depends(get_db),
-               current_user: models.User = Depends(get_current_user)):
-
+async def book_event(                          # ← make async
+    event_id: int,
+    booking: schemas.BookingCreate = Body(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
     result = crud.book_event(
         db=db,
         event_id=event_id,
@@ -923,6 +1026,18 @@ def book_event(event_id: int,
         seat_number=booking.seat_number
     )
 
+    # Broadcast updated seat list to all viewers of this event
+    bookings = crud.get_bookings_by_event(db=db, event_id=event_id)
+    taken_seats = [b.seat_number for b in bookings]
+    # 🆕 get locked seats again
+    locked_keys = redis_client.keys(f"seat_lock:{event_id}:*")
+    locked_seats = [int(k.split(":")[-1]) for k in locked_keys]
+
+    await manager.broadcast_to_event(event_id, {
+        "type": "seat_update",
+        "taken_seats": taken_seats,
+        "locked_seats": locked_seats
+    })
     return result
 
 from sqlalchemy.orm import selectinload
@@ -946,9 +1061,28 @@ def get_booking(booking_id: int, db: Session = Depends(get_db)):
 
 @app.delete("/bookings/{booking_id}", response_model=dict)
 async def cancel_booking(booking_id: int, db: db_dependency):
+    # Get event_id before deleting
+    booking = db.query(models.Booking).filter(models.Booking.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+    event_id = booking.event_id
+
     result = crud.cancel_booking(db, booking_id)
     if not result:
         raise HTTPException(status_code=404, detail="Booking not found")
+
+    # Broadcast updated seat list
+    bookings = crud.get_bookings_by_event(db=db, event_id=event_id)
+    taken_seats = [b.seat_number for b in bookings]
+    locked_keys = redis_client.keys(f"seat_lock:{event_id}:*")
+    locked_seats = [int(k.split(":")[-1]) for k in locked_keys]
+
+    await manager.broadcast_to_event(event_id, {
+        "type": "seat_update",
+        "taken_seats": taken_seats,
+        "locked_seats": locked_seats
+    })
+
     return {"message": "Booking cancelled successfully"}
 
 
@@ -1786,6 +1920,7 @@ async def get_car(
     crud.auto_free_car(db, car)
 
     return car
+
 @app.put("/cars/{car_id}", response_model=schemas.CarResponse)
 async def update_car(
     car_id: int,
@@ -1850,6 +1985,18 @@ async def update_rental(
         raise HTTPException(status_code=404, detail="Rental not found")
     return updated
 
+@app.get("/rentals/{rental_id}")
+def get_rental(
+    rental_id: int,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    rental = db.query(models.CarRental).filter(
+        models.CarRental.id == rental_id
+    ).first()
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+    return rental
 @app.delete("/rentals/{rental_id}", response_model=dict)
 async def delete_rental(
     rental_id: int,
@@ -2145,182 +2292,613 @@ def admin_delete_driver(
     db.delete(driver)
     db.commit()
     return {"message": "Driver deleted"}
+def transliterate_lt(text: str) -> str:
+    if not text:
+        return text
+    replacements = {
+        'ą': 'a', 'č': 'c', 'ę': 'e', 'ė': 'e',
+        'į': 'i', 'š': 's', 'ų': 'u', 'ū': 'u', 'ž': 'z',
+        'Ą': 'A', 'Č': 'C', 'Ę': 'E', 'Ė': 'E',
+        'Į': 'I', 'Š': 'S', 'Ų': 'U', 'Ū': 'U', 'Ž': 'Z',
+        # Ukrainian/Russian characters from Nominatim addresses
+        'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd',
+        'е': 'e', 'є': 'e', 'ж': 'zh', 'з': 'z', 'и': 'i',
+        'і': 'i', 'ї': 'i', 'й': 'y', 'к': 'k', 'л': 'l',
+        'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r',
+        'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh',
+        'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'shch', 'ь': '',
+        'ю': 'yu', 'я': 'ya',
+        'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D',
+        'Е': 'E', 'Є': 'E', 'Ж': 'Zh', 'З': 'Z', 'И': 'I',
+        'І': 'I', 'Ї': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L',
+        'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R',
+        'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh',
+        'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch',
+        'Ю': 'Yu', 'Я': 'Ya',
+    }
+    return ''.join(replacements.get(c, c) for c in text)
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import cm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from fastapi.responses import FileResponse
 
 
-
-# from google.cloud import documentai
-#
-# def extract_license_data(file_path):
-#     client = documentai.DocumentProcessorServiceClient()
-#
-#     name = f"projects/{PROJECT_ID}/locations/{LOCATION}/processors/{PROCESSOR_ID}"
-#
-#     with open(file_path, "rb") as f:
-#         content = f.read()
-#
-#     raw_document = documentai.RawDocument(content=content, mime_type="image/jpeg")
-#     request = documentai.ProcessRequest(name=name, raw_document=raw_document)
-#     result = client.process_document(request=request)
-#
-#     doc = result.document
-#
-#     fields = {entity.type_: entity.mention_text for entity in doc.entities}
-#
-#     return {
-#         "name": fields.get("first_name"),
-#         "surname": fields.get("last_name"),
-#         "birthdate": fields.get("date_of_birth"),
-#         "license_number": fields.get("license_number"),
-#         "expiry": fields.get("expiry_date"),
-#     }
-
-
-def validate_license(user, extracted):
-    errors = []
-
-    if extracted["expiry"] and extracted["expiry"] < date.today():
-        errors.append("License expired")
-
-    if extracted["name"] and extracted["name"].lower() != user.name.lower():
-        errors.append("Name mismatch")
-
-    if extracted["surname"] and extracted["surname"].lower() != user.surname.lower():
-        errors.append("Surname mismatch")
-
-    return errors
-
-
-def compute_risk_score(errors):
-    score = 0
-
-    if "License expired" in errors:
-        score += 50
-
-    if "Name mismatch" in errors:
-        score += 30
-
-    if "Surname mismatch" in errors:
-        score += 30
-
-    return score
-
-@app.post("/driver-license/upload", response_model=schemas.DriverLicenseUploadResponse)
-async def upload_driver_license(
-    file: UploadFile,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-    file_location = f"uploads/licenses/{current_user.id}_{file.filename}"
-    with open(file_location, "wb") as f:
-        f.write(await file.read())
-
-    record = models.DriverLicenseVerification(
-        user_id=current_user.id,
-        image_url=file_location,
-        status="pending"
-    )
-    db.add(record)
-    db.commit()
-    db.refresh(record)
-
-    extracted = extract_license_data(file_location)
-    errors = validate_license(current_user, extracted)
-    score = compute_risk_score(errors)
-
-    if score == 0:
-        record.status = "approved"
-    elif score < 40:
-        record.status = "manual_review"
-    else:
-        record.status = "rejected"
-
-    record.extracted_name = extracted["name"]
-    record.extracted_surname = extracted["surname"]
-    record.extracted_birthdate = extracted["birthdate"]
-    record.extracted_license_number = extracted["license_number"]
-    record.extracted_expiry = extracted["expiry"]
-    record.risk_score = score
-
-    db.commit()
-    db.refresh(record)
-
-    return record
-
-@app.put("/driver-license/{id}/review", response_model=schemas.DriverLicenseVerificationResponse)
-async def review_license(
-    id: int,
-    review: schemas.AdminReviewRequest,
-    db: Session = Depends(get_db),
-    current_user: models.User = Depends(get_current_user)
-):
-
-    if current_user.role != "admin":
-        raise HTTPException(403, "Admins only")
-
-    record = db.query(models.DriverLicenseVerification).filter_by(id=id).first()
-
-    if not record:
-        raise HTTPException(404, "Record not found")
-
-    record.status = review.status
-    record.admin_comment = review.admin_comment
-
-    db.commit()
-    db.refresh(record)
-
-    return record
 @app.get("/rentals/{rental_id}/agreement")
 def generate_rental_agreement(
     rental_id: int,
     db: Session = Depends(get_db)
 ):
-    rental = db.query(models.CarRental).filter(models.CarRental.id == rental_id).first()
+    try:
+        rental = db.query(models.CarRental).filter(models.CarRental.id == rental_id).first()
+        if not rental:
+            raise HTTPException(status_code=404, detail="Rental not found")
 
-    if not rental:
-        raise HTTPException(status_code=404, detail="Rental not found")
+        user = db.query(models.User).filter(models.User.id == rental.user_id).first()
+        car  = db.query(models.Car).filter(models.Car.id == rental.car_id).first()
 
-    file_path = f"agreement_{rental_id}.pdf"
+        file_path = f"agreement_{rental_id}.pdf"
 
-    # Generate PDF
-    c = canvas.Canvas(file_path, pagesize=A4)
-    width, height = A4
+        doc = SimpleDocTemplate(
+            file_path,
+            pagesize=A4,
+            rightMargin=2*cm, leftMargin=2*cm,
+            topMargin=2*cm, bottomMargin=2*cm
+        )
 
-    y = height - 50
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(50, y, "Car Rental Agreement")
+        PURPLE = colors.HexColor("#605fc9")
+        DARK   = colors.HexColor("#2d3436")
+        LIGHT  = colors.HexColor("#f8f9ff")
+        GRAY   = colors.HexColor("#868e96")
 
-    c.setFont("Helvetica", 11)
-    y -= 30
-    c.drawString(50, y, f"Rental ID: {rental.id}")
-    y -= 20
-    c.drawString(50, y, f"User ID: {rental.user_id}")
-    y -= 20
-    c.drawString(50, y, f"Car ID: {rental.car_id}")
-    y -= 20
-    c.drawString(50, y, f"Pickup location: {rental.pickup_location}")
-    y -= 20
-    c.drawString(50, y, f"Dropoff location: {rental.dropoff_location}")
-    y -= 20
-    c.drawString(50, y, f"Start: {rental.start_datetime}")
-    y -= 20
-    c.drawString(50, y, f"End: {rental.end_datetime}")
-    y -= 20
-    c.drawString(50, y, f"Distance: {rental.kilometers_used:.2f} km")
-    y -= 20
-    c.drawString(50, y, f"Total price: €{rental.total_price:.2f}")
+        title_style = ParagraphStyle("title",
+            fontSize=22, textColor=PURPLE, alignment=TA_CENTER,
+            fontName="Helvetica-Bold", spaceAfter=4)
 
-    y -= 40
-    c.drawString(50, y, "By renting this vehicle, the user agrees to the terms and conditions.")
-    y -= 20
-    c.drawString(50, y, "This agreement is automatically generated and valid without signature.")
+        subtitle_style = ParagraphStyle("subtitle",
+            fontSize=10, textColor=GRAY, alignment=TA_CENTER,
+            fontName="Helvetica", spaceAfter=2)
 
-    c.showPage()
-    c.save()
+        section_style = ParagraphStyle("section",
+            fontSize=11, textColor=PURPLE,
+            fontName="Helvetica-Bold", spaceBefore=14, spaceAfter=6)
 
-    return FileResponse(
-        file_path,
-        filename=f"rental_agreement_{rental_id}.pdf",
-        media_type="application/pdf"
+        body_style = ParagraphStyle("body",
+            fontSize=10, textColor=DARK,
+            fontName="Helvetica", spaceAfter=4)
+
+        small_style = ParagraphStyle("small",
+            fontSize=8, textColor=GRAY,
+            fontName="Helvetica", alignment=TA_CENTER, spaceAfter=4)
+
+        def info_table(rows):
+            data = [[Paragraph(f"<b>{k}</b>", body_style), Paragraph(str(v), body_style)] for k, v in rows]
+            t = Table(data, colWidths=[5.5*cm, 11*cm])
+            t.setStyle(TableStyle([
+                ("BACKGROUND", (0, 0), (0, -1), LIGHT),
+                ("BACKGROUND", (1, 0), (1, -1), colors.white),
+                ("TEXTCOLOR", (0, 0), (-1, -1), DARK),
+                ("FONTNAME", (0, 0), (-1, -1), "Helvetica"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("ROWBACKGROUNDS", (0, 0), (-1, -1), [LIGHT, colors.white]),
+                ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#e0e0f0")),
+                ("LEFTPADDING", (0, 0), (-1, -1), 10),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 10),
+                ("TOPPADDING", (0, 0), (-1, -1), 7),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 7),
+            ]))
+            return t
+
+        def fmt_dt(dt):
+            if not dt: return "—"
+            try:
+                return dt.strftime("%d %B %Y, %H:%M")
+            except:
+                return str(dt)
+
+        user_name = transliterate_lt(f"{user.name} {user.surname}" if user else f"User #{rental.user_id}")
+        user_email = user.email if user else "—"
+        car_name = transliterate_lt(f"{car.brand} {car.model} ({car.year})" if car else f"Car #{rental.car_id}")
+        car_plate  = car.license_plate if car else "—"
+        car_type   = f"{car.transmission} · {car.fuel_type}" if car else "—"
+
+        story = []
+
+        # ── Header ──────────────────────────────────────────
+        story.append(Spacer(1, 0.3*cm))
+        story.append(Paragraph("MobilEase", title_style))
+        story.append(Spacer(1, 0.3 * cm))
+        story.append(Spacer(1, 0.3 * cm))
+        story.append(Paragraph("Car Rental Agreement", subtitle_style))
+        story.append(Paragraph(f"Agreement #{rental_id:05d}", subtitle_style))
+        story.append(Spacer(1, 0.3*cm))
+        story.append(HRFlowable(width="100%", thickness=2, color=PURPLE, spaceAfter=14))
+
+        # ── Renter ──────────────────────────────────────────
+        story.append(Paragraph("Renter Information", section_style))
+        story.append(info_table([
+            ("Full Name",  user_name),
+            ("Email",      user_email),
+            ("User ID",    f"#{rental.user_id}"),
+        ]))
+
+        # ── Vehicle ─────────────────────────────────────────
+        story.append(Paragraph("Vehicle Information", section_style))
+        story.append(info_table([
+            ("Vehicle",              car_name),
+            ("License Plate",        car_plate),
+            ("Transmission / Fuel",  car_type),
+        ]))
+
+        # ── Rental Details ───────────────────────────────────
+        story.append(info_table([
+            ("Pickup Location", transliterate_lt(rental.pickup_location or "—")),
+            ("Drop-off Location", transliterate_lt(rental.dropoff_location or "—")),
+            ("Start Date & Time", fmt_dt(rental.start_datetime)),
+            ("End Date & Time", fmt_dt(rental.end_datetime)),
+            ("Distance", f"{rental.kilometers_used:.2f} km"),
+            ("Status", rental.status.upper() if rental.status else "RESERVED"),
+        ]))
+
+        # ── Pricing ──────────────────────────────────────────
+        story.append(Paragraph("Pricing", section_style))
+        price_data = [
+            [Paragraph("<b>Description</b>", body_style), Paragraph("<b>Amount</b>", body_style)],
+            [Paragraph("Rental Fee",         body_style), Paragraph(f"EUR {rental.total_price:.2f}", body_style)],
+            [Paragraph("<b>Total Paid</b>",  body_style), Paragraph(f"<b>EUR {rental.total_price:.2f}</b>", body_style)],
+        ]
+        price_table = Table(price_data, colWidths=[13*cm, 3.5*cm])
+        price_table.setStyle(TableStyle([
+            ("BACKGROUND",  (0, 0), (-1, 0), PURPLE),
+            ("TEXTCOLOR",   (0, 0), (-1, 0), colors.white),
+            ("FONTNAME",    (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("BACKGROUND",  (0, 1), (-1, 1), LIGHT),
+            ("BACKGROUND",  (0, 2), (-1, 2), colors.HexColor("#eeeeff")),
+            ("FONTNAME",    (0, 2), (-1, 2), "Helvetica-Bold"),
+            ("GRID",        (0, 0), (-1, -1), 0.5, colors.HexColor("#e0e0f0")),
+            ("ALIGN",       (1, 0), (1, -1), "RIGHT"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 10),
+            ("RIGHTPADDING",(0, 0), (-1, -1), 10),
+            ("TOPPADDING",  (0, 0), (-1, -1), 8),
+            ("BOTTOMPADDING",(0, 0), (-1, -1), 8),
+        ]))
+        story.append(price_table)
+
+        # ── Terms ────────────────────────────────────────────
+        story.append(Spacer(1, 0.8*cm))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#e0e0f0"), spaceAfter=10))
+        story.append(Paragraph("Terms & Conditions", section_style))
+        for term in [
+            "By renting this vehicle, the renter agrees to all terms and conditions of MobilEase.",
+            "The vehicle must be returned in the same condition as received.",
+            "The renter is responsible for any traffic violations during the rental period.",
+            "Fuel policy: the vehicle must be returned with the same fuel level as at pickup.",
+            "This agreement is automatically generated and is valid without a physical signature.",
+        ]:
+            story.append(Paragraph(f"• {term}", body_style))
+
+        # ── Footer ───────────────────────────────────────────
+        story.append(Spacer(1, 1*cm))
+        story.append(HRFlowable(width="100%", thickness=0.5, color=colors.HexColor("#e0e0f0"), spaceAfter=8))
+        story.append(Paragraph(
+            f"Generated on {datetime.now().strftime('%d %B %Y at %H:%M')} · MobilEase Transport Platform · Agreement #{rental_id:05d}",
+            small_style
+        ))
+
+        doc.build(story)
+
+        return FileResponse(
+            file_path,
+            filename=f"MobilEase_RentalAgreement_{rental_id:05d}.pdf",
+            media_type="application/pdf"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f">>> Agreement generation error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to generate agreement: {str(e)}")
+
+from google.cloud import documentai_v1 as documentai
+from google.api_core.client_options import ClientOptions
+
+# ── Document AI helpers ──────────────────────────────────────
+
+def get_docai_client():
+    project   = os.environ["GOOGLE_PROJECT_ID"]
+    location  = os.environ.get("GOOGLE_LOCATION", "us")
+    processor = os.environ["GOOGLE_PROCESSOR_ID"]
+    opts      = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    client    = documentai.DocumentProcessorServiceClient(client_options=opts)
+    name      = client.processor_path(project, location, processor)
+    print(f">>> DOCAI name: {name}")  # ← add this
+    return client, name
+
+
+def _parse_date(value: str) -> Optional[date]:
+    for fmt in ("%m/%d/%Y", "%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+        try:
+            return datetime.strptime(value.strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
+
+
+def _extract_fields(doc):
+    out = {}
+
+    # Your processor uses TOP-LEVEL entities
+    for ent in doc.entities:
+        key = ent.type_.strip().lower().replace(" ", "_")
+
+        # direct text
+        if ent.mention_text:
+            out[key] = ent.mention_text
+
+        # normalized values (dates)
+        if ent.normalized_value and ent.normalized_value.text:
+            out[key] = ent.normalized_value.text
+
+        # nested properties (if any)
+        for prop in ent.properties:
+            subkey = prop.type_.strip().lower().replace(" ", "_")
+            if prop.mention_text:
+                out[subkey] = prop.mention_text
+            if prop.normalized_value and prop.normalized_value.text:
+                out[subkey] = prop.normalized_value.text
+
+    return out
+
+def _compute_risk(extracted: dict, user: models.User, flags: list) -> tuple[float, str]:
+    score = 0.0
+    reasons = []
+
+    expiry_str = extracted.get("expiry_date")
+    if expiry_str:
+        expiry = _parse_date(expiry_str)
+        if expiry and expiry < date.today():
+            score += 0.45
+            reasons.append("expired license")
+    else:
+        score += 0.25
+        reasons.append("expiry date not readable")
+
+    ext_first = extracted.get("name", "").lower().strip()
+    ext_last = extracted.get("surname", "").lower().strip()
+    if user.name and ext_first and user.name.lower() != ext_first:
+        score += 0.20
+        reasons.append("first name mismatch")
+    if user.surname and ext_last and user.surname.lower() != ext_last:
+        score += 0.20
+        reasons.append("last name mismatch")
+
+    critical = ["license_id", "expiry_date", "name", "surname"]
+    score += len([f for f in critical if not extracted.get(f)]) * 0.05
+    score += len(flags) * 0.03
+
+    score = min(round(score, 3), 1.0)
+    reason = "Risk factors: " + ", ".join(reasons) if reasons else "No significant risk factors"
+    return score, reason
+
+
+def _decide(risk_score: float) -> str:
+    if risk_score < 0.30:
+        return "approved"
+    elif risk_score < 0.60:
+        return "manual_review"
+    return "rejected"
+
+
+# ── License routes ───────────────────────────────────────────
+
+@app.post("/license/verify", response_model=schemas.LicenseSubmissionResponse, tags=["License"])
+async def verify_license(
+    license_image: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    contents = await license_image.read()
+    if len(contents) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=400, detail="Image must be under 10 MB")
+
+    mime = license_image.content_type or "image/jpeg"
+    if mime not in ("image/jpeg", "image/png", "image/webp", "image/tiff"):
+        raise HTTPException(status_code=400, detail="Unsupported image type")
+
+    try:
+        client, processor_name = get_docai_client()
+        raw_doc = documentai.RawDocument(content=contents, mime_type=mime)
+        request  = documentai.ProcessRequest(name=processor_name, raw_document=raw_doc)
+        result   = client.process_document(request=request)
+        doc      = result.document
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Document AI error: {str(exc)}")
+
+    extracted = _extract_fields(doc)
+
+    flags = []
+    expiry_str = extracted.get("expiry_date")
+    if expiry_str:
+        expiry = _parse_date(expiry_str)
+        if expiry and expiry < date.today():
+            flags.append("License expired")
+    if not extracted.get("license_id") and not extracted.get("id"):
+        flags.append("License number not detected")
+    if not extracted.get("name") and not extracted.get("surname"):
+        flags.append("Name not detected — image may be unclear")
+
+    profile_matches = {
+        "name":    extracted.get("name", "").lower() == (current_user.name or "").lower(),
+        "surname": extracted.get("surname", "").lower() == (current_user.surname or "").lower(),
+    }
+
+    risk_score, risk_reason = _compute_risk(extracted, current_user, flags)
+    auto_status = _decide(risk_score)
+
+    image_b64 = base64.b64encode(contents).decode()
+    image_data_url = f"data:{mime};base64,{image_b64}"
+
+    sub = db.query(models.LicenseSubmission).filter(
+        models.LicenseSubmission.user_id == current_user.id
+    ).first()
+    if not sub:
+        sub = models.LicenseSubmission(user_id=current_user.id)
+        db.add(sub)
+
+    sub.driver_name      = f"{current_user.name} {current_user.surname}"
+    sub.status           = auto_status
+    sub.extracted_data   = encrypt_data(extracted)
+    sub.profile_matches  = encrypt_data(profile_matches)
+    sub.risk_score       = risk_score
+    sub.risk_reason      = risk_reason
+    sub.validation_flags = flags
+    sub.image_url        = image_data_url
+    sub.submitted_at     = datetime.now(timezone.utc)
+
+    db.commit()
+    db.refresh(sub)
+
+    return {
+        "id":              sub.id,
+        "status":          sub.status,
+        "risk_score":      sub.risk_score,
+        "risk_reason":     sub.risk_reason,
+        "admin_note":      sub.admin_note,
+        "submitted_at":    sub.submitted_at,
+        "extracted_data":  decrypt_data(sub.extracted_data),
+        "profile_matches": decrypt_data(sub.profile_matches),
+        "validation_flags": sub.validation_flags,
+    }
+
+@app.get("/license/status", response_model=schemas.LicenseSubmissionResponse, tags=["License"])
+def get_license_status(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    sub = db.query(models.LicenseSubmission).filter(
+        models.LicenseSubmission.user_id == current_user.id
+    ).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="No submission found")
+    return {
+        "id":              sub.id,
+        "status":          sub.status,
+        "risk_score":      sub.risk_score,
+        "risk_reason":     sub.risk_reason,
+        "admin_note":      sub.admin_note,
+        "submitted_at":    sub.submitted_at,
+        "extracted_data":  decrypt_data(sub.extracted_data) if sub.extracted_data else None,
+        "profile_matches": decrypt_data(sub.profile_matches) if sub.profile_matches else None,
+        "validation_flags": sub.validation_flags if sub.validation_flags else [],
+    }
+
+@app.get("/license/all", response_model=List[schemas.LicenseAdminResponse], tags=["License"])
+def get_all_licenses(
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admins only")
+    subs = db.query(models.LicenseSubmission).order_by(
+        models.LicenseSubmission.submitted_at.desc()
+    ).all()
+    return [
+        {
+            "id":              s.id,
+            "status":          s.status,
+            "driver_name":     s.driver_name,
+            "image_url":       s.image_url,
+            "risk_score":      s.risk_score,
+            "risk_reason":     s.risk_reason,
+            "admin_note":      s.admin_note,
+            "submitted_at":    s.submitted_at,
+            "reviewed_at":     s.reviewed_at,
+            "extracted_data":  decrypt_data(s.extracted_data) if s.extracted_data else None,
+            "profile_matches": decrypt_data(s.profile_matches) if s.profile_matches else None,
+            "validation_flags": s.validation_flags if s.validation_flags else [],
+        }
+        for s in subs
+    ]
+
+@app.post("/license/{submission_id}/review", response_model=schemas.LicenseSubmissionResponse, tags=["License"])
+def review_license(
+    submission_id: int,
+    body: schemas.LicenseReviewRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user),
+):
+    if current_user.role != "admin":
+        raise HTTPException(status_code=403, detail="Admins only")
+    if body.decision not in {"approved", "rejected", "manual_review"}:
+        raise HTTPException(status_code=400, detail="Invalid decision value")
+
+    sub = db.query(models.LicenseSubmission).filter(
+        models.LicenseSubmission.id == submission_id
+    ).first()
+    if not sub:
+        raise HTTPException(status_code=404, detail="Submission not found")
+
+    sub.status      = body.decision
+    sub.admin_note  = body.admin_note
+    sub.reviewed_at = datetime.now(timezone.utc)
+    sub.reviewed_by = current_user.id
+
+    db.commit()
+    db.refresh(sub)
+    return sub
+
+
+@app.get("/admin/analytics/revenue")
+def revenue_stats(db: Session = Depends(get_db)):
+    # Bus ticket revenue only
+    daily = db.execute(text("""
+        SELECT DATE(b.created_at) AS day, SUM(p.price) AS total
+        FROM bookings b
+        JOIN events e ON b.event_id = e.id
+        JOIN posts p ON e.post_id = p.id
+        WHERE p.price IS NOT NULL
+        GROUP BY day ORDER BY day
+    """)).fetchall()
+
+    weekly = db.execute(text("""
+        SELECT DATE_TRUNC('week', b.created_at) AS week, SUM(p.price) AS total
+        FROM bookings b
+        JOIN events e ON b.event_id = e.id
+        JOIN posts p ON e.post_id = p.id
+        WHERE p.price IS NOT NULL
+        GROUP BY week ORDER BY week
+    """)).fetchall()
+
+    monthly = db.execute(text("""
+        SELECT DATE_TRUNC('month', b.created_at) AS month, SUM(p.price) AS total
+        FROM bookings b
+        JOIN events e ON b.event_id = e.id
+        JOIN posts p ON e.post_id = p.id
+        WHERE p.price IS NOT NULL
+        GROUP BY month ORDER BY month
+    """)).fetchall()
+
+    return {
+        "daily":   [{"date": str(d[0]), "total": round(float(d[1] or 0), 2)} for d in daily],
+        "weekly":  [{"week": str(w[0]), "total": round(float(w[1] or 0), 2)} for w in weekly],
+        "monthly": [{"month": str(m[0]), "total": round(float(m[1] or 0), 2)} for m in monthly],
+    }
+
+
+@app.get("/admin/analytics/rental-revenue")
+def rental_revenue_stats(db: Session = Depends(get_db)):
+    # Car rental revenue only
+    daily = db.execute(text("""
+        SELECT DATE(created_at) AS day, SUM(total_price) AS total
+        FROM car_rentals
+        GROUP BY day ORDER BY day
+    """)).fetchall()
+
+    weekly = db.execute(text("""
+        SELECT DATE_TRUNC('week', created_at) AS week, SUM(total_price) AS total
+        FROM car_rentals
+        GROUP BY week ORDER BY week
+    """)).fetchall()
+
+    monthly = db.execute(text("""
+        SELECT DATE_TRUNC('month', created_at) AS month, SUM(total_price) AS total
+        FROM car_rentals
+        GROUP BY month ORDER BY month
+    """)).fetchall()
+
+    return {
+        "daily":   [{"date": str(d[0]), "total": round(float(d[1] or 0), 2)} for d in daily],
+        "weekly":  [{"week": str(w[0]), "total": round(float(w[1] or 0), 2)} for w in weekly],
+        "monthly": [{"month": str(m[0]), "total": round(float(m[1] or 0), 2)} for m in monthly],
+    }
+
+@app.post("/bookings/{booking_id}/send-ticket-email")
+def send_ticket_email_endpoint(
+    booking_id: int,
+    pdf_base64: str = Body(..., embed=True),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    pdf_bytes = base64.b64decode(pdf_base64)
+    return crud.send_ticket_email(
+        db=db,
+        booking_id=booking_id,
+        user_id=current_user.id,
+        pdf_bytes=pdf_bytes
     )
 
+def get_locked_seats(event_id: int, current_user_id: int):
+    keys = redis_client.keys(f"seat_lock:{event_id}:*")
+    locked = []
 
+    for key in keys:
+        seat = int(key.split(":")[-1])
+        owner = redis_client.get(key)
+
+        if owner and owner != str(current_user_id):
+            locked.append(seat)
+
+    return locked
+
+from fastapi import Body
+
+@app.post("/events/{event_id}/lock-seat")
+async def lock_seat_endpoint(
+    event_id: int,
+    body: BookingSeatRequest,  # <- keep the Pydantic object
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    seat_number = body.seat_number  # ← extract the integer
+    print("DEBUG seat_number =", seat_number)
+
+    key = f"seat_lock:{event_id}:{seat_number}"  # now this is correct
+    user_id = str(current_user.id)
+
+    existing = redis_client.get(key)
+
+    if existing and existing != user_id:
+        raise HTTPException(409, "Seat already locked")
+
+    redis_client.set(key, user_id, ex=300)
+
+    locked_seats = get_locked_seats(event_id, current_user.id)
+    taken_seats = [b.seat_number for b in crud.get_bookings_by_event(db, event_id)]
+
+    await manager.broadcast_to_event(event_id, {
+        "type": "seat_update",
+        "taken_seats": taken_seats,
+        "locked_seats": locked_seats
+    })
+
+    return {"message": "Seat locked"}
+@app.post("/events/{event_id}/unlock-seat")
+async def unlock_seat_endpoint(
+    event_id: int,
+    body: BookingSeatRequest,           # ← Pydantic object from request
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    seat_number = body.seat_number      # ← extract the actual integer
+    key = f"seat_lock:{event_id}:{seat_number}"
+    user_id = str(current_user.id)
+
+    # Only unlock if the current user owns the lock
+    if redis_client.get(key) == user_id:
+        redis_client.delete(key)
+
+    # Get updated seat state
+    locked_seats = get_locked_seats(event_id, current_user.id)
+    taken_seats = [b.seat_number for b in crud.get_bookings_by_event(db, event_id)]
+
+    # Broadcast updates to WebSocket subscribers
+    await manager.broadcast_to_event(event_id, {
+        "type": "seat_update",
+        "taken_seats": taken_seats,
+        "locked_seats": locked_seats
+    })
+
+    return {"message": "Seat unlocked"}
