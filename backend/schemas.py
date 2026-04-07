@@ -1,6 +1,6 @@
 from typing import Optional, Union
 from pydantic import BaseModel, EmailStr, field_validator, Field
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from datetime import datetime
 from datetime import date, time
 
@@ -134,6 +134,29 @@ class AdminReviewRequest(BaseModel):
     status: str
     admin_comment: Optional[str] = None
 
+class LicenseSubmissionResponse(BaseModel):
+    id: int
+    status: str
+    risk_score: Optional[float] = None
+    risk_reason: Optional[str] = None
+    validation_flags: Optional[List[str]] = None
+    extracted_data: Optional[Dict[str, Any]] = None
+    profile_matches: Optional[Dict[str, bool]] = None
+    admin_note: Optional[str] = None
+    submitted_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class LicenseAdminResponse(LicenseSubmissionResponse):
+    driver_name: Optional[str] = None
+    image_url: Optional[str] = None
+    reviewed_at: Optional[datetime] = None
+
+class LicenseReviewRequest(BaseModel):
+    decision: str   # "approved" | "rejected" | "manual_review"
+    admin_note: Optional[str] = None
+
 
 class Question(BaseModel):
     id: str
@@ -229,6 +252,7 @@ class Event(BaseModel):
     trainer_id: Optional[int] = None  # Trainer assigned for personal training
     participants: List[UserResponse] = []  # List of participants (for public group events)
     post: Post
+    bookings_count: int = 0
 
     class Config:
         from_attributes = True
@@ -504,6 +528,9 @@ class CarResponse(BaseModel):
     price_per_km: float
 
     available: bool
+    current_location: Optional[str] = None
+    current_lat: Optional[float] = None
+    current_lng: Optional[float] = None
 
     images: List[CarImage] = []
 
@@ -542,3 +569,9 @@ class CarRentalResponse(BaseModel):
 class CheckoutRequest(BaseModel):
     amount: float
     type: str
+
+class BookingSeatRequest(BaseModel):
+    seat_number: int
+
+    class Config:
+        orm_mode = True

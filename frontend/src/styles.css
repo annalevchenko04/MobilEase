@@ -666,3 +666,16 @@ section.full-width {
   to { opacity: 1; transform: scale(1); }
 }
 
+.seat-icon.locked-others {
+  background-color: #ffb74d;   /* orange for locked by others */
+  color: white;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+.seat-icon .seat-lock {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  font-size: 12px;
+}

@@ -7,24 +7,64 @@ from . import models
 from . import schemas
 from pydantic import json
 from passlib.context import CryptContext
-from .send_email import send_welcome_email
-from .send_company_email import send_company_registration_email
+from backend.redis_client import redis_client
 from sqlalchemy.exc import IntegrityError
 import json
 import logging
 from typing import Optional, List
 from qrcode import QRCode
-import datetime
+from datetime import datetime, timedelta, timezone, date
 import base64
 from io import BytesIO
-
-
+from sendgrid.helpers.mail import (
+    Mail, Attachment, FileContent,
+    FileName, FileType, Disposition
+)
+from .models import Booking, Event
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+import os
+from pathlib import Path
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
+from dotenv import load_dotenv
+
+load_dotenv()
+
+SENDGRID_API_KEY = os.getenv("SENDGRID_API_KEY")
+SENDER_EMAIL = "annlev@ktu.lt"  # Your verified SendGrid sender email
+
+# Dynamically get the absolute path to the email template
+BASE_DIR = Path(__file__).resolve().parent
+EMAIL_TEMPLATE_PATH = BASE_DIR / "email_template.html"
+BOOKING_TEMPLATE_PATH = BASE_DIR / "booking_confirmation.html"
+
+def send_welcome_email(to_email: str, name: str):
+    try:
+        with open(EMAIL_TEMPLATE_PATH, "r", encoding="utf-8") as f:
+            html_content = f.read().replace("{name}", name)
+
+        message = Mail(
+            from_email=SENDER_EMAIL,
+            to_emails=to_email,
+            subject="Welcome to the MobilEase!",
+            html_content=html_content
+        )
+
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+        print(f"✅ Email sent to {to_email}. Status code: {response.status_code}")
+
+    except Exception as e:
+        print("❌ Email sending failed:", e)
+        raise e
+
 
 def create_user(db: Session, user: schemas.UserCreate):
-    hashed_password = pwd_context.hash(user.password)
+    # ── Handle password hashing safely ──────────────────────
+    is_google_user = user.password is None or user.password == "google_oauth"
+    hashed_password = pwd_context.hash(user.password) if not is_google_user else "google_oauth"
 
     user_data = {
         "username": user.username,
@@ -39,11 +79,12 @@ def create_user(db: Session, user: schemas.UserCreate):
     }
 
     if user.role == "member":
-        is_google_user = user.password is None
         email_domain = user.email.split('@')[-1].lower()
 
         if not is_google_user:
-            company = db.query(models.Company).filter(models.Company.domain == email_domain).first()
+            company = db.query(models.Company).filter(
+                models.Company.domain == email_domain
+            ).first()
             if not company:
                 raise HTTPException(
                     status_code=400,
@@ -51,35 +92,34 @@ def create_user(db: Session, user: schemas.UserCreate):
                 )
             user_data["company_id"] = company.id
 
-        member_data = {
-            "membership_status": user.membership_status or "active",
-        }
-
-        db_user = models.Member(**user_data, **member_data)
+        db_user = models.Member(**user_data, membership_status=user.membership_status or "active")
 
     elif user.role == "admin":
         db_user = models.Admin(**user_data)
+
     elif user.role == "driver":
-        # Optional: auto-detect driver by email domain
         if not user.email.endswith("@mobilease.com"):
             raise HTTPException(
                 status_code=400,
                 detail="Driver accounts must use @mobilease.com email."
             )
-
-        driver_data = {
-            "license_number": user.license_number,
-            "salary_rate": user.salary_rate
-        }
-
-        db_user = models.Driver(**user_data, **driver_data)
+        db_user = models.Driver(
+            **user_data,
+            license_number=user.license_number,
+            salary_rate=user.salary_rate
+        )
     else:
         raise ValueError("Invalid role specified")
 
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
-    # send_welcome_email(db_user.email, db_user.name)
+
+    # ── Send welcome email — non-blocking ───────────────────
+    try:
+        send_welcome_email(db_user.email, db_user.name)
+    except Exception as e:
+        print(f"⚠️ Welcome email failed (non-critical): {e}")
 
     return schemas.UserResponse.model_validate({
         "id": db_user.id,
@@ -100,7 +140,6 @@ def create_user(db: Session, user: schemas.UserCreate):
             "industry": db_user.company.industry
         } if db_user.company else None
     })
-
 
 def create_company(db: Session, company_data: schemas.CompanyCreate, user_data: schemas.UserCreate):
     # 🔹 Check if company already exists
@@ -664,6 +703,7 @@ def create_event(db: Session, event: schemas.EventCreate, user_id: int):
     return db_event
 
 
+
 def get_event(db: Session, event_id: int, user_id: int):
     # Fetch the user based on their ID
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -685,24 +725,33 @@ def get_event(db: Session, event_id: int, user_id: int):
         ).first()
 
 
-def get_events(db: Session, user_id: int) -> list[models.Event]:
-    # Fetch the user based on their ID
+def get_events(db: Session, user_id: int, start: date = None, end: date = None) -> list[models.Event]:
     user = db.query(models.User).filter(models.User.id == user_id).first()
 
-    # Admins can view all events
     if user.role == "admin":
-        return db.query(models.Event).all()
+        query = db.query(models.Event)
 
-    # Trainers can see events they created (public or private)
     elif user.role == "trainer":
-        return db.query(models.Event).filter(models.Event.creator_id == user_id).all()
+        query = db.query(models.Event).filter(models.Event.creator_id == user_id)
 
-    # Members can see their own private events and all public events
-    else:  # For gym members
-        return db.query(models.Event).filter(
-            (models.Event.creator_id == user_id) |  # Their own events
-            (models.Event.event_type == "public")  # All public events
-        ).all()
+    else:
+        query = db.query(models.Event).filter(
+            (models.Event.creator_id == user_id) |
+            (models.Event.event_type == "public")
+        )
+
+    # Apply date range filter for all roles
+    if start:
+        query = query.filter(models.Event.date >= start)
+    if end:
+        query = query.filter(models.Event.date <= end)
+
+    events = query.options(selectinload(models.Event.bookings)).all()
+
+    for event in events:
+        event.bookings_count = len(event.bookings)
+
+    return events
 
 
 def update_event(db: Session, event_id: int, event_update: schemas.EventCreate, user_id: int):
@@ -759,36 +808,252 @@ def get_posts_by_event(db: Session, event_id: int):
 def get_event_with_posts(db: Session, event_id: int):
     return db.query(models.Event).filter(models.Event.id == event_id).first()
 
-def book_event(db: Session, event_id: int, user_id: int, seat_number: int):
-    # Check event exists
-    event = db.query(models.Event).filter(models.Event.id == event_id).first()
-    if not event:
-        raise HTTPException(status_code=404, detail="Event not found")
 
-    # Check seat availability
+def send_booking_confirmation_email(
+        to_email: str,
+        name: str,
+        description: str,
+        departure_time: str,
+        seat_number: int,
+        booking_id: int,
+        pdf_bytes: bytes = None
+):
+    try:
+        # ✅ Inline HTML template (NO FILE NEEDED)
+        html_content = f"""
+        <html>
+        <body style="font-family: Arial; background:#f4f6ff; padding:20px;">
+            <div style="max-width:600px; margin:auto; background:white; padding:20px; border-radius:10px;">
+
+                <h2 style="color:#3742fa; text-align:center;">MobilEase Ticket</h2>
+                <p style="text-align:center; color:#666;">Bus Ticket Confirmation</p>
+
+                <hr/>
+
+                <p><strong>Passenger:</strong> {name}</p>
+                <p><strong>Route:</strong> {description}</p>
+                <p><strong>Departure:</strong> {departure_time}</p>
+                <p><strong>Seat Number:</strong> {seat_number}</p>
+                <p><strong>Booking ID:</strong> {booking_id}</p>
+
+                <br/>
+
+                <p style="text-align:center; font-size:12px; color:#aaa;">
+                    This is an automated ticket — MobilEase Transport System
+                </p>
+            </div>
+        </body>
+        </html>
+        """
+
+        message = Mail(
+            from_email=SENDER_EMAIL,
+            to_emails=to_email,
+            subject="Your MobilEase Ticket is Confirmed!",
+            html_content=html_content
+        )
+
+        # ✅ Attach PDF
+        if pdf_bytes is not None:
+            encoded_pdf = base64.b64encode(pdf_bytes).decode()
+
+            attachment = Attachment(
+                FileContent(encoded_pdf),
+                FileName(f"ticket_{booking_id}.pdf"),
+                FileType("application/pdf"),
+                Disposition("attachment")
+            )
+
+            message.attachment = attachment
+
+        sg = SendGridAPIClient(SENDGRID_API_KEY)
+        response = sg.send(message)
+
+        print(f"✅ Email sent: {response.status_code}")
+
+    except Exception as e:
+        print("❌ Email failed:", e)
+        raise e
+
+
+from reportlab.lib.pagesizes import A4
+from reportlab.lib import colors
+from reportlab.lib.units import mm
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_CENTER
+import qrcode
+import io
+
+def generate_ticket_pdf_bytes(booking, event, user) -> bytes:
+    buffer = io.BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20*mm,
+        leftMargin=20*mm,
+        topMargin=20*mm,
+        bottomMargin=20*mm
+    )
+
+    styles = getSampleStyleSheet()
+
+    title_style = ParagraphStyle(
+        "title",
+        fontSize=22,
+        fontName="Helvetica-Bold",
+        textColor=colors.HexColor("#3742fa"),
+        alignment=TA_CENTER,
+        spaceAfter=6
+    )
+    sub_style = ParagraphStyle(
+        "sub",
+        fontSize=11,
+        fontName="Helvetica",
+        textColor=colors.HexColor("#605fc9"),
+        alignment=TA_CENTER,
+        spaceAfter=20
+    )
+    label_style = ParagraphStyle(
+        "label",
+        fontSize=10,
+        fontName="Helvetica",
+        textColor=colors.HexColor("#888888"),
+    )
+    value_style = ParagraphStyle(
+        "value",
+        fontSize=13,
+        fontName="Helvetica-Bold",
+        textColor=colors.HexColor("#2d3436"),
+    )
+
+    elements = []
+
+    elements.append(Paragraph("MobilEase", title_style))
+    elements.append(Paragraph("Bus Ticket Confirmation", sub_style))
+    elements.append(Spacer(1, 10))
+
+    ticket_data = [
+        [Paragraph("Passenger", label_style), Paragraph(f"{user.name} {user.surname}", value_style)],
+        [Paragraph("Email", label_style), Paragraph(user.email, value_style)],
+        [Paragraph("Event", label_style), Paragraph(event.name, value_style)],
+        [Paragraph("Date & Time", label_style), Paragraph(f"{event.date} {event.time}", value_style)],
+        [Paragraph("Seat Number", label_style), Paragraph(str(booking.seat_number), value_style)],
+        [Paragraph("Booking ID", label_style), Paragraph(str(booking.id), value_style)],
+    ]
+
+    table = Table(ticket_data, colWidths=[50*mm, 110*mm])
+    table.setStyle(TableStyle([
+        ("ROWBACKGROUNDS", (0, 0), (-1, -1), [colors.HexColor("#f8f9ff"), colors.white]),
+        ("BOX",           (0, 0), (-1, -1), 0.5, colors.HexColor("#dde0f5")),
+        ("INNERGRID",     (0, 0), (-1, -1), 0.25, colors.HexColor("#dde0f5")),
+        ("TOPPADDING",    (0, 0), (-1, -1), 8),
+        ("BOTTOMPADDING", (0, 0), (-1, -1), 8),
+        ("LEFTPADDING",   (0, 0), (-1, -1), 10),
+        ("RIGHTPADDING",  (0, 0), (-1, -1), 10),
+    ]))
+    elements.append(table)
+    elements.append(Spacer(1, 20))
+
+    qr_img = qrcode.make(booking.qr_code)
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+    qr = Image(qr_buffer, width=45*mm, height=45*mm)
+    qr.hAlign = "CENTER"
+    elements.append(qr)
+
+    elements.append(Spacer(1, 6))
+    elements.append(Paragraph(
+        "Scan QR code at boarding",
+        ParagraphStyle("qrlabel", fontSize=9, fontName="Helvetica",
+                       textColor=colors.HexColor("#adb5bd"), alignment=TA_CENTER)
+    ))
+    elements.append(Spacer(1, 20))
+    elements.append(Paragraph(
+        "This is an automated ticket — MobilEase Transport System",
+        ParagraphStyle("footer", fontSize=8, fontName="Helvetica",
+                       textColor=colors.HexColor("#adb5bd"), alignment=TA_CENTER)
+    ))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer.read()
+
+from sqlalchemy.exc import IntegrityError
+def book_event(db: Session, event_id: int, user_id: int, seat_number: int):
+    """
+    Book a seat after checking Redis lock, generate QR/PDF ticket,
+    and send email confirmation.
+    """
+    # ── Check Redis lock ──────────────────────────────
+    key = f"seat_lock:{event_id}:{seat_number}"
+    lock_owner = redis_client.get(key)
+
+    if lock_owner is None:
+        raise HTTPException(409, "Seat lock expired")
+    if lock_owner != str(user_id):
+        raise HTTPException(409, "Seat locked by another user")
+
+    # ── Check if seat already booked ─────────────────
     taken = db.query(models.Booking).filter(
         models.Booking.event_id == event_id,
         models.Booking.seat_number == seat_number
     ).first()
-
     if taken:
-        raise HTTPException(status_code=400, detail="Seat already taken")
+        raise HTTPException(409, "Seat already booked")
 
-    # Create booking
+    # ── Create booking record ────────────────────────
     booking = models.Booking(
         user_id=user_id,
         event_id=event_id,
         seat_number=seat_number
     )
 
-    # ⭐ Generate QR code for this booking
+    # Generate QR code for booking
     qr_data = generate_booking_qr(event_id, user_id, seat_number)
     booking.qr_code = qr_data
 
     db.add(booking)
-    db.commit()
-    db.refresh(booking)
-    return booking
+
+    try:
+        db.commit()
+        db.refresh(booking)
+
+        # Remove Redis lock after booking success
+        redis_client.delete(key)
+
+        # ── Fetch event & user info for email ──────────
+        event = db.query(models.Event).filter(models.Event.id == event_id).first()
+        user = db.query(models.User).filter(models.User.id == user_id).first()
+
+        # Generate PDF ticket
+        pdf_bytes = generate_ticket_pdf_bytes(booking, event, user)
+
+        # Send email with PDF attachment
+        send_booking_confirmation_email(
+            to_email=user.email,
+            name=f"{user.name} {user.surname}",
+            description=event.description or "Event details",
+            departure_time=f"{event.date} {event.time}",
+            seat_number=seat_number,
+            booking_id=booking.id,
+            pdf_bytes=pdf_bytes
+        )
+
+        print(f"✅ Booking created and email sent to {user.email}")
+        return booking
+
+    except IntegrityError:
+        db.rollback()
+        redis_client.delete(key)
+        raise HTTPException(409, "Seat already booked")
+    except Exception as e:
+        db.rollback()
+        redis_client.delete(key)
+        print(f"❌ Failed to send booking email: {e}")
+        raise HTTPException(500, "Booking created but email failed")
+
 
 def generate_qr_code_data(user_id: int, db: Session) -> str:
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -1566,7 +1831,11 @@ def create_car(db: Session, car: schemas.CarCreate):
         price_per_hour=car.price_per_hour,
         price_per_day=car.price_per_day,
         price_per_km=car.price_per_km,
-        available=car.available
+        available=car.available,
+        # ✅ Default location: Kaunas Bus Station
+        current_location="Kaunas Bus Station, Vytauto pr. 24, Kaunas, Lithuania",
+        current_lat=54.889444,
+        current_lng=23.928167,
     )
 
     db.add(db_car)
@@ -1708,6 +1977,10 @@ def update_car_rental(db: Session, rental_id: int, rental_update: schemas.CarRen
     # Free car if completed
     if db_rental.status == "completed":
         db_rental.car.available = True
+        # ✅ Add these 3 lines:
+        db_rental.car.current_location = db_rental.dropoff_location
+        db_rental.car.current_lat = db_rental.dropoff_lat
+        db_rental.car.current_lng = db_rental.dropoff_lng
 
     db.commit()
     db.refresh(db_rental)
@@ -1781,7 +2054,6 @@ from datetime import datetime, timedelta
 def auto_free_car(db: Session, car: models.Car):
     now = datetime.utcnow()
 
-    # Find active or reserved rentals for this car
     rental = (
         db.query(models.CarRental)
         .filter(
@@ -1793,10 +2065,16 @@ def auto_free_car(db: Session, car: models.Car):
     )
 
     if rental:
-        # If rental ended + 1 minute → free the car
         if rental.end_datetime + timedelta(minutes=1) < now:
             car.available = True
             rental.status = "completed"
+
+            # ✅ Update car location to dropoff when auto-completed
+            if rental.dropoff_lat and rental.dropoff_lng:
+                car.current_location = rental.dropoff_location
+                car.current_lat = rental.dropoff_lat
+                car.current_lng = rental.dropoff_lng
+
             db.commit()
             db.refresh(car)
             db.refresh(rental)

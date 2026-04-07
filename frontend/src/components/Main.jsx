@@ -3,6 +3,17 @@ import { motion } from "framer-motion";
 import { FaLeaf, FaBalanceScale, FaChartLine } from "react-icons/fa";
 import ImageCarousel from "./ImageCarousel";
 
+// Add this above your component or inside it
+const titleText = "MobilEase — One Platform. Every Journey.";
+
+const letterVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.04, duration: 0.3 }
+  })
+};
 export default function SustainabilityPage() {
   return (
       <div className="min-h-screen bg-gray-900 text-white">
@@ -27,10 +38,29 @@ export default function SustainabilityPage() {
                   <div style={{textAlign: "center"}}>
                       <ImageCarousel/>
                       <br/>
-                      <h1 className="title is-1">MobilEase — One Platform. Every Journey. </h1>
-                        <h2 className="title is-3 has-text-centered" style={{ color: "#605fc9", marginBottom: "40px" }}>
-                            How are you traveling today?
-                          </h2>
+                      <h1 className="title is-1">
+                      {titleText.split("").map((char, i) => (
+                        <motion.span
+                          key={i}
+                          custom={i}
+                          variants={letterVariants}
+                          initial="hidden"
+                          animate="visible"
+                          style={{ display: "inline-block", whiteSpace: "pre" }}
+                        >
+                          {char}
+                        </motion.span>
+                      ))}
+                    </h1>
+                       <motion.h2
+                          className="title is-3 has-text-centered"
+                          style={{ color: "#605fc9", marginBottom: "40px" }}
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: titleText.length * 0.04 + 0.3, duration: 0.6 }}
+                        >
+                          How are you traveling today?
+                        </motion.h2>
                   </div>
 
               </motion.h2>
@@ -297,7 +327,7 @@ export default function SustainabilityPage() {
               <div className="column">
               <div className="box">
                 <h3 className="title is-5">💳 Secure Payments</h3>
-                <p>Stripe‑powered secure payments.   </p>
+                <p>Pay safely with Stripe-powered checkout in just a few clicks.</p>
               </div>
             </div>
 
@@ -318,8 +348,8 @@ export default function SustainabilityPage() {
 
             <div className="column">
               <div className="box">
-                <h3 className="title is-5">📊 License Verification</h3>
-                <p>Verify our license and rent a car freely</p>
+                <h3 className="title is-5">🪪 License Verification</h3>
+                <p>Verify our license and rent a car freely.</p>
               </div>
             </div>
           </div>
@@ -355,7 +385,7 @@ export default function SustainabilityPage() {
                 <span className="icon is-large">
                   <i className="fas fa-bus fa-2x" style={{ color: "#605fc9" }}></i>
                 </span>
-                <h3 className="title is-5">Unified Transport</h3>
+                <h3 className="title is-5">Multi-option Transport</h3>
                 <p>Book bus tickets or rent a car — all from one platform.</p>
               </div>
             </div>
@@ -376,7 +406,7 @@ export default function SustainabilityPage() {
                   <i className="fas fa-chart-line fa-2x" style={{ color: "#605fc9" }}></i>
                 </span>
                 <h3 className="title is-5">Smart Mobility</h3>
-                <p>Dynamic pricing, QR check‑ins, analytics, and notifications.</p>
+                <p> Get QR tickets, receive reminders and track your trips every day.</p>
               </div>
             </div>
           </div>

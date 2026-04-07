@@ -1,58 +1,143 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Welcome to Employee Sustainability Portal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Welcome to MobilEase</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background-color: #f4f4f8;
+      font-family: Arial, sans-serif;
+    }
+    .wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    }
+    .header {
+      background: linear-gradient(135deg, #605fc9, #3742fa);
+      padding: 40px 30px;
+      text-align: center;
+    }
+    .header h1 {
+      color: #ffffff;
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: 1px;
+    }
+    .header p {
+      color: rgba(255,255,255,0.85);
+      margin: 8px 0 0;
+      font-size: 14px;
+    }
+    .body {
+      padding: 36px 40px;
+    }
+    .greeting {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2d3436;
+      margin-bottom: 16px;
+    }
+    .body p {
+      color: #555;
+      font-size: 15px;
+      line-height: 1.7;
+      margin: 0 0 16px;
+    }
+    .features {
+      background: #f8f9ff;
+      border-radius: 10px;
+      padding: 20px 24px;
+      margin: 24px 0;
+      border-left: 4px solid #605fc9;
+    }
+    .features p {
+      margin: 8px 0;
+      color: #444;
+      font-size: 14px;
+    }
+    .features span {
+      font-size: 16px;
+      margin-right: 8px;
+    }
+    .btn-wrapper {
+      text-align: center;
+      margin: 28px 0;
+    }
+    .btn {
+      display: inline-block;
+      background: linear-gradient(135deg, #605fc9, #3742fa);
+      color: #ffffff !important;
+      text-decoration: none;
+      padding: 14px 36px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .footer {
+      background: #f8f9ff;
+      padding: 20px 40px;
+      text-align: center;
+      border-top: 1px solid #e0e0f0;
+    }
+    .footer p {
+      color: #adb5bd;
+      font-size: 12px;
+      margin: 4px 0;
+    }
+  </style>
 </head>
-<body style="background-color:#f4f4f4; font-family: Arial, sans-serif; margin:0; padding:0;">
-    <div style="max-width:600px; margin:30px auto; background:white; padding:20px; border-radius:10px; box-shadow:0px 4px 8px rgba(0,0,0,0.1);">
+<body>
+  <div class="wrapper">
 
-        <!-- Header Section -->
-        <div style="text-align:center; padding-bottom:20px; border-bottom:2px solid #ddd;">
-            <h2 style="color:#333; margin:0;">Welcome, {name}!</h2>
-            <p style="color:#555;">Empowering people for a sustainable future.</p>
-        </div>
-
-        <!-- Hero Image -->
-        <div style="text-align:center; margin:20px 0;">
-            <img src="https://lh6.googleusercontent.com/xvN9uEt_rLfvKrjINZjkWOf-d64qoV8FHBQ_S98Se0yGmTn6g60kMwLzp9gZBjx3JgZ0SqIm5SjFd8FXjtxcYGo3rRzxHqZ3rj5GsnifHFYFKBiyM45E7Q1Zlao12zr19eCMRZZ8UVQ9C7lqKTF5SCQ"
-     alt="Sustainability Image" style="width:100%; max-width:500px; border-radius:10px;">
-
-        </div>
-
-        <!-- Content Section -->
-        <p style="color:#444; font-size:16px; line-height:1.6;">
-            Thank you for joining the <strong>Employee Sustainability Portal</strong>.
-            Our platform helps you <b>measure</b>, <b>learn</b>, <b>engage</b>, and <b>reduce</b> your carbon footprint.
-        </p>
-
-        <ul style="list-style:none; padding:0; margin:20px 0;">
-    <li style="background:#e8f5e9; padding:10px; margin:5px 0; border-radius:5px;">
-        &#127793; Track your sustainability impact
-    </li>
-    <li style="background:#e3f2fd; padding:10px; margin:5px 0; border-radius:5px;">
-        &#128202; Explore analytics & insights
-    </li>
-    <li style="background:#fff3e0; padding:10px; margin:5px 0; border-radius:5px;">
-        &#128161; Learn from others & share experiences
-    </li>
-</ul>
-
-
-
-        <!-- Call to Action -->
-        <div style="text-align:center; margin:30px 0;">
-            <a href="https://k548-esp-2025.onrender.com/"
-               style="background:#007bff; color:white; padding:12px 25px; text-decoration:none; font-size:16px; font-weight:bold; border-radius:5px; display:inline-block;">
-                Get Started
-            </a>
-        </div>
-
-        <!-- Footer -->
-        <div style="text-align:center; font-size:14px; color:#666; border-top:2px solid #ddd; padding-top:10px;">
-            <p>&#127757; <strong>Employee Sustainability Page</strong></p>
-            <p>&#169; 2025 All rights reserved.</p>
-        </div>
+    <!-- Header -->
+    <div class="header">
+      <h1>🚌 MobilEase</h1>
+      <p>One Platform. Every Journey.</p>
     </div>
+
+    <!-- Body -->
+    <div class="body">
+      <div class="greeting">Welcome, {name}! 👋</div>
+
+      <p>
+        We're thrilled to have you on board. Your MobilEase account has been
+        successfully created and you're ready to start exploring everything
+        the platform has to offer.
+      </p>
+
+      <div class="features">
+        <p><span>🎟</span> Book bus tickets and choose your seat</p>
+        <p><span>🚗</span> Rent a car and pick your drop-off location</p>
+        <p><span>📍</span> Track your upcoming trips from your profile</p>
+        <p><span>📄</span> Download QR tickets and rental agreements</p>
+      </div>
+
+      <p>
+        Click the button below to log in and start your first journey.
+      </p>
+
+      <div class="btn-wrapper">
+        <a href="http://localhost:3000" class="btn">Go to MobilEase</a>
+      </div>
+
+      <p style="font-size: 13px; color: #adb5bd;">
+        If you did not create this account, please ignore this email.
+      </p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>MobilEase Transport Service System</p>
+      <p>This is an automated message — please do not reply.</p>
+    </div>
+
+  </div>
 </body>
 </html>
