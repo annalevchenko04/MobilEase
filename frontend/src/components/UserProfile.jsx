@@ -34,7 +34,16 @@ const UserProfile = () => {
       email: "",
       password: ""
     });
-
+const requiredRouteFields = [
+  "title",
+  "from_country",
+  "from_city",
+  "to_country",
+  "to_city",
+  "distance_km",
+  "estimated_duration",
+  "price",
+];
     const [newPost, setNewPost] = useState({
         title: '',
         tags: [],
@@ -334,23 +343,47 @@ useEffect(() => {
 }, [userId, fetchPosts]);
 
 const saveDriverChanges = async () => {
-  await fetch(`${API_URL}/admin/drivers/${editingDriver.id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      phone: editingDriver.phone,
-      license_number: editingDriver.license_number,
-      salary_rate: editingDriver.salary_rate,
-    }),
-  });
+  // 🔴 Validation
+  if (
+    !editingDriver.phone?.trim() ||
+    !editingDriver.license_number?.trim() ||
+    !editingDriver.salary_rate
+  ) {
+    setErrorMessage("All fields are required.");
+    return;
+  }
 
-  setShowEditModal(false);
-  fetchDrivers();
+  if (!editingDriver.phone.startsWith("+")) {
+    setErrorMessage("Phone number must start with +.");
+    return;
+  }
+
+  if (Number(editingDriver.salary_rate) <= 5) {
+    setErrorMessage("Salary rate must be more than 5 €.");
+    return;
+  }
+
+  try {
+    await fetch(`${API_URL}/admin/drivers/${editingDriver.id}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        phone: editingDriver.phone,
+        license_number: editingDriver.license_number,
+        salary_rate: Number(editingDriver.salary_rate),
+      }),
+    });
+
+    setErrorMessage(""); // ✅ clear error
+    setShowEditModal(false);
+    fetchDrivers();
+  } catch (err) {
+    setErrorMessage("Failed to update driver.");
+  }
 };
-
 const deleteDriver = async () => {
   await fetch(`${API_URL}/admin/drivers/${deleteDriverId}`, {
     method: "DELETE",
@@ -1536,7 +1569,7 @@ const upcomingRentals = rentals.filter((rental) => {
                     <div className="modal-background" onClick={() => setIsEditing(false)}></div>
                     <div className="modal-card">
                         <header className="modal-card-head has-background-link-light">
-                            <p className="modal-card-title">Edit Post</p>
+                            <p className="modal-card-title">Edit Route</p>
                             <i
                                 className="fas fa-times close-icon"
                                 aria-label="close"
@@ -1555,109 +1588,12 @@ const upcomingRentals = rentals.filter((rental) => {
                                 </div>
                             </div>
 
-                            <div className="field">
-                              <label className="label">From Country</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="text"
-                                  name="from_country"
-                                  placeholder="e.g., Lithuania"
-                                  value={newPost.from_country}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
-
-                            {/* From City */}
-                            <div className="field">
-                              <label className="label">From City</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="text"
-                                  name="from_city"
-                                  placeholder="e.g., Kaunas"
-                                  value={newPost.from_city}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
-
-                            {/* To Country */}
-                            <div className="field">
-                              <label className="label">To Country</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="text"
-                                  name="to_country"
-                                  placeholder="e.g., Lithuania"
-                                  value={newPost.to_country}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
-
-                            {/* To City */}
-                            <div className="field">
-                              <label className="label">To City</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="text"
-                                  name="to_city"
-                                  placeholder="e.g., Vilnius"
-                                  value={newPost.to_city}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
-
-                            {/* Distance */}
-                            <div className="field">
-                              <label className="label">Distance (km)</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="number"
-                                  name="distance_km"
-                                  placeholder="e.g., 102"
-                                  value={newPost.distance_km}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
-
-                            {/* Estimated Duration */}
-                            <div className="field">
-                              <label className="label">Estimated Duration (hours)</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="number"
-                                  name="estimated_duration"
-                                  placeholder="e.g., 2"
-                                  value={newPost.estimated_duration}
-                                  onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
-
-                            {/* Price */}
-                            <div className="field">
-                              <label className="label">Price (€)</label>
-                              <div className="control">
-                                <input
-                                  className="input"
-                                  type="number"
-                                  name="price"
-                                  placeholder="e.g., 12.50"
-                                  value={newPost.price}
-                                 onChange={handleInputChange}
-                                />
-                              </div>
-                            </div>
+                                <div className="field">
+                                    <LocationFields
+                                        newPost={newPost}
+                                        handleInputChange={handleInputChange}
+                                    />
+                                </div>
                             <div className="field">
                                 <label className="label">
                                     Tags <span style={{color: 'red'}}>*</span>
@@ -2012,37 +1948,49 @@ const upcomingRentals = rentals.filter((rental) => {
       </header>
 
       <section className="modal-card-body">
+                      {errorMessage && (
+              <div className="notification is-danger">
+                <button
+                  className="delete"
+                  onClick={() => setErrorMessage("")}
+                ></button>
+                {errorMessage}
+              </div>
+            )}
         <div className="field">
-          <label className="label">Phone</label>
+          <label className="label">Phone <span style={{ color: "red" }}>*</span> </label>
           <input
             className="input"
             value={editingDriver.phone || ""}
             onChange={(e) =>
+               { setErrorMessage("");
               setEditingDriver({ ...editingDriver, phone: e.target.value })
-            }
+            }}
           />
         </div>
 
         <div className="field">
-          <label className="label">License Number</label>
+          <label className="label">License Number <span style={{ color: "red" }}>*</span> </label>
           <input
             className="input"
             value={editingDriver.license_number || ""}
             onChange={(e) =>
-              setEditingDriver({ ...editingDriver, license_number: e.target.value })
-            }
+              { setErrorMessage("");
+                  setEditingDriver({ ...editingDriver, license_number: e.target.value })
+            }}
           />
         </div>
 
         <div className="field">
-          <label className="label">Salary Rate (€)</label>
+          <label className="label">Salary Rate (€) <span style={{ color: "red" }}>*</span></label>
           <input
             className="input"
             type="number"
             value={editingDriver.salary_rate || ""}
             onChange={(e) =>
+                { setErrorMessage("");
               setEditingDriver({ ...editingDriver, salary_rate: e.target.value })
-            }
+            }}
           />
         </div>
       </section>

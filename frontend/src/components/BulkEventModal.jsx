@@ -280,7 +280,7 @@ const BulkEventModal = ({ token, onClose, onDone, templateDate }) => {
               <hr style={{ margin: "12px 0" }} />
 
               {/* Date range */}
-              <p className="label mb-2">📆 Date Range</p>
+              <p className="label mb-2">Date Range</p>
               <div className="columns">
                 <div className="column field">
                   <label className="label">From</label>

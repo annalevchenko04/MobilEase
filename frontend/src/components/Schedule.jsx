@@ -32,7 +32,8 @@ const Schedule = () => {
   const [bulkModalOpen, setBulkModalOpen] = useState(false);
   const [bulkTemplateDate, setBulkTemplateDate] = useState(null);
   const [bulkSuccessMsg, setBulkSuccessMsg] = useState("");
-
+const [cancelModalOpen, setCancelModalOpen] = useState(false);
+const [bookingToCancel, setBookingToCancel] = useState(null);
   // ── Filter state ─────────────────────────────────────────
   const [searchRoute, setSearchRoute] = useState("");
   const [filterTime, setFilterTime] = useState("all");
@@ -52,6 +53,14 @@ useEffect(() => {
   fetchEvents(); // only re-runs when week changes
 }, [weekStart]);
 
+const confirmCancelBooking = async () => {
+  if (!bookingToCancel) return;
+
+  await handleCancelBooking(bookingToCancel);
+
+  setCancelModalOpen(false);
+  setBookingToCancel(null);
+};
   const fetchBookings = async () => {
     try {
       const response = await fetch(`${API_URL}/bookings`, {
@@ -217,7 +226,7 @@ const fetchEvents = async () => {
   }
   function fuzzyAssignSeat(event, bookings) {
     const totalSeats = event.max_participants;
-    const takenSeats = bookings.map(b => b.seat_number);
+    const takenSeats = bookings; // already numbers
     let bestSeat = null, bestScore = -Infinity;
     for (let seat = 1; seat <= totalSeats; seat++) {
       if (takenSeats.includes(seat)) continue;
@@ -237,7 +246,8 @@ const fetchEvents = async () => {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
       });
       if (!response.ok) throw new Error("Error cancelling booking");
-      alert("Booking is canceled");
+      setErrorMessage("");
+      setBulkSuccessMsg("Booking cancelled successfully");
       setBookings(prev => prev.filter(b => b.id !== bookingId));
     } catch (error) {
       setErrorMessage("Failed to cancel the booking. Please try again.");
@@ -554,7 +564,11 @@ const getOccupancyForEvent = (eventItem) => {
                         <button
                           className="button is-danger is-small is-outlined"
                           style={{ width: "100%", fontSize: 11 }}
-                          onClick={(e) => { e.stopPropagation(); handleCancelBooking(booking.id); }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setBookingToCancel(booking.id);
+                            setCancelModalOpen(true);
+                          }}
                         >
                           Cancel Booking
                         </button>
@@ -637,15 +651,35 @@ const getOccupancyForEvent = (eventItem) => {
           bookings={eventBookings}
           onSelectSeat={(data) => startPayment(selectedEventForSeats, data)}
           onSkip={(data) => {
-            const seat = fuzzyAssignSeat(selectedEventForSeats, eventBookings);
-            const basePrice = selectedEventForSeats.post.price;
-            const discountedPrice = (data.isYoung || data.isSenior) ? basePrice * 0.5 : basePrice;
-            startPayment(selectedEventForSeats, {
-              seats: [seat], isYoung: data.isYoung,
-              isSenior: data.isSenior, totalPrice: discountedPrice
-            });
+            startPayment(selectedEventForSeats, data);
           }}
           onClose={() => setSeatModalOpen(false)}
+          fuzzyAssignSeat={(event, takenSeats) => {
+            let bestSeat = null, bestScore = -Infinity;
+
+            for (let seat = 1; seat <= event.max_participants; seat++) {
+              if (takenSeats.includes(seat)) continue;
+
+              const { seatType, seatPosition, neighbourPressure, occupancyRate } =
+                computeSeatInputs(seat, event.max_participants, takenSeats);
+
+              const score = defuzzify(
+                applyRules(
+                  fuzzifyOccupancy(occupancyRate),
+                  fuzzifyPosition(seatPosition),
+                  fuzzifyNeighbourPressure(neighbourPressure),
+                  fuzzifySeatType(seatType)
+                )
+              );
+
+              if (score > bestScore) {
+                bestScore = score;
+                bestSeat = seat;
+              }
+            }
+
+            return bestSeat;
+          }}
         />
       )}
 
@@ -665,8 +699,61 @@ const getOccupancyForEvent = (eventItem) => {
           }}
         />
       )}
+      {cancelModalOpen && (
+  <div className="modal is-active">
+    <div
+      className="modal-background"
+      onClick={() => setCancelModalOpen(false)}
+    ></div>
+
+    <div className="modal-card">
+      <header className="modal-card-head">
+        <p className="modal-card-title">Cancel Booking</p>
+        <button
+          className="delete"
+          aria-label="close"
+          onClick={() => setCancelModalOpen(false)}
+        ></button>
+      </header>
+
+      <section className="modal-card-body">
+        <p>
+          Are you sure you want to cancel this booking?
+        </p>
+        <p style={{ marginTop: 10, color: "#d63031", fontWeight: 600 }}>
+          ⚠ Money will not be returned.
+        </p>
+      </section>
+
+      <footer
+          className="modal-card-foot"
+          style={{
+            display: "flex",
+            justifyContent: "space-between",
+            width: "100%"
+          }}
+        >
+          <button
+            className="button"
+            onClick={() => setCancelModalOpen(false)}
+          >
+            Keep Booking
+          </button>
+
+          <button
+            className="button is-danger"
+            onClick={confirmCancelBooking}
+          >
+            Cancel Booking
+          </button>
+        </footer>
+    </div>
+  </div>
+)}
     </div>
   );
 };
+
+
 
 export default Schedule;

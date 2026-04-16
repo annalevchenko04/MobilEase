@@ -177,6 +177,7 @@ const App = () => {
                                                 </span>
                                         </a>
                                         )}
+                                        {userRole !== "admin" && (
                                          <a className="navbar-item is-size-5" href="/license/verify">
                                                 <span className="icon-text">
                                                   <span className="icon">
@@ -185,6 +186,7 @@ const App = () => {
                                                   <span><strong>My License</strong></span>
                                                 </span>
                                          </a>
+                                         )}
                                         <div className="navbar-end">
                                             <br/>
                                             <div className="navbar-item is-size-5">

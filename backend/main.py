@@ -2008,6 +2008,19 @@ async def delete_rental(
         raise HTTPException(status_code=404, detail="Rental not found")
     return {"message": "Rental deleted successfully"}
 
+@app.post("/rentals/{rental_id}/confirm-payment")
+async def confirm_payment(
+    rental_id: int,
+    db: db_dependency,
+    current_user: models.User = Depends(get_current_user)
+):
+    rental = crud.confirm_rental_payment(db, rental_id)
+
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+
+    return rental
+
 from fastapi import UploadFile, File
 @app.post("/cars/{car_id}/image", response_model=schemas.CarImage)
 async def upload_car_image(

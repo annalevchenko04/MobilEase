@@ -211,7 +211,7 @@ class EventCreate(BaseModel):
     description: Optional[str] = None
     date: date
     time: time  # Date and time of the event
-    duration: int  # Duration in minutes
+    duration: int  # Duration in hours
     event_type: str  # 'private' or 'public'
     is_personal_training: Optional[bool] = False  # True if personal training
     max_participants: Optional[int] = None  # For group classes
@@ -221,8 +221,8 @@ class EventCreate(BaseModel):
 
     @field_validator('duration')
     def duration_must_be_greater_than_15(cls, value):
-        if value <= 1:
-            raise ValueError('Duration must be greater than 1 hour')
+        if value <= 0:
+            raise ValueError('Duration must be greater than 0 hour')
         return value
 
     @field_validator('max_participants')

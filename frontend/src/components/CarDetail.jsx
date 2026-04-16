@@ -84,6 +84,7 @@ useEffect(() => {
     return <p>Loading car...</p>;
   }
 const handleBookClick = () => {
+
   if (!licenseStatus || licenseStatus === "none") {
     setBookingMsg({
       type: "info",
@@ -92,6 +93,7 @@ const handleBookClick = () => {
     });
     return;
   }
+
   if (licenseStatus === "rejected") {
     setBookingMsg({
       type: "error",
@@ -99,6 +101,7 @@ const handleBookClick = () => {
     });
     return;
   }
+
   if (licenseStatus === "pending" || licenseStatus === "manual_review") {
     setBookingMsg({
       type: "warning",
@@ -106,6 +109,7 @@ const handleBookClick = () => {
     });
     return;
   }
+
   navigate(`/rent/${car.id}`, {
     state: {
       carPricing: {
@@ -251,24 +255,24 @@ const handleBookClick = () => {
             <br />
 
                         <label className="label">Distance (km)</label>
-            <input
-              type="number"
-              className="input"
-              min="0"
-              value={distance}
-              onChange={(e) => {
-                const val = e.target.value;
+                        <input
+                          type="number"
+                          className={`input ${!distance ? "is-danger" : ""}`}
+                          min="0"
+                          value={distance}
+                          onChange={(e) => {
+                            const val = e.target.value;
 
-                if (val === "") {
-                  setDistance("");
-                  return;
-                }
+                            if (val === "") {
+                              setDistance("");
+                              return;
+                            }
 
-                if (Number(val) >= 0) {
-                  setDistance(val);
-                }
-              }}
-            />
+                            if (Number(val) >= 0) {
+                              setDistance(val);
+                            }
+                          }}
+                        />
             <br />
             <br />
 

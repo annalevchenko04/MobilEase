@@ -17,10 +17,9 @@ const EventModal = ({ event, handleClose, selectedDate, handleDeleteEvent }) => 
   const [posts, setPosts] = useState([]);
   const [price, setPrice] = useState(event ? event.price : 0);
   const [distance, setDistance] = useState(event ? event.distance_km : 0);
-const [postId, setPostId] = useState(event ? event.post_id : null);
-
+const [postId, setPostId] = useState("");
 const [drivers, setDrivers] = useState([]);
-const [driverId, setDriverId] = useState(null);
+const [driverId, setDriverId] = useState("");
 
 useEffect(() => {
   const fetchDrivers = async () => {
@@ -36,21 +35,25 @@ useEffect(() => {
 
 useEffect(() => {
   if (event) {
-    setName(event.name ?? null);
+    setName(event.name ?? "");
     setDescription(event.description ?? "");
     setTime(event.time ?? "");
     setDuration(event.duration ?? 30);
     setEventType(event.event_type ?? (userRole === "member" ? "private" : "public"));
-    setIsPersonalTraining(event.is_personal_training ?? false);
+
     setMaxParticipants(event.max_participants ?? 1);
     setRoomNumber(event.room_number ?? "");
     setTrainerId(event.trainer_id ?? null);
-    setPostId(event.post_id ?? null);
-    setDriverId(event.driver_id ?? null);
+
+    setPostId(event.post_id ? String(event.post_id) : "");
+    setDriverId(event.driver_id ? String(event.driver_id) : "");
 
     if (event.post) {
       setPrice(event.post.price ?? 0);
       setDistance(event.post.distance_km ?? 0);
+
+      // ⚠️ ONLY set name if you want overwrite behavior
+      setName(event.post.title ?? event.name ?? "");
     }
   }
 }, [event]);
@@ -61,8 +64,8 @@ useEffect(() => {
       setErrorMessage('Please fill in all required fields');
       return;
     }
-    if(duration <= 1){
-      setErrorMessage('Please set duration more than 1 hour');
+    if(duration <= 0){
+      setErrorMessage('Please set duration more than 0 hour');
       return;
     }
 
@@ -127,27 +130,26 @@ useEffect(() => {
       <div className="modal-background" onClick={handleClose}></div>
       <div className="modal-card">
         <header className="modal-card-head">
-          <p className="modal-card-title">{event?.id ? 'Update Event' : 'Add Event'}</p>
+          <p className="modal-card-title">{event?.id ? 'Update Route' : 'Add Route'}</p>
         </header>
         <section className="modal-card-body">
           <div className="field">
-            <label className="label">Event Name</label>
+            <label className="label">Route Title</label>
             <div className="select is-fullwidth">
             <select
-              value={postId ?? ""}
+              value={postId}
               onChange={(e) => {
-                const selectedId = Number(e.target.value);
+                const selectedId = e.target.value;
                 setPostId(selectedId);
 
-                if (!event) {   // ⭐ Only overwrite name when creating a NEW event
-                  const selectedPost = posts.find(p => p.id === selectedId);
-                  if (selectedPost) {
-                    setName(selectedPost.title);
-                    setDuration(selectedPost.estimated_duration ?? 30);
-                    setDescription(`${selectedPost.from_city ?? ''} → ${selectedPost.to_city ?? ''}`);
-                    setPrice(selectedPost.price ?? 0);
-                    setDistance(selectedPost.distance_km ?? 0);
-                  }
+                const selectedPost = posts.find(p => String(p.id) === selectedId);
+
+                if (selectedPost) {
+                  setName(selectedPost.title);
+                  setDuration(selectedPost.estimated_duration ?? 30);
+                  setDescription(`${selectedPost.from_city ?? ''} → ${selectedPost.to_city ?? ''}`);
+                  setPrice(selectedPost.price ?? 0);
+                  setDistance(selectedPost.distance_km ?? 0);
                 }
               }}
             >
@@ -275,8 +277,8 @@ useEffect(() => {
   <label className="label">Assign Driver</label>
   <div className="select is-fullwidth">
     <select
-      value={driverId ?? ""}
-      onChange={(e) => setDriverId(Number(e.target.value))}
+      value={driverId}
+      onChange={(e) => setDriverId(e.target.value)}
     >
       <option value="">Select a driver</option>
 

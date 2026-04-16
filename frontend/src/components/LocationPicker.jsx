@@ -5,6 +5,56 @@ import L from "leaflet";
 import markerIcon2x from "leaflet/dist/images/marker-icon-2x.png";
 import markerIcon from "leaflet/dist/images/marker-icon.png";
 import markerShadow from "leaflet/dist/images/marker-shadow.png";
+import booleanPointInPolygon from "@turf/boolean-point-in-polygon";
+import { point } from "@turf/helpers";
+import { GeoJSON } from "react-leaflet";
+
+const kaunasGeoJson = {
+  type: "Feature",
+        "geometry": {
+        "coordinates": [
+          [
+            [
+              23.788367911020742,
+              54.922149804039464
+            ],
+            [
+              23.747702276616224,
+              54.88447102983966
+            ],
+            [
+              23.84036724050995,
+              54.807640085267764
+            ],
+            [
+              23.971339582590986,
+              54.811188477754115
+            ],
+            [
+              24.201233545679656,
+              54.8175866858802
+            ],
+            [
+              24.14432901965307,
+              54.924255524655564
+            ],
+            [
+              24.103560379605028,
+              54.98315416533393
+            ],
+            [
+              23.763735885460676,
+              54.95832990368277
+            ],
+            [
+              23.788367911020742,
+              54.922149804039464
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+};
 
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -42,18 +92,27 @@ function DropoffClickHandler({ onDropoff }) {
 function LocationPicker({ car, onSelect }) {
   console.log("CAR DATA:", car); // ← add this
   const [dropoff, setDropoff] = useState(null);
-
+  const [error, setError] = useState("");
   const pickup = car?.current_lat && car?.current_lng
     ? { lat: car.current_lat, lng: car.current_lng }
     : null;
 
-  const handleDropoff = (latlng) => {
-    setDropoff(latlng);
-    onSelect({ pickup, dropoff: latlng });
-  };
+const handleDropoff = (latlng) => {
+  if (!isInsideKaunas(latlng.lat, latlng.lng)) {
+    setError("Dropoff must be inside Kaunas");
+    return;
+  }
+
+  setError(""); // ✅ clear error
+  setDropoff(latlng);
+  onSelect({ pickup, dropoff: latlng });
+};
 
   const center = pickup ? [pickup.lat, pickup.lng] : [54.8985, 23.9036];
-
+  const isInsideKaunas = (lat, lng) => {
+    const pt = point([lng, lat]); // ⚠️ order: [lng, lat]
+    return booleanPointInPolygon(pt, kaunasGeoJson);
+  };
   return (
     <div>
       <div style={{ marginBottom: 8, fontSize: 13, color: "#555", padding: "6px 0" }}>
@@ -71,13 +130,26 @@ function LocationPicker({ car, onSelect }) {
           <span style={{ color: "#c0392b" }}>Car location not set yet — no pickup point available</span>
         )}
       </div>
-
+        {error && (
+          <div style={{ color: "#c0392b", marginBottom: 8, fontSize: 13 }}>
+            {error}
+          </div>
+        )}
       <MapContainer
         center={center}
         zoom={12}
         style={{ height: "300px", width: "100%", borderRadius: 12, border: "1px solid #605fc9" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+        <GeoJSON
+          data={kaunasGeoJson}
+          style={{
+            color: "#28a745",
+            weight: 2,
+            fillColor: "#28a745",
+            fillOpacity: 0.15,
+          }}
+        />
         <DropoffClickHandler onDropoff={handleDropoff} />
 
         {pickup && (
@@ -91,6 +163,7 @@ function LocationPicker({ car, onSelect }) {
             <Popup>Your dropoff location</Popup>
           </Marker>
         )}
+
       </MapContainer>
     </div>
   );

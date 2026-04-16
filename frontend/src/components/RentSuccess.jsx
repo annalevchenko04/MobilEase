@@ -11,31 +11,39 @@ const RentSuccess = () => {
   const hasFetched = useRef(false); // ← prevent double fetch
 
   useEffect(() => {
-    if (!token) return;
-    if (hasFetched.current) return; // ← stop second run
-    hasFetched.current = true;
+  if (!token) return;
+  if (hasFetched.current) return;
+  hasFetched.current = true;
 
-    const id = localStorage.getItem("rental_id");
-    console.log(">>> rental_id:", id, "token:", token ? "exists" : "null");
+  const id = localStorage.getItem("rental_id");
 
-    if (id) {
-      setRentalId(id);
-      localStorage.removeItem("rental_id");
+  if (!id) return;
 
-      fetch(`${API_URL}/rentals/${id}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-        .then(r => {
-          console.log(">>> status:", r.status);
-          return r.json();
-        })
-        .then(data => {
-          console.log(">>> rental:", data);
-          setRental(data);
-        })
-        .catch(err => console.error(">>> error:", err));
+  setRentalId(id);
+  localStorage.removeItem("rental_id");
+
+  const confirmAndFetch = async () => {
+    try {
+      await fetch(`${API_URL}/rentals/${id}/confirm-payment`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const res = await fetch(`${API_URL}/rentals/${id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const data = await res.json();
+      setRental(data);
+    } catch (err) {
+      console.error(err);
     }
-  }, [token]);
+  };
+
+  confirmAndFetch();
+}, [token]);
 
   const downloadAgreement = () => {
     const link = document.createElement("a");
