@@ -3,7 +3,7 @@ import "../styles.css";
 import API_URL from "../config";
 import {UserContext} from "../context/UserContext";
 
-const SeatSelectionModal = ({ event, bookings: initialBookings, onSelectSeat, onSkip, onClose }) => {
+const SeatSelectionModal = ({ event, bookings: initialBookings, onSelectSeat, onSkip, onClose, fuzzyAssignSeat }) => {
   const totalSeats = event.max_participants;
   const [token, userRole] = useContext(UserContext);
   // ── WebSocket live seat state ──────────────────────────
@@ -130,10 +130,44 @@ const renderSeat = (seat) => {
     onSelectSeat({ seats: selectedSeats, isYoung, isSenior, totalPrice });
   };
 
-  const handleSkip = () => {
-    const skipPrice = isYoung || isSenior ? basePrice * 0.5 : basePrice;
-    onSkip({ seats: [], isYoung, isSenior, totalPrice: skipPrice });
-  };
+  const handleSkip = async () => {
+  // Combine taken + locked seats (VERY IMPORTANT)
+  const allTakenSeats = [
+    ...takenSeats,
+    ...lockedSeats
+  ];
+
+  const seat = fuzzyAssignSeat(event, allTakenSeats);
+
+  if (!seat) {
+    alert("No seats available");
+    return;
+  }
+
+  // ✅ LOCK seat before payment (CRITICAL)
+  try {
+    await fetch(`${API_URL}/events/${event.id}/lock-seat`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ seat_number: seat }),
+    });
+  } catch {
+    alert("Seat just got taken. Try again.");
+    return;
+  }
+
+  const skipPrice = isYoung || isSenior ? basePrice * 0.5 : basePrice;
+
+  onSkip({
+    seats: [seat],   // ✅ NOW WE PASS REAL SEAT
+    isYoung,
+    isSenior,
+    totalPrice: skipPrice
+  });
+};
 
   return (
     <div className="modal is-active">

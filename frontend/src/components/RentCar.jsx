@@ -105,64 +105,123 @@ const RentCar = () => {
   }, [tripMinutes, distanceKm, carPricing, rentalType, rentalDays, startDateTime, endDateTime, manualKm]);
 
   const handleConfirmBooking = async () => {
-    try {
-      if (!locations.dropoff) return;
+  if (!isFormValid()) {
+    alert("Please fill all required fields correctly.");
+    return;
+  }
 
-      let start, end;
+  try {
+    if (!locations.dropoff) return;
 
-      if (rentalType === "hourly") {
-        start = new Date();
-        end = new Date(start.getTime() + tripMinutes * 60000);
-      } else if (rentalType === "daily") {
-        start = new Date(`${startDate}T${startTime || "09:00"}`);
-        end = new Date(start);
-        end.setDate(end.getDate() + rentalDays);
-      } else {
-        start = new Date(startDateTime);
-        end = new Date(endDateTime);
-      }
+    let start, end;
 
-      const dropoffAddress = await getAddress(locations.dropoff.lat, locations.dropoff.lng);
-
-      const rentalRes = await fetch(`${API_URL}/rentals`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          car_id: id,
-          start_datetime: start.toISOString(),
-          end_datetime: end.toISOString(),
-          pickup_location: car?.current_location || "Car location",
-          pickup_lat: car?.current_lat,
-          pickup_lng: car?.current_lng,
-          dropoff_location: dropoffAddress,
-          dropoff_lat: locations.dropoff?.lat,
-          dropoff_lng: locations.dropoff?.lng,
-          kilometers_used: rentalType === "hourly" ? distanceKm : manualKm,
-        }),
-      });
-
-      if (!rentalRes.ok) { console.error("Rental creation failed"); return; }
-
-      const rental = await rentalRes.json();
-      localStorage.setItem("rental_id", rental.id);
-
-      const stripeRes = await fetch(`${API_URL}/create-checkout-session`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: totalCost, type: "rent" }),
-      });
-
-      const stripeData = await stripeRes.json();
-      const stripe = window.Stripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
-      await stripe.redirectToCheckout({ sessionId: stripeData.id });
-
-    } catch (error) {
-      console.error("Stripe error:", error);
+    if (rentalType === "hourly") {
+      start = new Date();
+      end = new Date(start.getTime() + tripMinutes * 60000);
+    } else if (rentalType === "daily") {
+      start = new Date(`${startDate}T${startTime || "09:00"}`);
+      end = new Date(start);
+      end.setDate(end.getDate() + rentalDays);
+    } else {
+      start = new Date(startDateTime);
+      end = new Date(endDateTime);
     }
-  };
+
+    const dropoffAddress = await getAddress(
+      locations.dropoff.lat,
+      locations.dropoff.lng
+    );
+
+    // 1️⃣ CREATE RENTAL FIRST (NOW IT IS PENDING)
+    const rentalRes = await fetch(`${API_URL}/rentals`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        car_id: id,
+
+        // ✅ THIS IS THE IMPORTANT PART
+        status: "pending",
+
+        start_datetime: start.toISOString(),
+        end_datetime: end.toISOString(),
+
+        pickup_location: car?.current_location || "Car location",
+        pickup_lat: car?.current_lat,
+        pickup_lng: car?.current_lng,
+
+        dropoff_location: dropoffAddress,
+        dropoff_lat: locations.dropoff?.lat,
+        dropoff_lng: locations.dropoff?.lng,
+
+        kilometers_used:
+          rentalType === "hourly" ? distanceKm : manualKm,
+      }),
+    });
+
+    if (!rentalRes.ok) {
+      console.error("Rental creation failed");
+      return;
+    }
+
+    const rental = await rentalRes.json();
+
+    // store rental id for later payment confirmation
+    localStorage.setItem("rental_id", rental.id);
+
+    // 2️⃣ NOW GO TO STRIPE
+    const stripeRes = await fetch(`${API_URL}/create-checkout-session`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        amount: totalCost,
+        type: "rent",
+        rental_id: rental.id, // 👈 IMPORTANT (so backend knows what to confirm)
+      }),
+    });
+
+    const stripeData = await stripeRes.json();
+
+    const stripe = window.Stripe(
+      process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY
+    );
+
+    await stripe.redirectToCheckout({
+      sessionId: stripeData.id,
+    });
+  } catch (error) {
+    console.error("Stripe error:", error);
+  }
+};
+
+  const isFormValid = () => {
+  if (!locations.dropoff) return false;
+
+  if (rentalType === "hourly") {
+    return distanceKm > 0 && tripMinutes > 0;
+  }
+
+  if (rentalType === "daily") {
+    return (
+      startDate &&
+      rentalDays > 0 &&
+      manualKm > 0
+    );
+  }
+
+  if (rentalType === "custom") {
+    return (
+      startDateTime &&
+      endDateTime &&
+      new Date(endDateTime) > new Date(startDateTime) &&
+      manualKm > 0
+    );
+  }
+
+  return false;
+};
 
   return (
     <div className="box" style={{ border: "3px solid #605fc9" }}>
@@ -356,10 +415,7 @@ const RentCar = () => {
           marginTop: "20px"
         }}
         onClick={handleConfirmBooking}
-        disabled={
-          (rentalType === "daily" && !startDate) ||
-          (rentalType === "custom" && (!startDateTime || !endDateTime))
-        }
+        disabled={!isFormValid()}
       >
         Confirm & Pay
       </button>

@@ -8,13 +8,15 @@ const CarsManagement = () => {
   const [cars, setCars] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carToDelete, setCarToDelete] = useState(null);
-
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentCarId, setCurrentCarId] = useState(null);
   const [carImages, setCarImages] = useState([]);
   const [errorMessage, setErrorMessage] = useState('');
 const [existingCarImages, setExistingCarImages] = useState([]);
+const isFieldInvalid = (field) => {
+  return errorMessage.toLowerCase().includes(field.replace(/_/g, " "));
+};
   const [newCar, setNewCar] = useState({
     brand: "",
     model: "",
@@ -150,8 +152,46 @@ const uploadCarImages = async (files, carId) => {
     setNewCar((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Create or update car
+  const requiredFields = [
+  "brand",
+  "model",
+  "year",
+  "license_plate",
+  "seats",
+  "transmission",
+  "fuel_type",
+  "price_per_hour",
+  "price_per_day",
+  "price_per_km",
+];
+
+const validateCar = () => {
+  for (const field of requiredFields) {
+    const value = newCar[field];
+
+    if (!value || value.toString().trim() === "") {
+      setErrorMessage(`${formatLabel(field)} is required`);
+      return false;
+    }
+
+    // Extra validation for numbers
+    if (
+      ["year", "seats", "price_per_hour", "price_per_day", "price_per_km"].includes(field)
+    ) {
+      if (isNaN(value) || Number(value) <= 0) {
+        setErrorMessage(`${formatLabel(field)} must be a valid number > 0`);
+        return false;
+      }
+    }
+  }
+
+  setErrorMessage("");
+  return true;
+};
   const saveCar = async () => {
+  // 🔴 VALIDATE FIRST
+  if (!validateCar()) return;
+
   try {
     const method = isEditing ? "PUT" : "POST";
     const url = isEditing
@@ -172,7 +212,7 @@ const uploadCarImages = async (files, carId) => {
     const data = await res.json();
     const carId = data.id;
 
-    // Upload new images
+    // ✅ Images are OPTIONAL
     if (carImages.length > 0) {
       await uploadCarImages(carImages, carId);
     }
@@ -182,8 +222,22 @@ const uploadCarImages = async (files, carId) => {
     setIsEditing(false);
     setIsCreating(false);
     setCarImages([]);
+    setNewCar({
+      brand: "",
+      model: "",
+      year: "",
+      license_plate: "",
+      seats: "",
+      transmission: "",
+      fuel_type: "",
+      price_per_hour: "",
+      price_per_day: "",
+      price_per_km: "",
+    });
+
   } catch (error) {
     console.error("Error saving car:", error);
+    setErrorMessage("Something went wrong while saving.");
   }
 };
   const editCar = (car) => {
@@ -305,7 +359,9 @@ const uploadCarImages = async (files, carId) => {
 
     {/* Model */}
     <div className="field">
-      <label className="label">Model</label>
+      <label className="label">
+        Model <span style={{ color: "red" }}>*</span>
+      </label>
       <div className="control">
         <input
           className="input"
@@ -321,7 +377,9 @@ const uploadCarImages = async (files, carId) => {
 
     {/* Year */}
     <div className="field">
-      <label className="label">Year</label>
+      <label className="label">
+        Year <span style={{ color: "red" }}>*</span>
+      </label>
       <div className="control">
         <input
           className="input"
@@ -337,7 +395,9 @@ const uploadCarImages = async (files, carId) => {
 
     {/* License Plate */}
     <div className="field">
-      <label className="label">License Plate</label>
+      <label className="label">
+        License Plate <span style={{ color: "red" }}>*</span>
+      </label>
       <div className="control">
         <input
           className="input"
@@ -353,7 +413,9 @@ const uploadCarImages = async (files, carId) => {
 
     {/* Seats */}
     <div className="field">
-      <label className="label">Seats</label>
+      <label className="label">
+        Seats <span style={{ color: "red" }}>*</span>
+      </label>
       <div className="control">
         <input
           className="input"
@@ -367,41 +429,55 @@ const uploadCarImages = async (files, carId) => {
       </div>
     </div>
 
-    {/* Transmission */}
-    <div className="field">
-      <label className="label">Transmission</label>
-      <div className="control">
-        <input
-          className="input"
-          type="text"
-          name="transmission"
-          placeholder="automatic / manual"
-          value={newCar.transmission}
-          onChange={handleInputChange}
-          style={{ border: "1px solid #605fc9", borderRadius: "12px" }}
-        />
-      </div>
+   {/* Transmission */}
+<div className="field">
+  <label className="label">
+      Transmission <span style={{ color: "red" }}>*</span>
+    </label>
+  <div className="control">
+    <div className="select is-fullwidth">
+      <select
+        name="transmission"
+        value={newCar.transmission}
+        onChange={handleInputChange}
+        style={{ border: "1px solid #605fc9", borderRadius: "12px" }}
+      >
+        <option value="">Select transmission</option>
+        <option value="automatic">Automatic</option>
+        <option value="manual">Manual</option>
+      </select>
     </div>
+  </div>
+</div>
 
-    {/* Fuel Type */}
-    <div className="field">
-      <label className="label">Fuel Type</label>
-      <div className="control">
-        <input
-          className="input"
-          type="text"
-          name="fuel_type"
-          placeholder="petrol / diesel / electric"
-          value={newCar.fuel_type}
-          onChange={handleInputChange}
-          style={{ border: "1px solid #605fc9", borderRadius: "12px" }}
-        />
-      </div>
+{/* Fuel Type */}
+<div className="field">
+  <label className="label">
+  Fuel Type <span style={{ color: "red" }}>*</span>
+</label>
+  <div className="control">
+    <div className="select is-fullwidth">
+      <select
+        name="fuel_type"
+        value={newCar.fuel_type}
+        onChange={handleInputChange}
+        style={{ border: "1px solid #605fc9", borderRadius: "12px" }}
+      >
+        <option value="">Select fuel type</option>
+        <option value="petrol">Petrol</option>
+        <option value="diesel">Diesel</option>
+        <option value="electric">Electric</option>
+        <option value="hybrid">Hybrid</option>
+      </select>
     </div>
+  </div>
+</div>
 
     {/* Price per hour */}
     <div className="field">
-      <label className="label">Price per Hour (€)</label>
+      <label className="label">
+  Price per Hour (€) <span style={{ color: "red" }}>*</span>
+</label>
       <div className="control">
         <input
           className="input"
@@ -417,7 +493,9 @@ const uploadCarImages = async (files, carId) => {
 
     {/* Price per day */}
     <div className="field">
-      <label className="label">Price per Day (€)</label>
+      <label className="label">
+  Price per Day (€) <span style={{ color: "red" }}>*</span>
+</label>
       <div className="control">
         <input
           className="input"
@@ -433,7 +511,9 @@ const uploadCarImages = async (files, carId) => {
 
     {/* Price per km */}
     <div className="field">
-      <label className="label">Price per KM (€)</label>
+<label className="label">
+  Price per KM (€) <span style={{ color: "red" }}>*</span>
+</label>
       <div className="control">
         <input
           className="input"
@@ -646,17 +726,74 @@ const uploadCarImages = async (files, carId) => {
               <section className="modal-card-body">
 
                 {/* Car fields */}
-              {Object.keys(newCar).map((field) => (
-              <div className="field" key={field}>
-                <label className="label">{formatLabel(field)}</label>
-                <input
-                  className="input"
-                  name={field}
-                  value={newCar[field]}
-                  onChange={handleInputChange}
-                />
-              </div>
-            ))}
+{Object.keys(newCar).map((field) => (
+  <div className="field" key={field}>
+    <label className="label">
+      {formatLabel(field)} <span style={{ color: "red" }}>*</span>
+    </label>
+
+    {/* SELECT for transmission */}
+    {field === "transmission" ? (
+      <div className="select is-fullwidth">
+        <select
+          name={field}
+          value={newCar[field]}
+          onChange={handleInputChange}
+          style={{
+            border: isFieldInvalid(field)
+              ? "2px solid red"
+              : "1px solid #605fc9",
+            borderRadius: "12px",
+          }}
+        >
+          <option value="">Select</option>
+          <option value="automatic">Automatic</option>
+          <option value="manual">Manual</option>
+        </select>
+      </div>
+    ) : field === "fuel_type" ? (
+      /* SELECT for fuel */
+      <div className="select is-fullwidth">
+        <select
+          name={field}
+          value={newCar[field]}
+          onChange={handleInputChange}
+          style={{
+            border: isFieldInvalid(field)
+              ? "2px solid red"
+              : "1px solid #605fc9",
+            borderRadius: "12px",
+          }}
+        >
+          <option value="">Select</option>
+          <option value="petrol">Petrol</option>
+          <option value="diesel">Diesel</option>
+          <option value="electric">Electric</option>
+          <option value="hybrid">Hybrid</option>
+        </select>
+      </div>
+    ) : (
+      /* NORMAL INPUT */
+      <input
+        className="input"
+        type={
+          ["year", "seats", "price_per_hour", "price_per_day", "price_per_km"].includes(field)
+            ? "number"
+            : "text"
+        }
+        name={field}
+        value={newCar[field]}
+        onChange={handleInputChange}
+        style={{
+          border: isFieldInvalid(field)
+            ? "2px solid red"
+            : "1px solid #605fc9",
+          borderRadius: "12px",
+        }}
+      />
+    )}
+  </div>
+))}
 
         {/* Upload new images */}
         <div className="field">
@@ -718,6 +855,13 @@ const uploadCarImages = async (files, carId) => {
             </ul>
           </div>
         )}
+
+                {errorMessage && (
+              <div className="notification is-danger">
+                <button className="delete" onClick={() => setErrorMessage("")}></button>
+                {errorMessage}
+              </div>
+            )}
 
       </section>
 

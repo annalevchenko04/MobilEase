@@ -1910,10 +1910,8 @@ def create_car_rental(db: Session, rental: schemas.CarRentalCreate, user_id: int
     if not car or not car.available:
         return None
 
-    # ⭐ Use ORS distance sent from frontend
     km_used = rental.kilometers_used
 
-    # ⭐ Calculate price
     total_price = calculate_rental_price(
         car,
         rental.start_datetime,
@@ -1924,31 +1922,40 @@ def create_car_rental(db: Session, rental: schemas.CarRentalCreate, user_id: int
     db_rental = models.CarRental(
         user_id=user_id,
         car_id=rental.car_id,
-
         pickup_location=rental.pickup_location,
         dropoff_location=rental.dropoff_location,
-
         pickup_lat=rental.pickup_lat,
         pickup_lng=rental.pickup_lng,
         dropoff_lat=rental.dropoff_lat,
         dropoff_lng=rental.dropoff_lng,
-
         start_datetime=rental.start_datetime,
         end_datetime=rental.end_datetime,
-
         kilometers_used=km_used,
         total_price=total_price,
-        status="reserved",
+        status="pending_payment",
     )
-
-    car.available = False
 
     db.add(db_rental)
     db.commit()
     db.refresh(db_rental)
     return db_rental
 
+def confirm_rental_payment(db: Session, rental_id: int):
+    rental = db.query(models.CarRental).filter(
+        models.CarRental.id == rental_id
+    ).first()
 
+    if not rental:
+        return None
+
+    rental.status = "reserved"
+
+    car = rental.car
+    car.available = False   # 👈 ONLY HERE
+
+    db.commit()
+    db.refresh(rental)
+    return rental
 
 # ⭐ UPDATE RENTAL (also uses ORS distance)
 def update_car_rental(db: Session, rental_id: int, rental_update: schemas.CarRentalUpdate):
@@ -1986,8 +1993,6 @@ def update_car_rental(db: Session, rental_id: int, rental_update: schemas.CarRen
     db.refresh(db_rental)
     return db_rental
 
-
-
 def delete_car_rental(db: Session, rental_id: int):
     db_rental = db.query(models.CarRental).filter(models.CarRental.id == rental_id).first()
     if not db_rental:
@@ -1999,21 +2004,43 @@ def delete_car_rental(db: Session, rental_id: int):
     return True
 
 
+def finalize_if_expired(rental):
+    now = datetime.utcnow()
+
+    if rental.status in ["reserved", "pending_payment"] and rental.end_datetime < now:
+        rental.status = "completed"
+
+        car = rental.car
+        car.available = True
+        car.current_location = rental.dropoff_location
+        car.current_lat = rental.dropoff_lat
+        car.current_lng = rental.dropoff_lng
+
 def get_user_rentals(db: Session, user_id: int):
-    return (
+    rentals = (
         db.query(models.CarRental)
         .filter(models.CarRental.user_id == user_id)
         .order_by(models.CarRental.start_datetime.asc())
         .all()
     )
 
+    for r in rentals:
+        finalize_if_expired(r)
+
+    db.commit()
+    return rentals
+
 
 def get_car_rentals(db: Session):
-    return (
-        db.query(models.CarRental)
-        .order_by(models.CarRental.start_datetime.asc())
-        .all()
-    )
+    rentals = db.query(models.CarRental).order_by(
+        models.CarRental.start_datetime.asc()
+    ).all()
+
+    for r in rentals:
+        finalize_if_expired(r)
+
+    db.commit()
+    return rentals
 
 def create_car_image(db: Session, car_id: int, url: str):
     db_image = models.CarImage(

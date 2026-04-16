@@ -1,6 +1,6 @@
 // npm install country-state-city react-select
 
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import Select from "react-select";
 import { Country, City } from "country-state-city";
 
@@ -45,11 +45,29 @@ export default function LocationFields({ newPost, handleInputChange }) {
   const fire = (name, value) =>
     handleInputChange({ target: { name, value } });
 
+   useEffect(() => {
+    if (newPost.from_country) {
+      const found = allCountries.find(
+        (c) => c.label === newPost.from_country
+      );
+      setFromCountry(found || null);
+    }
+
+    if (newPost.to_country) {
+      const found = allCountries.find(
+        (c) => c.label === newPost.to_country
+      );
+      setToCountry(found || null);
+    }
+  }, [newPost.from_country, newPost.to_country]);
+
   return (
     <>
       {/* FROM */}
       <div className="field">
-        <label className="label">From Country</label>
+        <label className="label">
+          From Country <span style={{ color: "red" }}>*</span>
+        </label>
         <Select
           options={allCountries}
           styles={selectStyles}
@@ -65,12 +83,19 @@ export default function LocationFields({ newPost, handleInputChange }) {
       </div>
 
       <div className="field">
-        <label className="label">From City</label>
+        <label className="label">
+            From City <span style={{ color: "red" }}>*</span>
+          </label>
         <Select
           options={fromCountry ? getCities(fromCountry.value) : []}
           styles={selectStyles}
           placeholder={fromCountry ? "Search city..." : "Select a country first"}
           isDisabled={!fromCountry}
+           value={
+            newPost.from_city
+              ? { label: newPost.from_city, value: newPost.from_city }
+              : null
+          }
           onChange={(opt) => fire("from_city", opt?.value || "")}
           isClearable
         />
@@ -78,7 +103,9 @@ export default function LocationFields({ newPost, handleInputChange }) {
 
       {/* TO */}
       <div className="field">
-        <label className="label">To Country</label>
+        <label className="label">
+            To Country <span style={{ color: "red" }}>*</span>
+          </label>
         <Select
           options={allCountries}
           styles={selectStyles}
@@ -94,12 +121,19 @@ export default function LocationFields({ newPost, handleInputChange }) {
       </div>
 
       <div className="field">
-        <label className="label">To City</label>
+        <label className="label">
+            To City <span style={{ color: "red" }}>*</span>
+          </label>
         <Select
           options={toCountry ? getCities(toCountry.value) : []}
           styles={selectStyles}
           placeholder={toCountry ? "Search city..." : "Select a country first"}
           isDisabled={!toCountry}
+          value={
+            newPost.to_city
+              ? { label: newPost.to_city, value: newPost.to_city }
+              : null
+          }
           onChange={(opt) => fire("to_city", opt?.value || "")}
           isClearable
         />
@@ -107,7 +141,9 @@ export default function LocationFields({ newPost, handleInputChange }) {
 
       {/* Rest of fields */}
       <div className="field">
-        <label className="label">Distance (km)</label>
+         <label className="label">
+            Distance (km) <span style={{ color: "red" }}>*</span>
+          </label>
         <div className="control">
           <input
             className="input"
@@ -122,7 +158,9 @@ export default function LocationFields({ newPost, handleInputChange }) {
       </div>
 
       <div className="field">
-        <label className="label">Estimated Duration (hours)</label>
+        <label className="label">
+            Estimated Duration (hours) <span style={{ color: "red" }}>*</span>
+          </label>
         <div className="control">
           <input
             className="input"
@@ -137,7 +175,9 @@ export default function LocationFields({ newPost, handleInputChange }) {
       </div>
 
       <div className="field">
-        <label className="label">Price (€)</label>
+         <label className="label">
+            Price (€) <span style={{ color: "red" }}>*</span>
+          </label>
         <div className="control">
           <input
             className="input"

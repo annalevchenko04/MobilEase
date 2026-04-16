@@ -130,6 +130,7 @@ const DriverRegister = () => {
         </div>
 
         <p>*Set 123456 as password. Inform a driver to change it after login.</p>
+        <p>**Driver email should be @mobilease.com.</p>
         <br/>
         <button className="button is-primary is-fullwidth">Register Driver</button>
       </form>
