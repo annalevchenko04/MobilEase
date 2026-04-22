@@ -16,9 +16,9 @@ axios
 alembic~=1.18.1
 qrcode~=8.2
 pillow
-
 stripe~=14.3.0
 httpx~=0.28.1
 reportlab~=4.4.10
 protobuf~=6.33.5
 APScheduler~=3.11.2
+redis~=7.4.0
