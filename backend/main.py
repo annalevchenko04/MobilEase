@@ -2105,11 +2105,11 @@ async def create_checkout_session(data: CheckoutRequest):
         type = data.type
 
         if type == "bus":
-            success_url = "/bus-success"
-            cancel_url = "/bus-cancel"
+            success_url = f"{FRONTEND_URL}/bus-success"
+            cancel_url = f"{FRONTEND_URL}/bus-cancel"
         else:
-            success_url = "/rent-success"
-            cancel_url = "/rent-cancel"
+            success_url = f"{FRONTEND_URL}/rent-success"
+            cancel_url = f"{FRONTEND_URL}/rent-cancel"
 
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],
