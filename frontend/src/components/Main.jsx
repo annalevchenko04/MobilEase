@@ -107,7 +107,7 @@ export default function SustainabilityPage() {
 
         <div style={{ marginTop: "12px" }}>
           <a
-            href={`http://localhost:3000/explore`}
+            href="/explore"
             style={{
               display: "inline-flex",
               alignItems: "center",
@@ -153,7 +153,7 @@ export default function SustainabilityPage() {
         </p>
            <div style={{ marginTop: "12px" }}>
           <a
-            href={`http://localhost:3000/explorerent`}
+            href="/explorerent"
             style={{
               display: "inline-flex",
               alignItems: "center",
