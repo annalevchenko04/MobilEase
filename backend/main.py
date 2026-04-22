@@ -38,7 +38,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from .schemas import CheckoutRequest, BookingSeatRequest
 
 GOOGLE_CLIENT_ID = "684289647628-p3l1tr17khb1d8ugpsgnnes3qi43gsgi.apps.googleusercontent.com"
-GOOGLE_REDIRECT_URI = "http://localhost:8000/auth/google/callback"
+GOOGLE_REDIRECT_URI = os.getenv(
+    "GOOGLE_REDIRECT_URI",
+    "http://localhost:8000/auth/google/callback"
+)
 GOOGLE_CLIENT_SECRET = "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"
 
 
@@ -59,6 +62,8 @@ origins = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://gray-coast-0457ace03.6.azurestaticapps.net",
+    "https://mobilease-levchenkoanna.onrender.com",
+    "https://mobilease.onrender.com"
     "https://k548-esp-2025.onrender.com",
     "https://quickchart.io"
 ]
