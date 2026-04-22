@@ -28,7 +28,7 @@ from .calculator import calculate_footprint, emission_factors
 import logging
 from fastapi.responses import JSONResponse
 from fastapi import APIRouter
-from google.oauth2 import id_token
+from google.oauth2 import id_token, service_account
 import httpx
 from google.auth.transport import requests
 from fastapi import Request
@@ -2530,14 +2530,36 @@ from google.api_core.client_options import ClientOptions
 
 # ── Document AI helpers ──────────────────────────────────────
 
+# def get_docai_client():
+#     project   = os.environ["GOOGLE_PROJECT_ID"]
+#     location  = os.environ.get("GOOGLE_LOCATION", "us")
+#     processor = os.environ["GOOGLE_PROCESSOR_ID"]
+#     opts      = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+#     client    = documentai.DocumentProcessorServiceClient(client_options=opts)
+#     name      = client.processor_path(project, location, processor)
+#     print(f">>> DOCAI name: {name}")  # ← add this
+#     return client, name
+
+
 def get_docai_client():
-    project   = os.environ["GOOGLE_PROJECT_ID"]
-    location  = os.environ.get("GOOGLE_LOCATION", "us")
+    project = os.environ["GOOGLE_PROJECT_ID"]
+    location = os.environ.get("GOOGLE_LOCATION", "us")
     processor = os.environ["GOOGLE_PROCESSOR_ID"]
-    opts      = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
-    client    = documentai.DocumentProcessorServiceClient(client_options=opts)
-    name      = client.processor_path(project, location, processor)
-    print(f">>> DOCAI name: {name}")  # ← add this
+
+    creds_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
+
+    credentials = service_account.Credentials.from_service_account_file(
+        creds_path
+    )
+
+    opts = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+
+    client = documentai.DocumentProcessorServiceClient(
+        credentials=credentials,
+        client_options=opts
+    )
+
+    name = client.processor_path(project, location, processor)
     return client, name
 
 
