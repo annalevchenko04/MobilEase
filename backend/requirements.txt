@@ -15,4 +15,4 @@ axios
 alembic
 qrcode
 pillow
-google-auth~=2.30.0
+google-auth
