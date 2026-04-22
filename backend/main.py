@@ -369,6 +369,11 @@ def authenticate_user(username: str, password: str, db: db_dependency):
         return False
     return user
 
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:3000"
+)
+
 @app.get("/auth/google")
 async def google_login():
     google_auth_url = (
@@ -391,7 +396,7 @@ async def google_callback(
 ) -> RedirectResponse:
 
     if code is None:
-        return RedirectResponse("http://localhost:3000")
+        return RedirectResponse(FRONTEND_URL)
 
     token_url = "https://oauth2.googleapis.com/token"
     token_data = {
@@ -447,7 +452,7 @@ async def google_callback(
     }
     access_token = create_token(token_payload)
 
-    redirect_url = f"http://localhost:3000/auth/google/callback?access_token={access_token}"
+    redirect_url = f"{FRONTEND_URL}/auth/google/callback?access_token={access_token}"
     return RedirectResponse(redirect_url)
 
 
@@ -2100,11 +2105,11 @@ async def create_checkout_session(data: CheckoutRequest):
         type = data.type
 
         if type == "bus":
-            success_url = "http://localhost:3000/bus-success"
-            cancel_url = "http://localhost:3000/bus-cancel"
+            success_url = "/bus-success"
+            cancel_url = "/bus-cancel"
         else:
-            success_url = "http://localhost:3000/rent-success"
-            cancel_url = "http://localhost:3000/rent-cancel"
+            success_url = "/rent-success"
+            cancel_url = "/rent-cancel"
 
         session = stripe.checkout.Session.create(
             payment_method_types=["card"],

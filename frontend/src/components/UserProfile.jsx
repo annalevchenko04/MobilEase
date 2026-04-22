@@ -279,7 +279,7 @@ const saveProfileChanges = async () => {
       if (value !== "" && value !== null) payload[key] = value;
     });
 
-    const response = await fetch(`http://localhost:8000/user/${userProfile.id}`, {
+    const response = await fetch(`${API_URL}/user/${userProfile.id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
