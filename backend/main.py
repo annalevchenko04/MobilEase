@@ -2543,20 +2543,24 @@ from google.api_core.client_options import ClientOptions
 
 def get_docai_client():
     project = os.environ["GOOGLE_PROJECT_ID"]
-    location = os.environ.get("GOOGLE_LOCATION", "us")
+    location = os.environ.get("GOOGLE_LOCATION", "eu")
     processor = os.environ["GOOGLE_PROCESSOR_ID"]
 
-    creds_path = os.environ["GOOGLE_APPLICATION_CREDENTIALS"]
-
-    credentials = service_account.Credentials.from_service_account_file(
-        creds_path
+    service_account_info = json.loads(
+        base64.b64decode(
+            os.environ["GOOGLE_SERVICE_ACCOUNT_B64"]
+        ).decode("utf-8")
     )
 
-    opts = ClientOptions(api_endpoint=f"{location}-documentai.googleapis.com")
+    credentials = service_account.Credentials.from_service_account_info(
+        service_account_info
+    )
 
     client = documentai.DocumentProcessorServiceClient(
         credentials=credentials,
-        client_options=opts
+        client_options=ClientOptions(
+            api_endpoint=f"{location}-documentai.googleapis.com"
+        )
     )
 
     name = client.processor_path(project, location, processor)
