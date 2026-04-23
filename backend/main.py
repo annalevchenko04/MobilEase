@@ -2542,19 +2542,25 @@ from google.api_core.client_options import ClientOptions
 
 
 def get_docai_client():
-    project = os.environ["GOOGLE_PROJECT_ID"]
-    location = os.environ.get("GOOGLE_LOCATION", "eu")
+    project   = os.environ["GOOGLE_PROJECT_ID"]
+    location  = os.environ.get("GOOGLE_LOCATION", "eu")
     processor = os.environ["GOOGLE_PROCESSOR_ID"]
 
-    service_account_info = json.loads(
-        base64.b64decode(
-            os.environ["GOOGLE_SERVICE_ACCOUNT_B64"]
-        ).decode("utf-8")
-    )
+    creds_path = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    creds_b64  = os.environ.get("GOOGLE_SERVICE_ACCOUNT_B64")
 
-    credentials = service_account.Credentials.from_service_account_info(
-        service_account_info
-    )
+    if creds_path and os.path.exists(creds_path):
+        # Local — use JSON file directly
+        credentials = service_account.Credentials.from_service_account_file(creds_path)
+        print(">>> Using credentials from file")
+    elif creds_b64:
+        # Render — decode base64
+        import base64, json
+        creds_dict = json.loads(base64.b64decode(creds_b64).decode("utf-8"))
+        credentials = service_account.Credentials.from_service_account_info(creds_dict)
+        print(">>> Using credentials from base64 env var")
+    else:
+        raise RuntimeError("No Google credentials found")
 
     client = documentai.DocumentProcessorServiceClient(
         credentials=credentials,
@@ -2562,9 +2568,9 @@ def get_docai_client():
             api_endpoint=f"{location}-documentai.googleapis.com"
         )
     )
-
-    name = client.processor_path(project, location, processor)
-    return client, name
+    processor_name = client.processor_path(project, location, processor)
+    print(f">>> DOCAI processor: {processor_name}")
+    return client, processor_name
 
 
 def _parse_date(value: str) -> Optional[date]:
