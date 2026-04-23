@@ -26,6 +26,7 @@ import DriverRegister from "./components/DriverRegister";
 import BusSuccess from "./components/BusSuccess";
 import DriverLicenseUpload from "./components/DriverLicenseUpload";
 import AdminLicenseReview from "./components/AdminLicenseReview";
+import CarMapPage from "./components/CarMapPage";
 
 const App = () => {
     const [token, userRole, , , setToken, isVerifying] = useContext(UserContext);
@@ -149,12 +150,12 @@ const App = () => {
 
                                         </a>
                                         <a className="navbar-item is-size-5" href="/explorerent">
-                                    <span className="icon-text">
-                                        <span className="icon">
-                                            <i className="fas fa-car"></i>
-                                        </span>
-                                        <span><strong>Car Renting</strong></span>
-                                    </span>
+                                            <span className="icon-text">
+                                                 <span className="icon">
+                                                       <i className="fas fa-car"></i>
+                                                 </span>
+                                                  <span><strong>Car Renting</strong></span>
+                                            </span>
                                         </a>
 
                                         {userRole !== "member" && (
@@ -243,6 +244,7 @@ const App = () => {
                                 <Route path="/register-driver" element={<DriverRegister />} />
                                 <Route path="/bus-success" element={<BusSuccess />} />
                                 <Route path="/adminlicensereview" element={<AdminLicenseReview />} />
+                                <Route path="/cars-map" element={<CarMapPage />} />
                             </>
                         )}
                     </Routes>

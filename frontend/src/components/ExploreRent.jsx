@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback, useContext } from "react";
 import { UserContext } from "../context/UserContext";
 import { Link } from "react-router-dom";
 import API_URL from "../config";
+import { FaMapMarkedAlt } from "react-icons/fa";
 
 const ExploreRent = () => {
   const [cars, setCars] = useState([]);
@@ -93,7 +94,19 @@ const ExploreRent = () => {
   return (
     <div>
       <h2 className="title is-2">Explore Cars</h2>
-
+      <Link
+        to="/cars-map"
+        style={{
+          display: "inline-block",
+          marginBottom: "20px",
+          color: "#605fc9",
+          fontWeight: "600",
+          textDecoration: "underline",
+          fontSize: "19px",
+        }}
+      >
+        <FaMapMarkedAlt size={18} /> Open Cars Map
+      </Link>
       {errorMessage && (
         <p className="has-text-centered" style={{ color: "#f14668" }}>
           {errorMessage}
