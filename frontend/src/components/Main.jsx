@@ -349,7 +349,7 @@ export default function SustainabilityPage() {
             <div className="column">
               <div className="box">
                 <h3 className="title is-5">🪪 License Verification</h3>
-                <p>Verify our license and rent a car freely.</p>
+                <p>Verify your driver license and rent a car freely.</p>
               </div>
             </div>
           </div>

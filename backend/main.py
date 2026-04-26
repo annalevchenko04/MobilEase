@@ -353,7 +353,7 @@ async def get_user_by_id(userid: int, db: db_dependency):
 async def register_user(user: schemas.UserCreate, db: db_dependency):
     db_user = crud.get_user(db=db, username=user.username)
     if db_user:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="Username already exists")
     return crud.create_user(db=db, user=user)
 
 
