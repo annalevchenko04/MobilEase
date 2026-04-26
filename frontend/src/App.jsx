@@ -7,7 +7,6 @@ import {Route, Routes, Navigate} from "react-router-dom";  // Import routing com
 import Footer from './components/Footer';  // Import the Footer component
 import UserProfile from "./components/UserProfile";
 import Main from "./components/Main";
-import Calculator from './components/Calculator';
 import Analytics from './components/Analytics';
 import Explore from './components/Explore';
 import ExploreRent from './components/ExploreRent';
@@ -15,9 +14,7 @@ import PostDetail from './components/PostDetail';
 import Schedule from './components/Schedule';
 import { Link } from "react-router-dom";
 import './styles.css';
-import CompanyRegister from "./components/CompanyRegister";
 import CarDetail from "./components/CarDetail";
-import Initiatives from './components/Initiatives';
 import RentCar from "./components/RentCar";
 import RentSuccess from "./components/RentSuccess";
 import GoogleCallback from "./components/GoogleCallback";
@@ -214,7 +211,6 @@ const App = () => {
                 <div className="column"></div>
                 <div className="column m-5 is-two-thirds">
                     <Routes>
-                        <Route path="/register-company" element={<CompanyRegister/>} />
                         <Route path="/auth/google/callback" element={<GoogleCallback />} />
                         />
                         {!token ? (
@@ -229,13 +225,11 @@ const App = () => {
                                 {/* Redirect to schedule if authenticated */}
                                 <Route path="/profile" element={<UserProfile/>}/>
                                 <Route path="/main" element={<Main/>}/>
-                                <Route path="/footprint" element={<Calculator/>}/>
                                 <Route path="/analytics" element={<Analytics/>}/>
                                 <Route path="/explore" element={<Explore/>}/>
                                 <Route path="/explorerent" element={<ExploreRent/>}/>
                                 <Route path="/car/:id" element={<CarDetail />} />
                                 <Route path="/post/:id" element={<PostDetail />} />
-                                <Route path="/initiatives" element={<Initiatives />} />
                                 <Route path="/schedule" element={<Schedule events={events} addEvent={addEvent}/>}/>
                                 <Route path="/license/verify" element={<DriverLicenseUpload/>}/>
                                 <Route path="*" element={<Navigate to="/main"/>}/>

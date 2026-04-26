@@ -66,6 +66,14 @@ def create_user(db: Session, user: schemas.UserCreate):
     is_google_user = user.password is None or user.password == "google_oauth"
     hashed_password = pwd_context.hash(user.password) if not is_google_user else "google_oauth"
 
+    # ── Uniqueness checks ────────────────────────────────────
+    if db.query(models.User).filter(models.User.username == user.username).first():
+        raise HTTPException(status_code=400, detail="Username already taken.")
+    if db.query(models.User).filter(models.User.email == user.email).first():
+        raise HTTPException(status_code=400, detail="Email already registered.")
+    if user.phone and db.query(models.User).filter(models.User.phone == user.phone).first():
+        raise HTTPException(status_code=400, detail="Phone number already registered.")
+
     user_data = {
         "username": user.username,
         "email": user.email,
@@ -79,19 +87,6 @@ def create_user(db: Session, user: schemas.UserCreate):
     }
 
     if user.role == "member":
-        email_domain = user.email.split('@')[-1].lower()
-
-        if not is_google_user:
-            company = db.query(models.Company).filter(
-                models.Company.domain == email_domain
-            ).first()
-            if not company:
-                raise HTTPException(
-                    status_code=400,
-                    detail=f"No company registered with domain '{email_domain}'. Please contact your company admin."
-                )
-            user_data["company_id"] = company.id
-
         db_user = models.Member(**user_data, membership_status=user.membership_status or "active")
 
     elif user.role == "admin":
@@ -134,11 +129,7 @@ def create_user(db: Session, user: schemas.UserCreate):
         "member_details": {
             "membership_status": db_user.membership_status
         } if isinstance(db_user, models.Member) else None,
-        "company": {
-            "name": db_user.company.name,
-            "domain": db_user.company.domain,
-            "industry": db_user.company.industry
-        } if db_user.company else None
+        "company": None
     })
 
 def create_company(db: Session, company_data: schemas.CompanyCreate, user_data: schemas.UserCreate):
@@ -199,7 +190,7 @@ def create_company(db: Session, company_data: schemas.CompanyCreate, user_data: 
 
 
 def get_user(db: Session, username: str):
-    db_user = db.query(models.User).options(joinedload(models.User.company)).filter(models.User.username == username).first()
+    db_user = db.query(models.User).filter(models.User.username == username).first()
     if not db_user:
         return None
 
@@ -219,22 +210,14 @@ def get_user(db: Session, username: str):
     member_details = None
     if db_user.role == "member":
         member_data = db.query(models.Member).filter(models.Member.username == username).first()
-        member_details = schemas.Member(
-            membership_status=member_data.membership_status,
-        )
-
-    company_info = None
-    if db_user.company:
-        company_info = schemas.Company(
-            name=db_user.company.name,
-            domain=db_user.company.domain,
-            industry=db_user.company.industry
-        )
+        if member_data:  # ← add this None check
+            member_details = schemas.Member(
+                membership_status=member_data.membership_status,
+            )
 
     return schemas.UserResponse(
         **user_data,
-        member_details=member_details,
-        company=company_info
+        member_details=member_details
     )
 
 
