@@ -2674,6 +2674,51 @@ async def verify_license(
 
     extracted = _extract_fields(doc)
 
+    # ── Document type guard ──────────────────────────────────────
+    EXPECTED_DOC_TYPE = "vairuotojo pažymėjimas"
+    doc_type_field = extracted.get("driving_licence_field", "").strip().lower()
+
+    if doc_type_field != EXPECTED_DOC_TYPE.lower():
+        flags = ["Invalid document type — not a driver's license"]
+        risk_score = 1.0
+        risk_reason = "Document is not a driver's license"
+        auto_status = "rejected"
+
+        image_b64 = base64.b64encode(contents).decode()
+        image_data_url = f"data:{mime};base64,{image_b64}"
+
+        sub = db.query(models.LicenseSubmission).filter(
+            models.LicenseSubmission.user_id == current_user.id
+        ).first()
+        if not sub:
+            sub = models.LicenseSubmission(user_id=current_user.id)
+            db.add(sub)
+
+        sub.driver_name = f"{current_user.name} {current_user.surname}"
+        sub.status = auto_status
+        sub.extracted_data = encrypt_data(extracted)
+        sub.profile_matches = encrypt_data({})
+        sub.risk_score = risk_score
+        sub.risk_reason = risk_reason
+        sub.validation_flags = flags
+        sub.image_url = image_data_url
+        sub.submitted_at = datetime.now(timezone.utc)
+
+        db.commit()
+        db.refresh(sub)
+
+        return {
+            "id": sub.id,
+            "status": sub.status,
+            "risk_score": sub.risk_score,
+            "risk_reason": sub.risk_reason,
+            "admin_note": sub.admin_note,
+            "submitted_at": sub.submitted_at,
+            "extracted_data": decrypt_data(sub.extracted_data),
+            "profile_matches": decrypt_data(sub.profile_matches),
+            "validation_flags": sub.validation_flags,
+        }
+
     flags = []
     expiry_str = extracted.get("expiry_date")
     if expiry_str:

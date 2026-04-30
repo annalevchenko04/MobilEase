@@ -19,7 +19,15 @@ const FIELD_LABELS = {
   address:        "Address",
   license_class:  "Class",
   issuing_state:  "Issued By",
+  driving_licence_field: "Document Type",
 };
+
+ const EXPECTED_DOC_TYPE = "vairuotojo pažymėjimas";
+ const isValidLicenseType = (doc) => {
+   const field = doc?.extracted_data?.driving_licence_field;
+   if (!field) return false;
+   return field.trim().toLowerCase() === EXPECTED_DOC_TYPE.toLowerCase();
+ };
 
 const RiskBadge = ({ score }) => {
   const pct = Math.round(score * 100);
@@ -264,7 +272,25 @@ export default function AdminLicenseReview() {
             </div>
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
-
+                  {selected.extracted_data && !isValidLicenseType(selected) && (
+                    <div style={{
+                      gridColumn: "1 / -1",
+                      background: "#fff5f5", border: "1px solid #ffc9c9",
+                      borderRadius: 10, padding: "12px 16px", marginBottom: 4,
+                      display: "flex", alignItems: "center", gap: 10,
+                    }}>
+                      <span style={{ fontSize: 18, color: "#d63031" }}>✗</span>
+                      <div>
+                        <div style={{ fontSize: 10, letterSpacing: 2, color: "#d63031",
+                               fontFamily: "monospace" }}>NOT A DRIVER'S LICENSE</div>
+                        <div style={{ fontSize: 12, color: "#868e96", marginTop: 3 }}>
+                          Detected type: <strong>
+                            {selected.extracted_data.driving_licence_field || "not found"}
+                          </strong> — expected "vairuotojo pažymėjimą"
+                        </div>
+                      </div>
+                    </div>
+                  )}
               {/* License image */}
               <div>
                 <div style={{ fontSize: 10, letterSpacing: 2, color: "#868e96", fontFamily: "monospace", marginBottom: 8 }}>

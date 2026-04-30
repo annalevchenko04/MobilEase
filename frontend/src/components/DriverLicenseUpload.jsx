@@ -18,7 +18,16 @@ const FIELD_LABELS = {
   expiry_date:   "Expiry Date",
   issue_date:    "Issue Date",
   country:       "Country",
+  driving_licence_field: "Document Type",
 };
+
+ const EXPECTED_DOC_TYPE = "vairuotojo pažymėjimas";
+
+ const isValidLicenseType = (result) => {
+   const field = result?.extracted_data?.driving_licence_field;
+   if (!field) return false;
+   return field.trim().toLowerCase() === EXPECTED_DOC_TYPE.toLowerCase();
+ };
 
 // ── Risk score gauge ─────────────────────────────────────────
 const RiskGauge = ({ score }) => {
@@ -308,6 +317,24 @@ useEffect(() => {
               background: "#fff", border: "1px solid #e9ecef",
               borderRadius: 12, padding: 20, boxShadow: "0 2px 12px #0000000a",
             }}>
+                 {/* Wrong document type — show blocking banner */}
+                 {result.extracted_data && !isValidLicenseType(result) && (
+                   <div style={{
+                     background: "#fff5f5", border: "1px solid #ffc9c9",
+                     borderRadius: 10, padding: "14px 16px", marginBottom: 16,
+                   }}>
+                     <div style={{ fontSize: 10, letterSpacing: 2, color: "#d63031",
+                            fontFamily: "monospace", marginBottom: 4 }}>
+                       INVALID DOCUMENT TYPE
+                     </div>
+                     <div style={{ fontSize: 13, color: "#c92a2a", fontWeight: 600 }}>
+                       This does not appear to be a driver's license.
+                     </div>
+                     <div style={{ fontSize: 12, color: "#868e96", marginTop: 6 }}>
+                       Please upload a valid driver's license and try again.
+                     </div>
+                   </div>
+                 )}
               {/* Risk score */}
               {result.risk_score !== undefined && (
                 <div style={{ display: "flex", alignItems: "center", gap: 18, marginBottom: 18, paddingBottom: 16, borderBottom: "1px solid #f1f3f5" }}>
