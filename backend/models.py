@@ -443,6 +443,10 @@ class CarRental(Base):
     user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
     car_id = Column(Integer, ForeignKey("cars.id"), nullable=False)
 
+    # 👇 NEW
+    pin_hash = Column(String(64), nullable=True)
+    is_unlocked = Column(Boolean, default=False)
+
     # FR‑6.2 — Pickup & Drop‑off
     pickup_location = Column(String(255), nullable=False)
     dropoff_location = Column(String(255), nullable=False)

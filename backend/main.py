@@ -34,7 +34,7 @@ from google.auth.transport import requests
 from fastapi import Request
 from fastapi.responses import RedirectResponse, JSONResponse
 from apscheduler.schedulers.background import BackgroundScheduler
-
+import hashlib
 from .schemas import CheckoutRequest, BookingSeatRequest
 
 GOOGLE_CLIENT_ID = "684289647628-p3l1tr17khb1d8ugpsgnnes3qi43gsgi.apps.googleusercontent.com"
@@ -3002,3 +3002,40 @@ async def unlock_seat_endpoint(
     })
 
     return {"message": "Seat unlocked"}
+
+from pydantic import BaseModel
+
+class UnlockRequest(BaseModel):
+    pin: str
+
+
+@app.post("/rentals/{rental_id}/unlock")
+def unlock_car(
+    rental_id: int,
+    request: UnlockRequest,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    rental = db.query(models.CarRental).filter(
+        models.CarRental.id == rental_id,
+        models.CarRental.user_id == current_user.id
+    ).first()
+
+    if not rental:
+        raise HTTPException(status_code=404, detail="Rental not found")
+
+    if rental.status != "reserved":
+        raise HTTPException(status_code=400, detail="Rental not active")
+
+    hashed = hashlib.sha256(request.pin.encode()).hexdigest()
+
+    if hashed != rental.pin_hash:
+        raise HTTPException(status_code=401, detail="Invalid PIN")
+
+    # 👇 unlock logic
+    rental.is_unlocked = True
+    rental.status = "in_progress"
+
+    db.commit()
+
+    return {"message": "Car unlocked successfully"}

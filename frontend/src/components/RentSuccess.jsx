@@ -8,8 +8,10 @@ const RentSuccess = () => {
   const [token] = useContext(UserContext);
   const [rentalId, setRentalId] = useState(null);
   const [rental, setRental] = useState(null);
+  const [enteredPin, setEnteredPin] = useState("");
+const [unlockStatus, setUnlockStatus] = useState(null);
   const hasFetched = useRef(false); // ← prevent double fetch
-
+const [pin, setPin] = useState(null);
   useEffect(() => {
   if (!token) return;
   if (hasFetched.current) return;
@@ -24,12 +26,15 @@ const RentSuccess = () => {
 
   const confirmAndFetch = async () => {
     try {
-      await fetch(`${API_URL}/rentals/${id}/confirm-payment`, {
+      const payRes = await fetch(`${API_URL}/rentals/${id}/confirm-payment`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
+
+      const payData = await payRes.json();
+      setPin(payData.plain_pin);
 
       const res = await fetch(`${API_URL}/rentals/${id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -54,7 +59,26 @@ const RentSuccess = () => {
     link.click();
     document.body.removeChild(link);
   };
+const unlockCar = async () => {
+  try {
+    const res = await fetch(`${API_URL}/rentals/${rentalId}/unlock`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ pin: enteredPin }),
+    });
 
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.detail);
+
+    setUnlockStatus("Car unlocked successfully 🚗");
+  } catch (err) {
+    setUnlockStatus(err.message);
+  }
+};
   return (
     <div style={{ maxWidth: 560, margin: "60px auto", fontFamily: "inherit" }}>
       <div style={{
@@ -65,7 +89,7 @@ const RentSuccess = () => {
       }}>
         {/* Green header */}
         <div style={{
-          background: "linear-gradient(135deg, #00b894, #00cec9)",
+          background: "linear-gradient(135deg, #605fc9, #3742fa)",
           padding: "36px 24px", textAlign: "center"
         }}>
           <div style={{
@@ -82,6 +106,27 @@ const RentSuccess = () => {
           </p>
         </div>
 
+        <br/>
+                  {pin && (
+  <div style={{
+    background: "#fff3cd",
+    border: "1px solid #ffeeba",
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 16,
+    textAlign: "center"
+  }}>
+    <div style={{ fontSize: 12, color: "#856404" }}>
+      🔑 Your unlock PIN
+    </div>
+    <div style={{ fontSize: 28, fontWeight: 800 }}>
+      {pin}
+    </div>
+    <div style={{ fontSize: 11, color: "#856404" }}>
+      Use this to unlock the car
+    </div>
+  </div>
+)}
         {/* Body */}
         <div style={{ padding: "24px 28px" }}>
           {rental ? (

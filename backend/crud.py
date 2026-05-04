@@ -1923,6 +1923,16 @@ def create_car_rental(db: Session, rental: schemas.CarRentalCreate, user_id: int
     db.refresh(db_rental)
     return db_rental
 
+import random
+import hashlib
+
+def generate_pin():
+    return str(random.randint(1000, 9999))
+
+def hash_pin(pin: str):
+    return hashlib.sha256(pin.encode()).hexdigest()
+
+
 def confirm_rental_payment(db: Session, rental_id: int):
     rental = db.query(models.CarRental).filter(
         models.CarRental.id == rental_id
@@ -1933,11 +1943,19 @@ def confirm_rental_payment(db: Session, rental_id: int):
 
     rental.status = "reserved"
 
+    # 👇 generate PIN
+    pin = generate_pin()
+    rental.pin_hash = hash_pin(pin)
+
     car = rental.car
-    car.available = False   # 👈 ONLY HERE
+    car.available = False
 
     db.commit()
     db.refresh(rental)
+
+    # ⚠️ return PIN ONLY ONCE (frontend display)
+    rental.plain_pin = pin
+
     return rental
 
 # ⭐ UPDATE RENTAL (also uses ORS distance)
