@@ -89,7 +89,7 @@ const BulkEventModal = ({ token, onClose, onDone, templateDate }) => {
   const handlePreview = () => {
     if (!name.trim())          { setError("Please select a route first."); return; }
     if (!time)                 { setError("Please set a time."); return; }
-    if (duration <= 1)         { setError("Duration must be more than 1 hour."); return; }
+    if (duration <= 0)         { setError("Duration must be more than 0 hour."); return; }
     if (!dateFrom || !dateTo)  { setError("Please set both dates."); return; }
     if (days.length === 0)     { setError("Select at least one day."); return; }
     const dates = computeDates();
