@@ -113,10 +113,7 @@ const BulkEventModal = ({ token, onClose, onDone, templateDate }) => {
             Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify({
-            name,
-            description,
-            date,
-            time,
+            name, description, date, time,
             duration: Number(duration),
             event_type: eventType,
             max_participants: Number(maxParticipants) > 0 ? Number(maxParticipants) : null,
@@ -127,7 +124,11 @@ const BulkEventModal = ({ token, onClose, onDone, templateDate }) => {
             trainer_id: null,
           }),
         });
-        if (!res.ok) throw new Error(`Failed on ${date}`);
+
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(`${date}: ${errorData.detail || 'Failed to create event'}`);
+        }
         created++;
       }
       onDone(created);

@@ -656,7 +656,33 @@ def get_user_badges(db: Session, user_id: int):
         for ub in user_badges
     ]
 
+
 def create_event(db: Session, event: schemas.EventCreate, user_id: int):
+    # ⭐ Check driver availability before creating
+    if event.driver_id:
+        # Calculate event start and end time
+        event_start = datetime.combine(event.date, event.time)
+        event_end = event_start + timedelta(hours=event.duration)
+
+        # Find all events assigned to this driver on the same date
+        conflicting = db.query(models.Event).filter(
+            models.Event.driver_id == event.driver_id,
+            models.Event.date == event.date
+        ).all()
+
+        for existing in conflicting:
+            existing_start = datetime.combine(existing.date, existing.time)
+            existing_end = existing_start + timedelta(hours=existing.duration)
+
+            # Check overlap: two events overlap if one starts before the other ends
+            if event_start < existing_end and event_end > existing_start:
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Driver is already assigned to '{existing.name}' "
+                           f"from {existing.time} "
+                           f"({existing.duration}h) on this date."
+                )
+
     db_event = models.Event(
         name=event.name,
         description=event.description,

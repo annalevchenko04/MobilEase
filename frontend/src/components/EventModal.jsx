@@ -97,11 +97,13 @@ useEffect(() => {
     const url = event?.id
       ? `${API_URL}/event/${event.id}`
       : `${API_URL}/event`;
-
     try {
       const response = await fetch(url, requestOptions);
-      if (!response.ok) throw new Error(`Failed to ${event?.id ? 'update' : 'create'} event`);
-      handleClose();  // Close modal and refresh events
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || `Failed to ${event?.id ? 'update' : 'create'} event`);
+      }
+      handleClose();
     } catch (error) {
       setErrorMessage(`Error: ${error.message}`);
     }

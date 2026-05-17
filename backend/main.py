@@ -2848,7 +2848,19 @@ def review_license(
 
     db.commit()
     db.refresh(sub)
-    return sub
+
+    #  decrypt before returning — same pattern as your other license endpoints
+    return {
+        "id":               sub.id,
+        "status":           sub.status,
+        "risk_score":       sub.risk_score,
+        "risk_reason":      sub.risk_reason,
+        "admin_note":       sub.admin_note,
+        "submitted_at":     sub.submitted_at,
+        "validation_flags": sub.validation_flags if sub.validation_flags else [],
+        "extracted_data":   decrypt_data(sub.extracted_data) if sub.extracted_data else None,
+        "profile_matches":  decrypt_data(sub.profile_matches) if sub.profile_matches else None,
+    }
 
 
 @app.get("/admin/analytics/revenue")
