@@ -169,33 +169,28 @@ class ConnectionManager:
 manager = ConnectionManager()
 # ─────────────────────────────────────────────────────────
 from backend.database import SessionLocal
-
 @app.websocket("/ws/events/{event_id}/seats")
 async def websocket_seat_updates(websocket: WebSocket, event_id: int):
     await manager.connect(websocket, event_id)
-
-    # Create DB session manually
     db = SessionLocal()
 
     try:
         bookings = crud.get_bookings_by_event(db, event_id)
         taken_seats = [b.seat_number for b in bookings]
 
-        locked_keys = redis_client.keys(f"seat_lock:{event_id}:*")
-        locked_seats = [int(k.split(":")[-1]) for k in locked_keys]
+        locked_seats = get_locked_seats(event_id)
 
         await websocket.send_json({
             "type": "seat_update",
             "taken_seats": taken_seats,
-            "locked_seats": locked_seats
+            "locked_seats": locked_seats,
         })
 
         while True:
-            await websocket.receive_text()
+            await websocket.receive_text()  # ping from client
 
     except WebSocketDisconnect:
         manager.disconnect(websocket, event_id)
-
     finally:
         db.close()
 
@@ -2942,75 +2937,70 @@ def send_ticket_email_endpoint(
         pdf_bytes=pdf_bytes
     )
 
-def get_locked_seats(event_id: int, current_user_id: int):
-    keys = redis_client.keys(f"seat_lock:{event_id}:*")
+def get_locked_seats(event_id: int) -> list[int]:
+    pattern = f"seat_lock:{event_id}:*"
     locked = []
 
-    for key in keys:
-        seat = int(key.split(":")[-1])
-        owner = redis_client.get(key)
-
-        if owner and owner != str(current_user_id):
+    for key in redis_client.scan_iter(pattern):
+        try:
+            seat = int(key.split(":")[-1])
             locked.append(seat)
+        except ValueError:
+            continue
 
     return locked
+
 
 from fastapi import Body
 
 @app.post("/events/{event_id}/lock-seat")
 async def lock_seat_endpoint(
     event_id: int,
-    body: BookingSeatRequest,  # <- keep the Pydantic object
+    body: BookingSeatRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    seat_number = body.seat_number  # ← extract the integer
-    print("DEBUG seat_number =", seat_number)
-
-    key = f"seat_lock:{event_id}:{seat_number}"  # now this is correct
+    seat_number = body.seat_number
+    key = f"seat_lock:{event_id}:{seat_number}"
     user_id = str(current_user.id)
 
     existing = redis_client.get(key)
-
     if existing and existing != user_id:
         raise HTTPException(409, "Seat already locked")
 
     redis_client.set(key, user_id, ex=300)
 
-    locked_seats = get_locked_seats(event_id, current_user.id)
     taken_seats = [b.seat_number for b in crud.get_bookings_by_event(db, event_id)]
+    locked_seats = get_locked_seats(event_id)
 
     await manager.broadcast_to_event(event_id, {
         "type": "seat_update",
         "taken_seats": taken_seats,
-        "locked_seats": locked_seats
+        "locked_seats": locked_seats,
     })
 
     return {"message": "Seat locked"}
 @app.post("/events/{event_id}/unlock-seat")
 async def unlock_seat_endpoint(
     event_id: int,
-    body: BookingSeatRequest,           # ← Pydantic object from request
+    body: BookingSeatRequest,
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user)
 ):
-    seat_number = body.seat_number      # ← extract the actual integer
+    seat_number = body.seat_number
     key = f"seat_lock:{event_id}:{seat_number}"
     user_id = str(current_user.id)
 
-    # Only unlock if the current user owns the lock
     if redis_client.get(key) == user_id:
         redis_client.delete(key)
 
-    # Get updated seat state
-    locked_seats = get_locked_seats(event_id, current_user.id)
     taken_seats = [b.seat_number for b in crud.get_bookings_by_event(db, event_id)]
+    locked_seats = get_locked_seats(event_id)
 
-    # Broadcast updates to WebSocket subscribers
     await manager.broadcast_to_event(event_id, {
         "type": "seat_update",
         "taken_seats": taken_seats,
-        "locked_seats": locked_seats
+        "locked_seats": locked_seats,
     })
 
     return {"message": "Seat unlocked"}

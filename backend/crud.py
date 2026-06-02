@@ -939,6 +939,7 @@ def generate_ticket_pdf_bytes(booking, event, user) -> bytes:
     elements = []
 
     elements.append(Paragraph("MobilEase", title_style))
+    elements.append(Spacer(1, 6))  # ← add vertical space (6 points)
     elements.append(Paragraph("Bus Ticket Confirmation", sub_style))
     elements.append(Spacer(1, 10))
 
@@ -964,11 +965,10 @@ def generate_ticket_pdf_bytes(booking, event, user) -> bytes:
     elements.append(table)
     elements.append(Spacer(1, 20))
 
-    qr_img = qrcode.make(booking.qr_code)
-    qr_buffer = io.BytesIO()
-    qr_img.save(qr_buffer, format="PNG")
-    qr_buffer.seek(0)
-    qr = Image(qr_buffer, width=45*mm, height=45*mm)
+    import base64
+
+    qr_buffer = io.BytesIO(base64.b64decode(booking.qr_code))
+    qr = Image(qr_buffer, width=45 * mm, height=45 * mm)
     qr.hAlign = "CENTER"
     elements.append(qr)
 

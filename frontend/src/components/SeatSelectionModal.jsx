@@ -16,21 +16,34 @@ const SeatSelectionModal = ({ event, bookings: initialBookings, onSelectSeat, on
   const [isSenior, setIsSenior] = useState(false);
   const wsRef = useRef(null);
 
-  useEffect(() => {
+useEffect(() => {
   const wsUrl = API_URL.replace("http://", "ws://").replace("https://", "wss://");
   const ws = new WebSocket(`${wsUrl}/ws/events/${event.id}/seats`);
   wsRef.current = ws;
 
   ws.onmessage = (e) => {
     const data = JSON.parse(e.data);
-    if (data.type === "seat_update") {
-      setTakenSeats(data.taken_seats.map(Number));
-      setLockedSeats((data.locked_seats || []).map(Number));
+    if (data.type !== "seat_update") return;
 
+    const wsTaken = Array.isArray(data.taken_seats)
+      ? data.taken_seats.map(Number)
+      : [];
+
+    const wsLocked = Array.isArray(data.locked_seats)
+      ? data.locked_seats.map(Number)
+      : [];
+
+    // 1) update taken + locked from backend
+    setTakenSeats(wsTaken);
+    setLockedSeats(wsLocked);
+
+    // 2) drop seats that became taken OR locked (by anyone)
       setSelectedSeats(prev =>
-        prev.filter(s => !data.taken_seats.includes(s))
-      );
-    }
+      prev.filter(s =>
+        !wsTaken.includes(s) &&          // remove if taken
+        !(wsLocked.includes(s) && !prev.includes(s)) // remove only if locked by others
+      )
+    );
   };
 
   const ping = setInterval(() => {
@@ -42,7 +55,6 @@ const SeatSelectionModal = ({ event, bookings: initialBookings, onSelectSeat, on
     ws.close();
   };
 }, [event.id]);
-
 
 
   const generateRows = (total) => {

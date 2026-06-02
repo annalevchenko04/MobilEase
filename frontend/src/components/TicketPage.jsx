@@ -54,6 +54,8 @@ export default TicketPage;
 
 import jsPDF from "jspdf";
 
+
+
 const generateTicketPDF = (booking) => {
   const doc = new jsPDF();
 
@@ -94,18 +96,20 @@ const generateTicketPDF = (booking) => {
 
   // --- Centered QR Code ---
   if (booking.qr_code) {
+    const cleanQR = booking.qr_code.replace(/\s/g, "");
     const qrSize = 60; // make it nice and visible
     const qrX = (pageWidth - qrSize) / 2; // center horizontally
     const qrY = y + 60;
 
-    doc.addImage(
-      `data:image/png;base64,${booking.qr_code}`,
+       doc.addImage(
+      `data:image/png;base64,${cleanQR}`,
       "PNG",
       qrX,
       qrY,
       qrSize,
       qrSize
     );
+
   }
 
   // Save PDF
