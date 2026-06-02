@@ -42,10 +42,11 @@ GOOGLE_REDIRECT_URI = os.getenv(
     "GOOGLE_REDIRECT_URI",
     "http://localhost:8000/auth/google/callback"
 )
-GOOGLE_CLIENT_SECRET = "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"
 
 
 load_dotenv()
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+
 print(">>> PROCESSOR ID:", os.environ.get("GOOGLE_PROCESSOR_ID"))
 # Create a directory to store uploaded images if it doesn't exist
 os.makedirs("images", exist_ok=True)
