@@ -136,7 +136,7 @@ const App = () => {
                                         </span>
                                     </a>
                                 )}
-
+                                       {userRole !== "driver" && (
                                         <a className="navbar-item is-size-5" href="/explore">
                                     <span className="icon-text">
                                         <span className="icon">
@@ -146,6 +146,8 @@ const App = () => {
                                     </span>
 
                                         </a>
+                                        )}
+                                        {userRole !== "driver" && (
                                         <a className="navbar-item is-size-5" href="/explorerent">
                                             <span className="icon-text">
                                                  <span className="icon">
@@ -154,8 +156,9 @@ const App = () => {
                                                   <span><strong>Car Renting</strong></span>
                                             </span>
                                         </a>
+                                            )}
 
-                                        {userRole !== "member" && (
+                                        {userRole !== "member" && userRole !== "driver" && (
                                         <a className="navbar-item is-size-5" href="/schedule">
                                                 <span className="icon-text">
                                                     <span className="icon">

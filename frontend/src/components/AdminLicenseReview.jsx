@@ -185,7 +185,7 @@ export default function AdminLicenseReview() {
 
       {/* Filter tabs */}
       <div style={{
-        display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap",
+        display: "flex", gap: 6, marginBottom: 16, overflowX: "auto", scrollbarWidth: "none",
         background: "#f8f9fa", borderRadius: 10, padding: 6, border: "1px solid #e9ecef",
       }}>
         {[
@@ -201,6 +201,7 @@ export default function AdminLicenseReview() {
             onClick={() => setFilter(key)}
             style={{
               padding: "6px 12px", borderRadius: 7, fontSize: 12, fontWeight: 700,
+              flexShrink: 0,
               background: filterStatus === key ? "#fff" : "transparent",
               color: filterStatus === key ? color : "#868e96",
               boxShadow: filterStatus === key ? "0 1px 4px #0000001a" : "none",
@@ -221,13 +222,20 @@ export default function AdminLicenseReview() {
 
       {/* Main split layout */}
       <div style={{
-        display: "flex", gap: 16, alignItems: "flex-start",
+        display: "flex", flexDirection: window.innerWidth < 640 ? "column" : "row",
+        gap: 16, alignItems: "flex-start",
         border: "1px solid #e9ecef", borderRadius: 12, overflow: "hidden",
         background: "#fff", minHeight: 500,
       }}>
 
         {/* LEFT — list */}
-        <div style={{ width: 300, borderRight: "1px solid #f1f3f5", flexShrink: 0, overflowY: "auto", maxHeight: 700 }}>
+        <div style={{
+          width: window.innerWidth < 640 ? "100%" : 300,
+          borderRight: window.innerWidth < 640 ? "none" : "1px solid #f1f3f5",
+          borderBottom: window.innerWidth < 640 ? "1px solid #f1f3f5" : "none",
+          flexShrink: 0, overflowY: "auto",
+          maxHeight: window.innerWidth < 640 ? 240 : 700,
+        }}>
           {loading ? (
             <div style={{ padding: 40, textAlign: "center", color: "#868e96", fontSize: 13 }}>Loading…</div>
           ) : filtered.length === 0 ? (
@@ -271,7 +279,7 @@ export default function AdminLicenseReview() {
               </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 20 }}>
+            <div style={{ display: "grid", gridTemplateColumns: window.innerWidth < 640 ? "1fr" : "1fr 1fr", gap: 16, marginBottom: 20 }}>
                   {selected.extracted_data && !isValidLicenseType(selected) && (
                     <div style={{
                       gridColumn: "1 / -1",
@@ -442,7 +450,7 @@ export default function AdminLicenseReview() {
                 </div>
               )}
 
-              <div style={{ display: "flex", gap: 10 }}>
+              <div style={{ display: "flex", flexDirection: window.innerWidth < 640 ? "column" : "row", gap: 10 }}>
                 <button
                   className="lic-action-btn"
                   onClick={() => handleDecision("approved")}

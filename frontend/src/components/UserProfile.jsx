@@ -1873,6 +1873,15 @@ const upcomingRentals = rentals.filter((rental) => {
     </Link>
       <br/>
       <br/>
+<div
+  style={{
+    overflowX: "auto",
+    overflowY: "auto",
+    maxHeight: "60vh",   // vertical scroll limit
+    width: "100%",
+    WebkitOverflowScrolling: "touch",
+  }}
+>
     <table className="table is-striped is-fullwidth">
       <thead>
         <tr>
@@ -1936,6 +1945,7 @@ const upcomingRentals = rentals.filter((rental) => {
         )}
       </tbody>
     </table>
+          </div>
   </div>
 )}
 {showEditModal && editingDriver && (
