@@ -77,7 +77,7 @@ useEffect(() => {
     <div style={{ maxWidth: "900px", margin: "0 auto" }}>
       <h1 className="title is-2">Admin Analytics Dashboard</h1>
       <br/>
-      <div className="has-text-centered" style={{ marginBottom: 16, display: "flex", gap: 8, justifyContent: "center" }}>
+      <div className="has-text-centered" style={{ marginBottom: 16, display: "flex", gap: 8, justifyContent: "center", flexWrap: "wrap" }}>
   {[
     { key: "tickets", label: "🎟 Tickets Sold" },
     { key: "revenue", label: "🚌 Bus Revenue" },

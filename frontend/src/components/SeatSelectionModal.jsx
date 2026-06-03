@@ -10,6 +10,7 @@ const SeatSelectionModal = ({ event, bookings: initialBookings, onSelectSeat, on
   const [takenSeats, setTakenSeats] = useState(
     initialBookings.map(b => Number(b.seat_number))
   );
+  const isMobile = window.innerWidth <= 480;
   const [lockedSeats, setLockedSeats] = useState([]);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [isYoung, setIsYoung] = useState(false);
@@ -184,7 +185,14 @@ const renderSeat = (seat) => {
   return (
     <div className="modal is-active">
       <div className="modal-background" onClick={onClose}></div>
-      <div className="modal-card seat-modal-card">
+      <div
+        className="modal-card seat-modal-card"
+        style={{
+          width: isMobile ? "95%" : "600px",
+          maxWidth: "95%",
+          margin: "0 auto"
+        }}
+      >
         <header className="modal-card-head">
           <p className="modal-card-title">Choose Your Seat(s)</p>
           <button className="button" onClick={onClose}>X</button>
@@ -238,15 +246,39 @@ const renderSeat = (seat) => {
           </div>
         </section>
 
-        <footer className="modal-card-foot" style={{ width: "100%" }}>
+          <footer
+            className="modal-card-foot"
+            style={{
+              width: "100%",
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: "10px"
+            }}
+          >
           <div style={{ marginRight: "auto" }}>
-            <button className="button is-danger is-light" onClick={handleSkip}>
+            <button
+              className="button is-danger is-light"
+              onClick={handleSkip}
+              style={{
+                width: isMobile ? "100%" : "auto"
+              }}
+            >
               Continue without seat selection
             </button>
+
+
           </div>
-          <button className="button is-primary" onClick={handleConfirm}>
+          <button
+            className="button is-primary"
+            onClick={handleConfirm}
+            style={{
+              width: isMobile ? "100%" : "auto"
+            }}
+          >
             Confirm Selection
           </button>
+
+
         </footer>
       </div>
     </div>
