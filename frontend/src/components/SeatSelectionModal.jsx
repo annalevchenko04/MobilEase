@@ -133,6 +133,11 @@ const renderSeat = (seat) => {
   if (isYoung || isSenior) totalPrice = totalPrice * 0.5;
 
   const handleConfirm = () => {
+    if (selectedSeats.length === 0) {
+    alert("Please select at least one seat before continuing.");
+    return;
+  }
+
     // Final check — make sure none of the selected seats got taken while choosing
     const conflict = selectedSeats.some(s => takenSeats.includes(s));
     if (conflict) {
