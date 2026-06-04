@@ -44,6 +44,41 @@ const requiredRouteFields = [
   "estimated_duration",
   "price",
 ];
+const [distanceKm, setDistanceKm] = useState(0);
+const [tripMinutes, setTripMinutes] = useState(0);
+async function calculateDistanceKm(from, to) {
+  const res = await fetch("https://api.openrouteservice.org/v2/directions/driving-car", {
+    method: "POST",
+    headers: {
+      "Authorization": process.env.REACT_APP_ORS_API_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      coordinates: [
+        [from.lng, from.lat],
+        [to.lng, to.lat]
+      ]
+    }),
+  });
+
+  const data = await res.json();
+  if (!data.routes || data.routes.length === 0) return { km: 0, minutes: 0 };
+
+  const summary = data.routes[0].summary;
+  return {
+    km: summary.distance / 1000,
+    minutes: summary.duration / 60
+  };
+}
+const handleBusLocationSelect = async ({ from, to }) => {
+  const { km, minutes } = await calculateDistanceKm(from, to);
+  setNewPost(prev => ({
+    ...prev,
+    distance_km: km.toFixed(1),
+    estimated_duration: Math.round(minutes / 60)
+  }));
+};
+
     const [newPost, setNewPost] = useState({
         title: '',
         tags: [],
@@ -1472,7 +1507,12 @@ const upcomingRentals = rentals.filter((rental) => {
                                            value={newPost.title} onChange={handleInputChange} style={{ border: '1px solid #605fc9', borderRadius: '12px' }}/>
                                 </div>
                     </div>
-                    <LocationFields newPost={newPost} handleInputChange={handleInputChange} />
+                    <LocationFields
+                      newPost={newPost}
+                      handleInputChange={handleInputChange}
+                      onLocationSelect={handleBusLocationSelect}
+                    />
+
                     <div className="field">
                     <label className="label">
                         Tags <span style={{color: 'red'}}>*</span>
@@ -1590,8 +1630,9 @@ const upcomingRentals = rentals.filter((rental) => {
 
                                 <div className="field">
                                     <LocationFields
-                                        newPost={newPost}
-                                        handleInputChange={handleInputChange}
+                                      newPost={newPost}
+                                      handleInputChange={handleInputChange}
+                                      onLocationSelect={handleBusLocationSelect}
                                     />
                                 </div>
                             <div className="field">

@@ -27,7 +27,7 @@ const selectStyles = {
   }),
 };
 
-export default function LocationFields({ newPost, handleInputChange }) {
+export default function LocationFields({ newPost, handleInputChange, onLocationSelect }) {
   const allCountries = Country.getAllCountries().map((c) => ({
     label: c.name,
     value: c.isoCode,
@@ -35,6 +35,18 @@ export default function LocationFields({ newPost, handleInputChange }) {
 
   const [fromCountry, setFromCountry] = useState(null);
   const [toCountry, setToCountry] = useState(null);
+async function geocodeCity(city, country) {
+  const res = await fetch(
+    `https://nominatim.openstreetmap.org/search?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&format=json&limit=1`
+  );
+  const data = await res.json();
+  if (!data.length) return null;
+
+  return {
+    lat: parseFloat(data[0].lat),
+    lng: parseFloat(data[0].lon)
+  };
+}
 
   const getCities = (isoCode) =>
     City.getCitiesOfCountry(isoCode).map((c) => ({
@@ -45,21 +57,23 @@ export default function LocationFields({ newPost, handleInputChange }) {
   const fire = (name, value) =>
     handleInputChange({ target: { name, value } });
 
-   useEffect(() => {
-    if (newPost.from_country) {
-      const found = allCountries.find(
-        (c) => c.label === newPost.from_country
-      );
-      setFromCountry(found || null);
-    }
+    useEffect(() => {
+      async function updateCoords() {
+        if (newPost.from_city && newPost.from_country &&
+            newPost.to_city && newPost.to_country) {
 
-    if (newPost.to_country) {
-      const found = allCountries.find(
-        (c) => c.label === newPost.to_country
-      );
-      setToCountry(found || null);
-    }
-  }, [newPost.from_country, newPost.to_country]);
+          const from = await geocodeCity(newPost.from_city, newPost.from_country);
+          const to = await geocodeCity(newPost.to_city, newPost.to_country);
+
+          if (from && to && onLocationSelect) {
+            onLocationSelect({ from, to });
+          }
+        }
+      }
+
+      updateCoords();
+    }, [newPost.from_city, newPost.to_city]);
+
 
   return (
     <>
