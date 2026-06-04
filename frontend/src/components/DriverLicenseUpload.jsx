@@ -21,13 +21,26 @@ const FIELD_LABELS = {
   driving_licence_field: "Document Type",
 };
 
- const EXPECTED_DOC_TYPE = "vairuotojo pažymėjimas";
+const VALID_LICENSE_TYPES = [
+  "vairuotojo pažymėjimas",      // Lithuanian
+  "водительское удостоверение",  // Russian
+  "посвідчення водія",           // Ukrainian
+  "driving license",             // English (US)
+  "driving licence",             // English (UK)
+  "driver's license",            // English alt
+  "driver licence"               // English alt
+];
 
- const isValidLicenseType = (result) => {
-   const field = result?.extracted_data?.driving_licence_field;
-   if (!field) return false;
-   return field.trim().toLowerCase() === EXPECTED_DOC_TYPE.toLowerCase();
- };
+const isValidLicenseType = (result) => {
+  const field = result?.extracted_data?.driving_licence_field;
+  if (!field) return false;
+
+  const normalized = field.trim().toLowerCase();
+
+  return VALID_LICENSE_TYPES.some(type =>
+    normalized.includes(type)     // allows partial matches too
+  );
+};
 
 // ── Risk score gauge ─────────────────────────────────────────
 const RiskGauge = ({ score }) => {

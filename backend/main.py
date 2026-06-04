@@ -2671,10 +2671,18 @@ async def verify_license(
     extracted = _extract_fields(doc)
 
     # ── Document type guard ──────────────────────────────────────
-    EXPECTED_DOC_TYPE = "vairuotojo pažymėjimas"
+    VALID_LICENSE_NAMES = [
+        "vairuotojo pažymėjimas",  # Lithuanian
+        "водительское удостоверение",  # Russian
+        "посвідчення водія",  # Ukrainian
+        "driving license",  # English (US)
+        "driving licence",  # English (UK)
+        "driver's license",  # English alt
+        "driver licence",  # English alt
+    ]
     doc_type_field = extracted.get("driving_licence_field", "").strip().lower()
 
-    if doc_type_field != EXPECTED_DOC_TYPE.lower():
+    if doc_type_field not in VALID_LICENSE_NAMES:
         flags = ["Invalid document type — not a driver's license"]
         risk_score = 1.0
         risk_reason = "Document is not a driver's license"
