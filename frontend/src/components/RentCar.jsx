@@ -162,7 +162,8 @@ const RentCar = () => {
     });
 
     if (!rentalRes.ok) {
-      console.error("Rental creation failed");
+      const errorData = await rentalRes.json();
+      alert(errorData.detail || "Failed to create rental");
       return;
     }
 

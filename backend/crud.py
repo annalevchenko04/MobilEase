@@ -1921,6 +1921,22 @@ def create_car_rental(db: Session, rental: schemas.CarRentalCreate, user_id: int
 
     km_used = rental.kilometers_used
 
+    existing = db.query(models.CarRental).filter(
+        models.CarRental.car_id == rental.car_id,
+        models.CarRental.status.in_([
+            "pending_payment",
+            "payment_processing",
+            "reserved",
+            "in_progress"
+        ])
+    ).first()
+
+    if existing:
+        raise HTTPException(
+            status_code=409,
+            detail="Car is already being rented or payment is in progress"
+        )
+
     total_price = calculate_rental_price(
         car,
         rental.start_datetime,
@@ -2107,7 +2123,28 @@ from datetime import datetime, timedelta
 
 def auto_free_car(db: Session, car: models.Car):
     now = datetime.utcnow()
+    # 1️⃣ FREE CARS STUCK IN PAYMENT
+    payment_rental = (
+        db.query(models.CarRental)
+        .filter(
+            models.CarRental.car_id == car.id,
+            models.CarRental.status.in_(["pending_payment", "payment_processing"])
+        )
+        .order_by(models.CarRental.created_at.desc())
+        .first()
+    )
 
+    if payment_rental:
+        # If payment stuck for more than 10 minutes → cancel it
+        if payment_rental.created_at + timedelta(minutes=10) < now:
+            payment_rental.status = "cancelled"
+            car.available = True
+            db.commit()
+            db.refresh(car)
+            db.refresh(payment_rental)
+            return  # stop here, no need to check further
+
+    # 2️⃣ EXISTING LOGIC FOR RESERVED/ACTIVE RENTALS
     rental = (
         db.query(models.CarRental)
         .filter(
